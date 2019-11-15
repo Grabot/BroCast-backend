@@ -1,6 +1,9 @@
+from app import db
 from app.routes import app_home
 from app.forms.RegistrationForm import RegistrationForm
 from flask import render_template
+from flask import flash
+from flask import redirect
 from app.models.user import User
 
 
@@ -13,11 +16,11 @@ def register():
     """
     form = RegistrationForm()
     if form.validate_on_submit():
-        user = User(username=form.username.data, email=form.email.data)
+        user = User(username=form.username.data)
         user.set_password(form.password.data)
         db.session.add(user)
         db.session.commit()
         flash('Congratulations, you are now a registered user!')
-        return redirect(url_for('login'))
+        return redirect('/home')
     return render_template('register.html', title='Register', form=form)
 

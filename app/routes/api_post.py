@@ -3,7 +3,7 @@ from flask import jsonify
 from flask import request
 
 
-@app_home.route('/api/post_data', methods=['POST'])
+@app_home.route('/brocast_api/post_data', methods=['POST'])
 def get_post_message():
     """
     gets a post message and it returns a pre determined json argument.
