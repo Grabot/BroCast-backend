@@ -1,13 +1,13 @@
 from app import db
-from app.routes import app_home
-from app.forms.RegistrationForm import RegistrationForm
+from app.view.routes import app_view
+from app.view.forms.RegistrationForm import RegistrationForm
 from flask import render_template
 from flask import flash
 from flask import redirect
-from app.models.user import User
+from app.view.models.user import User
 
 
-@app_home.route('/register', methods=['GET', 'POST'])
+@app_view.route('/register', methods=['GET', 'POST'])
 def register():
     """
     Here the registration is handled.
