@@ -10,11 +10,11 @@
 import os
 from flask_script import Manager
 from flask_migrate import Migrate, MigrateCommand
+from config import Config
+from app import create_app, db
 
-from app import app, db
-
-
-app.config.from_object(os.environ['APP_SETTINGS'])
+app = create_app()
+app.config.from_object(Config)
 
 migrate = Migrate(app, db)
 manager = Manager(app)
