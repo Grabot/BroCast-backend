@@ -2,9 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Test</title>
+    <title>{{Title}}</title>
 </head>
 <body>
-Test
+{% for user in users %}
+<p style="color: green;">[{{ user.username }}]</p>
+{% endfor %}
 </body>
 </html>
