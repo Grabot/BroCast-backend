@@ -6,7 +6,7 @@
 </head>
 <body>
 {% for user in users %}
-<p style="color: green;">[{{ user.username }}]</p>
+<p style="color: green;">[{{ user.username }}]  [{{ user.get_password() }}]</p>
 {% endfor %}
 </body>
 </html>

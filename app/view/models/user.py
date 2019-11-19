@@ -16,6 +16,13 @@ class User(db.Model):
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
 
+    # TODO @Sander: possibly the password should be hashed in the app and not here.
+    def set_password_dangerous(self, password):
+        self.password_hash = password
+
+    def get_password(self):
+        return self.password_hash
+
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
