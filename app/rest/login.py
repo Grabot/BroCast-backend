@@ -6,14 +6,10 @@ from app.view.models.user import User
 
 class Login(Resource):
     def get(self, username, password):
-        print("user " + username + " is trying to log in")
         user = User.query.filter_by(username=username).first()
-        print("we found someone in the database. He is " + user.username)
         if user is None or not user.check_password(password):
-            print("wrong password")
             return {'result': 'failed',
                     'reason': 'Invalid username or password'}
-        print("successful login")
         return {'result': 'success'}
 
     def put(self, username, password):

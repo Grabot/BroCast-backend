@@ -19,9 +19,7 @@ class Register(Resource):
         db.session.commit()
         return {
             'result': True,
-            'message': "congratulations! " + username + " is now registerd at BroCast. Happy BroCasting!",
-            'username': username,
-            'password': password
+            'message': "congratulations! " + username + " is now registerd at BroCast. Happy BroCasting!"
         }
 
     def put(self, username, password):
