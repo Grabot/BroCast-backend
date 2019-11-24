@@ -12,7 +12,11 @@ class Register(Resource):
         user.set_password_dangerous(password)
         db.session.add(user)
         db.session.commit()
-        return {'message': 'congratulations! ' + username + " is now registerd at BroCast. Happy BroCasting!"}
+        return {
+            'message': "congratulations! " + username + " is now registerd at BroCast. Happy BroCasting!",
+            'username': username,
+            'password': password
+        }
 
     def put(self, username, password):
         pass
