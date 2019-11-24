@@ -7,13 +7,18 @@ from app.view.models.user import User
 
 class Register(Resource):
     def get(self, username, password):
-        print("user: " + username + " wants to register! He is using password: " + password)
+        user = User.query.filter_by(username=username).first()
+        if user is not None:
+            return {
+                'result': False,
+                'message': "username is already taken! Please choose another one."
+            }
         user = User(username=username)
         user.set_password(password)
-        print("password after encryption is: " + user.get_password())
         db.session.add(user)
         db.session.commit()
         return {
+            'result': True,
             'message': "congratulations! " + username + " is now registerd at BroCast. Happy BroCasting!",
             'username': username,
             'password': password
