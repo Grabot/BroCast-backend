@@ -7,9 +7,10 @@ from app.view.models.user import User
 
 class Register(Resource):
     def get(self, username, password):
+        print("user: " + username + " wants to register! He is using password: " + password)
         user = User(username=username)
-        # user.set_password(password)
-        user.set_password_dangerous(password)
+        user.set_password(password)
+        print("password after encryption is: " + user.get_password())
         db.session.add(user)
         db.session.commit()
         return {
