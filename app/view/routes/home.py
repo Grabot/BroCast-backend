@@ -8,7 +8,5 @@ from app.view.models.user import User
 @app_view.route('/home', methods=['GET', 'POST'])
 def home():
     users = User.query.all()
-    for u in users:
-        print(u.username)
     return render_template('home.html', users=users, title='Home')
 
