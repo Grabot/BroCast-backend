@@ -3,11 +3,12 @@ from app.rest import app_api
 from flask_restful import Api
 from flask_restful import Resource
 from app.view.models.user import User
+from sqlalchemy import func
 
 
 class Register(Resource):
     def get(self, username, password):
-        user = User.query.filter_by(username=username).first()
+        user = User.query.filter(func.lower(User.username) == func.lower(username)).first()
         if user is not None:
             return {
                 'result': False,
@@ -34,4 +35,3 @@ class Register(Resource):
 
 api = Api(app_api)
 api.add_resource(Register, '/api/v1.0/register/<string:username>/<string:password>', endpoint='register')
-
