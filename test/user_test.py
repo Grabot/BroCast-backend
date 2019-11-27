@@ -2,13 +2,11 @@ import unittest
 from app import create_app, db
 from app.view.models.user import User
 from config import Config
+from sqlalchemy import func
+from config import TestConfig
 
 
-class TestConfig(Config):
-    TESTING = True
-    SQLALCHEMY_DATABASE_URI = 'sqlite://'
-
-
+# This messes up the brocast database for some reason. Don't run it! :p
 class UserModelTest(unittest.TestCase):
     def setUp(self):
         self.app = create_app(TestConfig)
@@ -44,6 +42,12 @@ class UserModelTest(unittest.TestCase):
         self.assertEqual(bro1.bros.first().username, 'bro2')
         self.assertEqual(bro2.user_bros.count(), 1)
         self.assertEqual(bro2.user_bros.first().username, 'bro1')
+
+    def test_bro_login(self):
+        bro1 = User(username="bro1")
+        db.session.add(bro1)
+        user = User.query.filter(func.lower(User.username) == func.lower("bro1")).first()
+        self.assertEqual(user, bro1)
 
 
 if __name__ == '__main__':
