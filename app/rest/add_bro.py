@@ -6,7 +6,7 @@ from app.view.models.user import User
 from sqlalchemy import func
 
 
-class Search(Resource):
+class AddBro(Resource):
     def get(self, bro):
         users = User.query.filter(func.lower(User.username) == func.lower(bro))
         usernames = []
@@ -26,5 +26,5 @@ class Search(Resource):
 
 
 api = Api(app_api)
-api.add_resource(Search, '/api/v1.0/search/<string:bro>/', endpoint='search')
+api.add_resource(AddBro, '/api/v1.0/add/<string:bro>/', endpoint='add_bro')
 
