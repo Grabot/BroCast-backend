@@ -12,6 +12,7 @@ class UserModelTest(unittest.TestCase):
         self.app = create_app(TestConfig)
         self.app_context = self.app.app_context()
         self.app_context.push()
+        self.app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite://"
         db.create_all()
 
     def tearDown(self):

@@ -9,11 +9,10 @@ from sqlalchemy import func
 class Search(Resource):
     def get(self, bro):
         users = User.query.filter(func.lower(User.username) == func.lower(bro))
-        usernames = []
+        bros = []
         for user in users:
-            usernames.append([user.username, user.id])
-            print(user.username)
-        return jsonify({'usernames': usernames})
+            bros.append({'username': user.username, 'id': user.id})
+        return jsonify({'bros': bros})
 
     def put(self, bro):
         pass
