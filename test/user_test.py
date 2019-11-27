@@ -33,8 +33,17 @@ class UserModelTest(unittest.TestCase):
         db.session.add(bro1)
         db.session.add(bro2)
         db.session.commit()
+        # test to see if the bros both have 0 bros
         self.assertEqual(bro1.bros.all(), [])
         self.assertEqual(bro2.bros.all(), [])
+
+        bro1.add_bro(bro2)
+        db.session.commit()
+        self.assertTrue(bro1.get_bro(bro2))
+        self.assertEqual(bro1.bros.count(), 1)
+        self.assertEqual(bro1.bros.first().username, 'bro2')
+        self.assertEqual(bro2.user_bros.count(), 1)
+        self.assertEqual(bro2.user_bros.first().username, 'bro1')
 
 
 if __name__ == '__main__':
