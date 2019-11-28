@@ -9,9 +9,9 @@ class Login(Resource):
         # We don't do the case sensitivity test here because the bro should give the proper name
         bro = Bro.query.filter_by(bro_name=bro_name).first()
         if bro is None or not bro.check_password(password):
-            return {'result': 'failed',
+            return {'result': False,
                     'reason': 'Invalid bro name or password'}
-        return {'result': 'success'}
+        return {'result': True}
 
     def put(self, bro_name, password):
         pass
