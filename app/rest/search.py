@@ -2,17 +2,17 @@ from app.rest import app_api
 from flask_restful import Api
 from flask_restful import Resource
 from flask import jsonify
-from app.view.models.user import User
+from app.view.models.bro import Bro
 from sqlalchemy import func
 
 
 class Search(Resource):
     def get(self, bro):
-        users = User.query.filter(func.lower(User.username) == func.lower(bro))
-        bros = []
-        for user in users:
-            bros.append({'username': user.username, 'id': user.id})
-        return jsonify({'bros': bros})
+        bros = Bro.query.filter(func.lower(Bro.bro_name) == func.lower(bro))
+        potential_bros = []
+        for bro in bros:
+            potential_bros.append({'bro_name': bro.bro_name, 'id': bro.id})
+        return jsonify({'bros': potential_bros})
 
     def put(self, bro):
         pass

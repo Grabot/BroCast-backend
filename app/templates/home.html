@@ -5,8 +5,8 @@
     <title>{{Title}}</title>
 </head>
 <body>
-{% for user in users %}
-<p style="color: green;">[{{ user.username }}]  [{{ user.get_password() }}]</p>
+{% for bro in bros %}
+<p style="color: green;">[{{ bro.bro_name }}]  [{{ bro.get_password() }}]</p>
 {% endfor %}
 </body>
 </html>

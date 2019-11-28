@@ -3,27 +3,27 @@ from werkzeug.security import generate_password_hash
 from werkzeug.security import check_password_hash
 
 
-user_bros = db.Table(
-    'user_bros',
-    db.Column('bro_id', db.Integer, db.ForeignKey('user.id')),
-    db.Column('bro_id', db.Integer, db.ForeignKey('user.id'))
+bro_bros = db.Table(
+    'bro_bros',
+    db.Column('bro_id', db.Integer, db.ForeignKey('bro.id')),
+    db.Column('bros_bro_id', db.Integer, db.ForeignKey('bro.id'))
 )
 
 
-class User(db.Model):
+class Bro(db.Model):
     """
-    The User that is stored in the database.
-    The user has a unique id and username
+    Bro that is stored in the database.
+    The bro has a unique id and bro name
     The password is hashed and it can be checked.
     """
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(64), index=True, unique=True)
+    bro_name = db.Column(db.String(64), index=True, unique=True)
     bros = db.relationship(
-        'User',
-        secondary=user_bros,
-        primaryjoin=(user_bros.c.bro_id == id),
-        secondaryjoin=(user_bros.c.bro_id == id),
-        backref=db.backref('user_bros', lazy='dynamic'), lazy='dynamic')
+        'Bro',
+        secondary=bro_bros,
+        primaryjoin=(bro_bros.c.bro_id == id),
+        secondaryjoin=(bro_bros.c.bros_bro_id == id),
+        backref=db.backref('bro_bros', lazy='dynamic'), lazy='dynamic')
     password_hash = db.Column(db.String(128))
 
     def set_password(self, password):
@@ -39,16 +39,15 @@ class User(db.Model):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-    def add_bro(self, user):
-        if not self.get_bro(user):
-            self.bros.append(user)
+    def add_bro(self, bro):
+        if not self.get_bro(bro):
+            self.bros.append(bro)
 
-    def remove_bro(self, user):
-        if self.get_bro(user):
-            self.bros.remove(user)
+    def remove_bro(self, bro):
+        if self.get_bro(bro):
+            self.bros.remove(bro)
 
-    def get_bro(self, user):
+    def get_bro(self, bro):
         # TODO @Sander: check if this is correct.
         return self.bros.filter(
-            user_bros.c.bro_id == user.id).count() > 0
-
+            bro_bros.c.bros_bro_id == bro.id).count() > 0
