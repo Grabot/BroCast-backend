@@ -1,8 +1,8 @@
-"""create table Bro with associate table between two bros
+"""create table Bro and associate table BroBros
 
-Revision ID: 12c0145d603b
+Revision ID: 9972e2a187ed
 Revises: 
-Create Date: 2019-11-28 16:43:39.713000
+Create Date: 2019-11-30 12:59:42.246469
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '12c0145d603b'
+revision = '9972e2a187ed'
 down_revision = None
 branch_labels = None
 depends_on = None

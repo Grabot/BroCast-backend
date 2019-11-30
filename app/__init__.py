@@ -1,26 +1,35 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
 from config import Config
+from flask_script import Manager
+from flask_migrate import Migrate, MigrateCommand
 
-db = SQLAlchemy()
-migrate = Migrate()
 
+app = Flask(__name__)
+app.config.from_object(Config)
+POSTGRES = {
+    'user': 'brocastadmin',
+    'pw': 'rps4nvuh4g5d2r1j',
+    'db': 'brocastdb',
+    'host': 'brocast-1.cg9fwmgrjypi.eu-central-1.rds.amazonaws.com',
+    'port': '5432',
+}
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://%(user)s:\
+%(pw)s@%(host)s:%(port)s/%(db)s' % POSTGRES
 
-def create_app(config_class=Config):
-    app = Flask(__name__)
-    app.config.from_object(Config)
-    db.init_app(app)
-    migrate.init_app(app, db)
+db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 
-    # add the routes
-    from app.view.routes import app_view as home_bp
-    app.register_blueprint(home_bp)
-    from app.rest import app_api as api_bp
-    app.register_blueprint(api_bp)
+manager = Manager(app)
+manager.add_command('db', MigrateCommand)
 
-    # add the models
-    from app.view import models
+# add the routes
+from app.view.routes import app_view as home_bp
+app.register_blueprint(home_bp)
+from app.rest import app_api as api_bp
+app.register_blueprint(api_bp)
 
-    return app
+# add the models
+from app.view import models
+
 

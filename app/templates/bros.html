@@ -5,6 +5,8 @@
     <title>{{Title}}</title>
 </head>
 <body>
-Hello World!
+{% for bro in bros %}
+<p style="color: green;">[{{ bro.bro_name }}]  [{{ bro.get_password() }}]</p>
+{% endfor %}
 </body>
 </html>
