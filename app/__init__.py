@@ -1,3 +1,4 @@
+import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from config import Config
@@ -8,11 +9,11 @@ from flask_migrate import Migrate, MigrateCommand
 app = Flask(__name__)
 app.config.from_object(Config)
 POSTGRES = {
-    'user': 'brocastadmin',
-    'pw': 'rps4nvuh4g5d2r1j',
-    'db': 'brocastdb',
-    'host': 'brocast-1.cg9fwmgrjypi.eu-central-1.rds.amazonaws.com',
-    'port': '5432',
+    'user': os.environ.get('POSTRGES_USER'),
+    'pw': os.environ.get('POSTGRES_PASSWORD'),
+    'db': os.environ.get('POSTGRES_DATABASE'),
+    'host': os.environ.get('POSTGRES_HOST'),
+    'port': os.environ.get('POSTGRES_PORT')
 }
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://%(user)s:%(pw)s@%(host)s:%(port)s/%(db)s' % POSTGRES
 
