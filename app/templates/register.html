@@ -5,7 +5,7 @@
         <p>
             {{ form.bro_name.label }}<br>
             {{ form.bro_name(size=32) }}<br>
-            {% for error in form.username.errors %}
+            {% for error in form.bro_name.errors %}
             <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
         </p>
