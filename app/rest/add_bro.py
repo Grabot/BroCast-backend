@@ -7,7 +7,7 @@ from sqlalchemy import func
 
 
 class AddBro(Resource):
-    def get(self, bro):
+    def get(self, bro, bros_bro):
         bros = Bro.query.filter(func.lower(Bro.bro_name) == func.lower(bro))
         bro_names = []
         for bro in bros:
@@ -15,16 +15,16 @@ class AddBro(Resource):
             print(bro.bro_name)
         return jsonify({'bro names': bro_names})
 
-    def put(self, bro):
+    def put(self, bro, bros_bro):
         pass
 
-    def delete(self, bro):
+    def delete(self, bro, bros_bro):
         pass
 
-    def post(self, bro):
+    def post(self, bro, bros_bro):
         pass
 
 
 api = Api(app_api)
-api.add_resource(AddBro, '/api/v1.0/add/<string:bro>/', endpoint='add_bro')
+api.add_resource(AddBro, '/api/v1.0/add/<string:bro>/<string:bros_bro>', endpoint='add_bro')
 
