@@ -7,23 +7,23 @@ from sqlalchemy import func
 
 
 class Search(Resource):
-    def get(self, bro, bros_bro):
+    def get(self, bro):
         bros = Bro.query.filter(func.lower(Bro.bro_name) == func.lower(bro))
         potential_bros = []
         for bro in bros:
             potential_bros.append({'bro_name': bro.bro_name, 'id': bro.id})
         return jsonify({'bros': potential_bros})
 
-    def put(self, bro, bros_bro):
+    def put(self, bro):
         pass
 
-    def delete(self, bro, bros_bro):
+    def delete(self, bro):
         pass
 
-    def post(self, bro, bros_bro):
+    def post(self, bro):
         pass
 
 
 api = Api(app_api)
-api.add_resource(Search, '/api/v1.0/search/<string:bro>/<string:bros_bro>', endpoint='search')
+api.add_resource(Search, '/api/v1.0/search/<string:bro>', endpoint='search')
 
