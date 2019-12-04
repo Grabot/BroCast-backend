@@ -19,23 +19,20 @@ class AddBro(Resource):
             index += 1
         if index != 1:
             # The bro's should both be found within the database so this will give an error!
-            return {'results': False}
+            return {'result': False}
         # We now no FOR SURE that it only found 1
         logged_in_bro = logged_in_bro.first()
-
         bro_to_be_added = Bro.query.filter(func.lower(Bro.bro_name) == func.lower(bros_bro))
         index = 0
         for b in bro_to_be_added:
             index += 1
         if index != 1:
             # The bro's should both be found within the database so this will give an error!
-            return {'results': False}
-
+            return {'result': False}
         bro_to_be_added = bro_to_be_added.first()
-
         logged_in_bro.add_bro(bro_to_be_added)
         db.session.commit()
-        return {'results': True}
+        return {'result': True}
 
     def put(self, bro, bros_bro):
         pass
