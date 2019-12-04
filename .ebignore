@@ -1,0 +1,10 @@
+# All the folders that don't need to be included in the aws enviroment.
+venv/
+test/
+__pycache__/
+migrations/
+
+# All the files that don't need to be included.
+BroCast-backend.zip
+manage.py
+README.md
