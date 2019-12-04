@@ -15,7 +15,7 @@ from app import create_app, db
 
 app = create_app()
 app.config.from_object(Config)
-
+# When running flask migrations on the database the connection should explicitly be set here
 migrate = Migrate(app, db)
 manager = Manager(app)
 
