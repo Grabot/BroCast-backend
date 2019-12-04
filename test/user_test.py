@@ -95,6 +95,7 @@ class BroModelTest(unittest.TestCase):
         self.assertEqual(bro.bros.all(), [])
         self.assertEqual(bros_bro.bros.all(), [])
 
+        print("bro %s wants to add %s as a bro" % (bro.bro_name, bros_bro.bro_name))
         # We expect there to be only 1 but we don't do the 'first' call on the query
         # because we want it to fail if there are multiple results found for the bro_name
         logged_in_bro = Bro.query.filter(func.lower(Bro.bro_name) == func.lower("bro5"))

@@ -4,10 +4,12 @@ from flask_restful import Resource
 from flask import jsonify
 from app.view.models.bro import Bro
 from sqlalchemy import func
+from app import db
 
 
 class AddBro(Resource):
     def get(self, bro, bros_bro):
+        print("bro %s wants to add %s as a bro" % (bro, bros_bro))
         # We expect there to be only 1 but we don't do the 'first' call on the query
         # because we want it to fail if there are multiple results found for the bro_name
         logged_in_bro = Bro.query.filter(func.lower(Bro.bro_name) == func.lower(bro))
