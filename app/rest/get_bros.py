@@ -17,11 +17,12 @@ class GetBros(Resource):
             return {'result': False}
         # We now no FOR SURE that it only found 1
         logged_in_bro = logged_in_bro.first()
-        bros = logged_in_bro.bros()
+        bros = logged_in_bro.bros
+        bro_list = []
         for b in bros:
-            print(b.bro_name)
-
-        return {'result': True}
+            bro_list.append({'bro_name': b.bro_name, 'id': b.id})
+        return jsonify({'result': True,
+                        'bro_list': bro_list})
 
     def put(self, bro):
         pass
@@ -34,5 +35,5 @@ class GetBros(Resource):
 
 
 api = Api(app_api)
-api.add_resource(GetBros, '/api/v1.0/get/bros/<string:bro>', endpoint='search')
+api.add_resource(GetBros, '/api/v1.0/get/bros/<string:bro>', endpoint='get_bros')
 

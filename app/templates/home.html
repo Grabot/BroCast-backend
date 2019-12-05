@@ -5,6 +5,20 @@
     <title>{{Title}}</title>
 </head>
 <body>
-Hello World!
+{% block content %}
+{% for bro in bros %}
+
+    <div>
+        bro: {{bro.bro_name}}
+    </div>
+    {% for b in bro.bros %}
+        <div>
+            has bro:
+            {{b.bro_name}}
+        </div>
+    {% endfor %}
+<p></p>
+{% endfor %}
+{%endblock%}
 </body>
 </html>
