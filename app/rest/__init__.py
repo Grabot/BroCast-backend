@@ -7,4 +7,5 @@ from app.rest import login
 from app.rest import search
 from app.rest import add_bro
 from app.rest import get_bros
+from app.rest import test
 
