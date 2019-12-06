@@ -6,17 +6,10 @@
 </head>
 <body>
 {% block content %}
-{% for bro in bros %}
-
+{% for message in messages %}
     <div>
-        bro: {{bro.bro_name}}
+        message: {{message.body}}
     </div>
-    {% for b in bro.bros %}
-        <div>
-            has bro:
-            {{b.bro_name}}
-        </div>
-    {% endfor %}
 <p></p>
 {% endfor %}
 {%endblock%}

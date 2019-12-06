@@ -5,8 +5,20 @@
     <title>{{Title}}</title>
 </head>
 <body>
+{% block content %}
 {% for bro in bros %}
-<p style="color: green;">[{{ bro.bro_name }}]  [{{ bro.get_password() }}]</p>
+
+    <div>
+        bro: {{bro.bro_name}}
+    </div>
+    {% for b in bro.bros %}
+        <div>
+            has bro:
+            {{b.bro_name}}
+        </div>
+    {% endfor %}
+<p></p>
 {% endfor %}
+{%endblock%}
 </body>
 </html>
