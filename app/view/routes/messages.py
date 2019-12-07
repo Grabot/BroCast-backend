@@ -14,6 +14,5 @@ def messages():
 def clear_messages():
     Message.query.delete()
     db.session.commit()
-    db.engine.execute('alter sequence Message_id_seq RESTART with 1')
     return 'ok'
 

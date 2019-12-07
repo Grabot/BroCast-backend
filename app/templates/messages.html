@@ -8,7 +8,7 @@
 {% block content %}
 {% for message in messages %}
     <div>
-        message: {{message.body}}
+        from {{message.sender_id}} to {{message.recipient_id}} with message: '{{message.body}}'
     </div>
 <p></p>
 {% endfor %}

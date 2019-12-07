@@ -3,6 +3,7 @@ from flask_restful import Api
 from flask_restful import Resource
 from flask import jsonify
 from app.view.models.bro import Bro
+from app.view.models.bro_bros import BroBros
 from sqlalchemy import func
 from app import db
 
@@ -30,6 +31,24 @@ class AddBro(Resource):
             # The bro's should both be found within the database so this will give an error!
             return {'result': False}
         bro_to_be_added = bro_to_be_added.first()
+
+        print("test association 1")
+        # It is possible that the connection is already made. First look for the connection
+        bro_association_1 = BroBros.query.filter_by(bro_id=logged_in_bro.id, bros_bro_id=bro_to_be_added.id).first()
+        if bro_association_1 is not None:
+            # TODO: maybe not False. Fix it.
+            return {'result': False}
+
+        print("test association 2")
+        # Test the other way around!
+        bro_association_2 = BroBros.query.filter_by(bro_id=bro_to_be_added.id, bros_bro_id=logged_in_bro.id).first()
+        if bro_association_2 is not None:
+            bro_association_2.set_accepted(True)
+            db.session.commit()
+            return {'result': True}
+
+        print("create association")
+        # If there is no association in the database we will create one.
         logged_in_bro.add_bro(bro_to_be_added)
         db.session.commit()
         return {'result': True}

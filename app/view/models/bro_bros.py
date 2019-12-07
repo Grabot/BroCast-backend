@@ -12,4 +12,7 @@ class BroBros(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     bro_id = db.Column(db.Integer, db.ForeignKey('Bro.id'))
     bros_bro_id = db.Column(db.Integer, db.ForeignKey('Bro.id'))
+    accepted = db.Column(db.Boolean, default=False)
 
+    def set_accepted(self, accepted):
+        self.accepted = accepted

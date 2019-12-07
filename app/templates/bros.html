@@ -13,8 +13,14 @@
     </div>
     {% for b in bro.bros %}
         <div>
-            has bro:
-            {{b.bro_id}}, {{b.bros_bro_id}}
+            send bro request:
+            {{b.bro_id}}, {{b.bros_bro_id}} (accepted: {{b.accepted}})
+        </div>
+    {% endfor %}
+    {% for b in bro.bro_bros %}
+        <div>
+            received bro request:
+            {{b.bro_id}}, {{b.bros_bro_id}} (accepted: {{b.accepted}})
         </div>
     {% endfor %}
 <p></p>
