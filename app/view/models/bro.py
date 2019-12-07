@@ -17,10 +17,10 @@ class Bro(db.Model):
     bro_name = db.Column(db.String(64), index=True, unique=True)
 
     bros = db.relationship('BroBros',
-                               foreign_keys=[BroBros.bro_id],
-                               backref=db.backref('brosbro', lazy='joined'),
-                               lazy='dynamic',
-                               cascade='all, delete-orphan')
+                           foreign_keys=[BroBros.bro_id],
+                           backref=db.backref('brosbro', lazy='joined'),
+                           lazy='dynamic',
+                           cascade='all, delete-orphan')
 
     bro_bros = db.relationship('BroBros',
                                foreign_keys=[BroBros.bros_bro_id],
@@ -60,18 +60,18 @@ class Bro(db.Model):
         if not self.get_bro(bro):
             b = BroBros(bro_id=self.id, bros_bro_id=bro.id)
             db.session.add(b)
-    #
-    # def remove_bro(self, bro):
-    #     if self.get_bro(bro):
-    #         self.bros.remove(bro)
-    #
-    # def get_bro(self, bro):
-    #     # TODO @Sander: check if this is correct.
-    #     return self.bros.filter(
-    #         BroBros.bros_bro_id == bro.id).count() > 0
+
+    def remove_bro(self, bro):
+        # This is to remove a bro connection, not the bro itself.
+        if self.get_bro(bro):
+            bro_bros_query = BroBros.query.filter_by(bro_id=self.id, bros_bro_id=bro.id).first()
+            # Just a safety check to make sure it exists before deleting it.
+            if bro_bros_query is not None:
+                BroBros.query.filter_by(bro_id=self.id, bros_bro_id=bro.id).delete()
 
     def get_bro(self, bro):
         # see if the bro that is passed is already in the BroBros list
         if bro.id is None:
             return False
         return self.bros.filter_by(bros_bro_id=bro.id).first() is not None
+

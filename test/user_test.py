@@ -25,7 +25,7 @@ class BroModelTest(unittest.TestCase):
         self.assertFalse(bro.check_password('hacker'))
         self.assertTrue(bro.check_password('secret'))
 
-    def test_bros(self):
+    def test_bro_add(self):
         bro1 = Bro(bro_name='bro1')
         bro2 = Bro(bro_name='bro2')
         db.session.add(bro1)
@@ -81,11 +81,6 @@ class BroModelTest(unittest.TestCase):
         self.assertEqual(len(bro2.bros.all()), 1)
         self.assertEqual(len(bro2.bro_bros.all()), 1)
 
-        # self.assertEqual(bro1.bros.first().bro_name, 'bro2')
-        # self.assertEqual(bro2.bro_bros.count(), 1)
-        # self.assertEqual(bro2.bros.count(), 1)
-        # self.assertEqual(bro2.bro_bros.first().bro_name, 'bro1')
-
         brosbro = bro2.bros.first()
         self.assertNotEqual(brosbro, None)
 
@@ -108,6 +103,7 @@ class BroModelTest(unittest.TestCase):
     def test_bro_login(self):
         bro3 = Bro(bro_name="bro3")
         db.session.add(bro3)
+        db.session.commit()
         bro = Bro.query.filter(func.lower(Bro.bro_name) == func.lower("bro3")).first()
         self.assertEqual(bro, bro3)
 
@@ -131,54 +127,19 @@ class BroModelTest(unittest.TestCase):
         self.assertEqual(potential_bros[0]['bro_name'], "bro4")
         # TODO @Sander: expand when users can have the same bro_name with different emotion
 
-    def test_add_bro_api(self):
-        # The bro wants to add his bro
-        # so bros_bro should be added to bro's bro_bros and it should not be equal to bro
-        bro = Bro(bro_name="bro5")
-        bros_bro = Bro(bro_name="bro6")
-        db.session.add(bro)
-        db.session.add(bros_bro)
+    def test_bro_delete(self):
+        bro5 = Bro(bro_name="bro5")
+        bro6 = Bro(bro_name="bro6")
+        db.session.add(bro5)
+        db.session.add(bro6)
         db.session.commit()
-        # test to see if the bros both have 0 bros
-        self.assertEqual(bro.bros.all(), [])
-        self.assertEqual(bros_bro.bros.all(), [])
-
-        print("bro %s wants to add %s as a bro" % (bro.bro_name, bros_bro.bro_name))
-        # We expect there to be only 1 but we don't do the 'first' call on the query
-        # because we want it to fail if there are multiple results found for the bro_name
-        logged_in_bro = Bro.query.filter(func.lower(Bro.bro_name) == func.lower("bro5"))
-        index = 0
-        for br in logged_in_bro:
-            index += 1
-        if index != 1:
-            # The bro's should both be found within the database so this will give an error!
-            return {'results': False}
-        # We now no FOR SURE that it only found 1
-        logged_in_bro = logged_in_bro.first()
-        self.assertEqual(logged_in_bro, bro)
-
-        bro_to_be_added = Bro.query.filter(func.lower(Bro.bro_name) == func.lower("bro6"))
-        index = 0
-        for br in bro_to_be_added:
-            index += 1
-        if index != 1:
-            # The bro's should both be found within the database so this will give an error!
-            return {'results': False}
-
-        bro_to_be_added = bro_to_be_added.first()
-        self.assertEqual(bro_to_be_added, bros_bro)
-
-        logged_in_bro.add_bro(bro_to_be_added)
+        bro5.add_bro(bro6)
         db.session.commit()
-        # First we test that when a bro adds another bro that there is a one way connection
-        self.assertTrue(logged_in_bro.get_bro(bro_to_be_added))
-        self.assertEqual(logged_in_bro.bros.count(), 1)
-        self.assertEqual(logged_in_bro.bro_bros.count(), 0)
-        self.assertEqual(logged_in_bro.bros.first().bro_name, 'bro6')
-        self.assertEqual(bro_to_be_added.bro_bros.count(), 1)
-        self.assertEqual(bro_to_be_added.bros.count(), 0)
-        self.assertEqual(bro_to_be_added.bro_bros.first().bro_name, 'bro5')
-
+        self.assertTrue(bro5.get_bro(bro6))
+        # We have added the bro and we know that this works because of previous tests. We now delete it
+        bro5.remove_bro(bro6)
+        db.session.commit()
+        self.assertFalse(bro5.get_bro(bro6))
 
 
 if __name__ == '__main__':
