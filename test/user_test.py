@@ -42,7 +42,15 @@ class BroModelTest(unittest.TestCase):
         self.assertEqual(len(bro1.bros.all()), 1)
         self.assertEqual(len(bro1.bro_bros.all()), 0)
 
-        # We test that the correct
+        # We test that we cannot add the same bro twice
+        bro1.add_bro(bro2)
+        db.session.commit()
+        # First we test that when a bro adds another bro that there is a one way connection
+        self.assertTrue(bro1.get_bro(bro2))
+        self.assertEqual(len(bro1.bros.all()), 1)
+        self.assertEqual(len(bro1.bro_bros.all()), 0)
+
+        # We test that the brosbro association is correct
         brosbro = bro1.bros.first()
         self.assertNotEqual(brosbro, None)
 

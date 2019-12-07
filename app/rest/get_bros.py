@@ -20,7 +20,10 @@ class GetBros(Resource):
         bros = logged_in_bro.bros
         bro_list = []
         for b in bros:
-            bro_list.append({'bro_name': b.bro_name, 'id': b.id})
+            bros_bro = Bro.query.filter_by(id=b.bros_bro_id).first()
+            # We don't expect this to not return anything but we have a check anyway
+            if bros_bro is not None:
+                bro_list.append({'bro_name': bros_bro.bro_name, 'id': bros_bro.id})
         return jsonify({'result': True,
                         'bro_list': bro_list})
 
