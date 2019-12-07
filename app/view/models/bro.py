@@ -5,6 +5,7 @@ from app import db
 from app.view.models.bro_bros import BroBros
 from app.view.models.message import Message
 
+
 class Bro(db.Model):
     """
     Bro that is stored in the database.
@@ -15,21 +16,17 @@ class Bro(db.Model):
     __tablename__ = 'Bro'
     id = db.Column(db.Integer, primary_key=True)
     bro_name = db.Column(db.String(64), index=True, unique=True)
-
     bros = db.relationship('BroBros',
                            foreign_keys=[BroBros.bro_id],
                            backref=db.backref('brosbro', lazy='joined'),
                            lazy='dynamic',
                            cascade='all, delete-orphan')
-
     bro_bros = db.relationship('BroBros',
                                foreign_keys=[BroBros.bros_bro_id],
                                backref=db.backref('bro', lazy='joined'),
                                lazy='dynamic',
                                cascade='all, delete-orphan')
-
     password_hash = db.Column(db.String(128))
-
     messages_sent = db.relationship('Message',
                                     foreign_keys='Message.sender_id',
                                     backref='author', lazy='dynamic')
@@ -40,10 +37,6 @@ class Bro(db.Model):
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
-
-    # TODO @Sander: possibly the password should be hashed in the app and not here.
-    def set_password_dangerous(self, password):
-        self.password_hash = password
 
     def get_password(self):
         return self.password_hash

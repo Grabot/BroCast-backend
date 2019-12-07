@@ -23,19 +23,3 @@ def clear_bros(bro, bros_bro):
     db.session.commit()
     return "Bro %s no longer is a bro of %s" % (remove_bro.bro_name, to_be_removed_bro.bro_name)
 
-
-@app_view.route('/messages/nuke', methods=['GET', 'POST'])
-def clear_messages():
-    Message.query.delete()
-    db.session.commit()
-    db.engine.execute('alter sequence message_id_seq RESTART with 1')
-    return 'ok'
-
-
-@app_view.route('/bros/nuke', methods=['GET', 'POST'])
-def fresh_start():
-    Bro.query.delete()
-    db.session.commit()
-    db.engine.execute('alter sequence bro_id_seq RESTART with 1')
-    return 'ok'
-

@@ -2,10 +2,11 @@ from app.rest import app_api
 from flask_restful import Api
 from flask_restful import Resource
 from flask import request
+from flask import jsonify
 from app.view.models.bro import Bro
+from app.view.models.bro_bros import BroBros
 from app.view.models.message import Message
 from sqlalchemy import func
-from sqlalchemy import or_
 from app import db
 
 
@@ -31,9 +32,11 @@ class GetMessage(Resource):
         bro_to_be_added = bro_to_be_added.first()
 
         messages = Message.query.filter_by(sender_id=logged_in_bro.id, recipient_id=bro_to_be_added.id)
+        message_list = []
         for m in messages:
-            print(m.body)
-        return {'result': True}
+            message_list.append(m.body)
+        return jsonify({'result': True,
+                        'message_list': message_list})
 
     def put(self, bro, bros_bro):
         pass
@@ -67,9 +70,14 @@ class GetMessage(Resource):
             return {'result': False}
         bro_to_be_added = bro_to_be_added.first()
 
+        bro_associate_1 = BroBros.query.filter_by(bro_id=logged_in_bro.id, bros_bro_id=bro_to_be_added.id)
+        if bro_associate_1 is None:
+            return {'result': False}
+
         bro_message = Message(
             sender_id=logged_in_bro.id,
             recipient_id=bro_to_be_added.id,
+            bro_bros_id=bro_associate_1.first().id,
             body=message
         )
 
