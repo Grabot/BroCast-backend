@@ -19,7 +19,7 @@ def create_app(config_class=Config):
         'host': os.environ.get('POSTGRES_HOST'),
         'port': os.environ.get('POSTGRES_PORT')
     }
-    if POSTGRES['user'] is not None:
+    if POSTGRES['host'] is not None:
         app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://%(user)s:%(pw)s@%(host)s:%(port)s/%(db)s' % POSTGRES
     db.init_app(app)
     migrate.init_app(app, db)

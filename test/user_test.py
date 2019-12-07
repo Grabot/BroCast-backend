@@ -39,23 +39,71 @@ class BroModelTest(unittest.TestCase):
         db.session.commit()
         # First we test that when a bro adds another bro that there is a one way connection
         self.assertTrue(bro1.get_bro(bro2))
-        self.assertEqual(bro1.bros.count(), 1)
-        self.assertEqual(bro1.bro_bros.count(), 0)
-        self.assertEqual(bro1.bros.first().bro_name, 'bro2')
-        self.assertEqual(bro2.bro_bros.count(), 1)
-        self.assertEqual(bro2.bros.count(), 0)
-        self.assertEqual(bro2.bro_bros.first().bro_name, 'bro1')
+        self.assertEqual(len(bro1.bros.all()), 1)
+        self.assertEqual(len(bro1.bro_bros.all()), 0)
 
-        # If the bro adds the other bro back the connection should be both ways!
+        # We test that the correct
+        brosbro = bro1.bros.first()
+        self.assertNotEqual(brosbro, None)
+
+        # Take the bros from the brosbro association table and test if they are correct
+        test_bro1 = Bro.query.filter_by(id=brosbro.bro_id).first()
+        test_bro2 = Bro.query.filter_by(id=brosbro.bros_bro_id).first()
+        self.assertEqual(test_bro1.bro_name, 'bro1')
+        self.assertEqual(test_bro2.bro_name, 'bro2')
+
+        # Test that the other bro is also correctly set now.
+        self.assertEqual(len(bro2.bros.all()), 0)
+        self.assertEqual(len(bro2.bro_bros.all()), 1)
+
+        # The association table should be the same but it should be contacted from the other Bro.
+        brosbro = bro2.bro_bros.first()
+        self.assertNotEqual(brosbro, None)
+
+        # Again check the brosbro. It should be the same object.
+        test_bro1 = Bro.query.filter_by(id=brosbro.bro_id).first()
+        test_bro2 = Bro.query.filter_by(id=brosbro.bros_bro_id).first()
+        self.assertEqual(test_bro1.bro_name, 'bro1')
+        self.assertEqual(test_bro2.bro_name, 'bro2')
+
+        # For the other bro there should be no brosbro connection
+        # TODO: Possibly this will change. When a bro is added both paths are created with an active indication (maybe)
+        self.assertEqual(bro2.bros.first(), None)
+        # # If the bro adds the other bro back the connection should be both ways!
         bro2.add_bro(bro1)
+        db.session.commit()
+
         self.assertTrue(bro1.get_bro(bro2))
         self.assertTrue(bro2.get_bro(bro1))
-        self.assertEqual(bro1.bros.count(), 1)
-        self.assertEqual(bro1.bro_bros.count(), 1)
-        self.assertEqual(bro1.bros.first().bro_name, 'bro2')
-        self.assertEqual(bro2.bro_bros.count(), 1)
-        self.assertEqual(bro2.bros.count(), 1)
-        self.assertEqual(bro2.bro_bros.first().bro_name, 'bro1')
+
+        self.assertEqual(len(bro1.bros.all()), 1)
+        self.assertEqual(len(bro1.bro_bros.all()), 1)
+        self.assertEqual(len(bro2.bros.all()), 1)
+        self.assertEqual(len(bro2.bro_bros.all()), 1)
+
+        # self.assertEqual(bro1.bros.first().bro_name, 'bro2')
+        # self.assertEqual(bro2.bro_bros.count(), 1)
+        # self.assertEqual(bro2.bros.count(), 1)
+        # self.assertEqual(bro2.bro_bros.first().bro_name, 'bro1')
+
+        brosbro = bro2.bros.first()
+        self.assertNotEqual(brosbro, None)
+
+        # This should now be a new associate table row
+        test_bro1 = Bro.query.filter_by(id=brosbro.bro_id).first()
+        test_bro2 = Bro.query.filter_by(id=brosbro.bros_bro_id).first()
+        self.assertEqual(test_bro1.bro_name, 'bro2')
+        self.assertEqual(test_bro2.bro_name, 'bro1')
+
+        # Now the first bro should have the same associate table as the previous one.
+        brosbro = bro1.bro_bros.first()
+        self.assertNotEqual(brosbro, None)
+
+        # This should now be a new associate table row
+        test_bro1 = Bro.query.filter_by(id=brosbro.bro_id).first()
+        test_bro2 = Bro.query.filter_by(id=brosbro.bros_bro_id).first()
+        self.assertEqual(test_bro1.bro_name, 'bro2')
+        self.assertEqual(test_bro2.bro_name, 'bro1')
 
     def test_bro_login(self):
         bro3 = Bro(bro_name="bro3")
