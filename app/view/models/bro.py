@@ -18,18 +18,18 @@ class Bro(db.Model):
     bro_name = db.Column(db.String(64), index=True, unique=True)
     bros = db.relationship('BroBros',
                            foreign_keys=[BroBros.bro_id],
-                           backref=db.backref('brosbro', lazy='joined'),
+                           backref=db.backref('bro_bros', lazy='joined'),
                            lazy='dynamic',
                            cascade='all, delete-orphan')
     bro_bros = db.relationship('BroBros',
                                foreign_keys=[BroBros.bros_bro_id],
-                               backref=db.backref('bro', lazy='joined'),
+                               backref=db.backref('bros', lazy='joined'),
                                lazy='dynamic',
                                cascade='all, delete-orphan')
     password_hash = db.Column(db.String(128))
     messages_sent = db.relationship('Message',
                                     foreign_keys='Message.sender_id',
-                                    backref='author', lazy='dynamic')
+                                    backref='sender', lazy='dynamic')
     messages_received = db.relationship('Message',
                                         foreign_keys='Message.recipient_id',
                                         backref='recipient', lazy='dynamic')

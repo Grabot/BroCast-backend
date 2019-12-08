@@ -37,12 +37,13 @@ class GetMessage(Resource):
         # but an error should be given nonetheless
         bro_association_1 = BroBros.query.filter_by(bro_id=logged_in_bro.id, bros_bro_id=bro_to_be_added.id).first()
         if bro_association_1 is not None:
-            messages = Message.query.filter_by(bro_bros_id=bro_association_1.id)
-
+            messages = Message.query.filter_by(bro_bros_id=bro_association_1.id).\
+                order_by(Message.timestamp.desc()).paginate(1, 20, False).items
 
         bro_association_2 = BroBros.query.filter_by(bro_id=bro_to_be_added.id, bros_bro_id=logged_in_bro.id).first()
         if bro_association_2 is not None:
-            messages = Message.query.filter_by(bro_bros_id=bro_association_2.id)
+            messages = Message.query.filter_by(bro_bros_id=bro_association_2.id).\
+                order_by(Message.timestamp.desc()).paginate(1, 20, False).items
 
         if messages is None:
             return {'result': False}
