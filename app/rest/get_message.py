@@ -11,8 +11,7 @@ from app import db
 
 
 class GetMessage(Resource):
-    def get(self, bro, bros_bro):
-        print("getting messages")
+    def get(self, bro, bros_bro, page):
         logged_in_bro = Bro.query.filter(func.lower(Bro.bro_name) == func.lower(bro))
         index = 0
         for b in logged_in_bro:
@@ -38,12 +37,12 @@ class GetMessage(Resource):
         bro_association_1 = BroBros.query.filter_by(bro_id=logged_in_bro.id, bros_bro_id=bro_to_be_added.id).first()
         if bro_association_1 is not None:
             messages = Message.query.filter_by(bro_bros_id=bro_association_1.id).\
-                order_by(Message.timestamp.desc()).paginate(1, 20, False).items
+                order_by(Message.timestamp.desc()).paginate(1, 20*page, False).items
 
         bro_association_2 = BroBros.query.filter_by(bro_id=bro_to_be_added.id, bros_bro_id=logged_in_bro.id).first()
         if bro_association_2 is not None:
             messages = Message.query.filter_by(bro_bros_id=bro_association_2.id).\
-                order_by(Message.timestamp.desc()).paginate(1, 20, False).items
+                order_by(Message.timestamp.desc()).paginate(1, 20*page, False).items
 
         if messages is None:
             return {'result': False}
@@ -57,13 +56,13 @@ class GetMessage(Resource):
         return jsonify({'result': True,
                         'message_list': message_list})
 
-    def put(self, bro, bros_bro):
+    def put(self, bro, bros_bro, page):
         pass
 
-    def delete(self, bro, bros_bro):
+    def delete(self, bro, bros_bro, page):
         pass
 
-    def post(self, bro, bros_bro):
+    def post(self, bro, bros_bro, page):
         json = request.get_json()
         # If there is no message we give an error.
         if len(json['message']) == 0:
@@ -112,5 +111,5 @@ class GetMessage(Resource):
 
 
 api = Api(app_api)
-api.add_resource(GetMessage, '/api/v1.0/message/<string:bro>/<string:bros_bro>', endpoint='get_message')
+api.add_resource(GetMessage, '/api/v1.0/message/<string:bro>/<string:bros_bro>/<int:page>', endpoint='get_message')
 
