@@ -36,6 +36,12 @@ class Bro(db.Model):
                                         backref='recipient', lazy='dynamic')
     last_message_read_time = db.Column(db.DateTime)
 
+    def set_registration_id(self, registration_id):
+        self.registration_id = registration_id
+
+    def get_registration_id(self):
+        return self.registration_id
+
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
 

@@ -1,6 +1,7 @@
 from app.view.routes import app_view
 from flask import render_template
 from app.view.models.bro import Bro
+from app.view.models.bro_bros import BroBros
 from app import db
 
 
@@ -14,6 +15,14 @@ def bros():
 def fresh_start():
     Bro.query.delete()
     db.session.commit()
-    db.engine.execute('alter sequence Bro_id_seq RESTART with 1')
+    # db.engine.execute("alter sequence Bro_id_seq RESTART with 1")
+    return 'ok'
+
+
+@app_view.route('/brosbro/nuke', methods=['GET', 'POST'])
+def bros_bro_nuke():
+    BroBros.query.delete()
+    db.session.commit()
+    # db.engine.execute("alter sequence BroBros_id_seq RESTART with 1")
     return 'ok'
 

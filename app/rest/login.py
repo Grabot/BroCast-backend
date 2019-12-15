@@ -11,7 +11,10 @@ class Login(Resource):
         if bro is None or not bro.check_password(password):
             return {'result': False,
                     'reason': 'Invalid bro name or password'}
-        return {'result': True}
+
+        token = bro.get_registration_id()
+        return {'result': True,
+                'token': token}
 
     def put(self, bro_name, password):
         pass

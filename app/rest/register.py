@@ -7,7 +7,7 @@ from sqlalchemy import func
 
 
 class Register(Resource):
-    def get(self, bro_name, password):
+    def get(self, bro_name, password, token):
         # First check if there is a bro with that name in the database
         bro_check = Bro.query.filter(func.lower(Bro.bro_name) == func.lower(bro_name)).first()
         if bro_check is not None:
@@ -18,6 +18,7 @@ class Register(Resource):
         # If there is no bro with that name we can create a new bro and save it.
         bro = Bro(bro_name=bro_name)
         bro.set_password(password)
+        bro.set_registration_id(token)
         db.session.add(bro)
         db.session.commit()
         return {
@@ -25,15 +26,16 @@ class Register(Resource):
             'message': "congratulations! " + bro_name + " is now registerd at BroCast. Happy BroCasting!"
         }
 
-    def put(self, bro_name, password):
+    def put(self, bro_name, password, token):
         pass
 
-    def delete(self, bro_name, password):
+    def delete(self, bro_name, password, token):
         pass
 
-    def post(self, bro_name, password):
+    def post(self, bro_name, password, token):
         pass
 
 
 api = Api(app_api)
-api.add_resource(Register, '/api/v1.0/register/<string:bro_name>/<string:password>', endpoint='register')
+api.add_resource(Register, '/api/v1.0/register/<string:bro_name>/<string:password>/<string:token>', endpoint='register')
+

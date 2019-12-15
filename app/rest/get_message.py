@@ -80,28 +80,28 @@ class GetMessage(Resource):
             return {'result': False}
         # We now no FOR SURE that it only found 1
         logged_in_bro = logged_in_bro.first()
-        bro_to_be_added = Bro.query.filter(func.lower(Bro.bro_name) == func.lower(bros_bro))
+        bro_to_send_to = Bro.query.filter(func.lower(Bro.bro_name) == func.lower(bros_bro))
         index = 0
-        for b in bro_to_be_added:
+        for b in bro_to_send_to:
             index += 1
         if index != 1:
             # The bro's should both be found within the database so this will give an error!
             return {'result': False}
-        bro_to_be_added = bro_to_be_added.first()
+        bro_to_send_to = bro_to_send_to.first()
 
         # TODO: It is possible that this does not find anything, but that the relationship is the other way around.
         #  The relationship the other way around should be found to save and later find all the messages.
-        bro_associate = BroBros.query.filter_by(bro_id=logged_in_bro.id, bros_bro_id=bro_to_be_added.id)
+        bro_associate = BroBros.query.filter_by(bro_id=logged_in_bro.id, bros_bro_id=bro_to_send_to.id)
         if bro_associate.first() is None:
             # If the association does not exist it should exist in the other way around.
             # If this is not the case than we will show an error.
-            bro_associate = BroBros.query.filter_by(bro_id=bro_to_be_added.id, bros_bro_id=logged_in_bro.id)
+            bro_associate = BroBros.query.filter_by(bro_id=bro_to_send_to.id, bros_bro_id=logged_in_bro.id)
             if bro_associate.first() is None:
                 return {'result': False}
 
         bro_message = Message(
             sender_id=logged_in_bro.id,
-            recipient_id=bro_to_be_added.id,
+            recipient_id=bro_to_send_to.id,
             bro_bros_id=bro_associate.first().id,
             body=message
         )
@@ -109,7 +109,7 @@ class GetMessage(Resource):
         db.session.add(bro_message)
         db.session.commit()
 
-        send_notification(bro_to_be_added, "you have a message", message)
+        send_notification(bro_to_send_to, "you have a message", message)
 
         return {'result': True}
 
