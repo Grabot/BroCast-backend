@@ -8,6 +8,7 @@ from app.view.models.bro_bros import BroBros
 from app.view.models.message import Message
 from sqlalchemy import func
 from app import db
+from app.rest.notification import send_notification
 
 
 class GetMessage(Resource):
@@ -107,6 +108,9 @@ class GetMessage(Resource):
 
         db.session.add(bro_message)
         db.session.commit()
+
+        send_notification(bro_to_be_added, "you have a message", message)
+
         return {'result': True}
 
 

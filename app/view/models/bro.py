@@ -27,6 +27,7 @@ class Bro(db.Model):
                                lazy='dynamic',
                                cascade='all, delete-orphan')
     password_hash = db.Column(db.String(128))
+    registration_id = db.Column(db.String(255))
     messages_sent = db.relationship('Message',
                                     foreign_keys='Message.sender_id',
                                     backref='sender', lazy='dynamic')
