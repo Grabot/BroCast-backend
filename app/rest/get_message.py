@@ -109,7 +109,7 @@ class GetMessage(Resource):
         db.session.add(bro_message)
         db.session.commit()
 
-        send_notification(bro_to_send_to, "you have a message", message)
+        send_notification(bro_to_send_to, "you have a new message from " + str(bro), message)
 
         return {'result': True}
 
