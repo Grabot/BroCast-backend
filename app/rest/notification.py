@@ -1,27 +1,12 @@
 # Send to single device.
 from pyfcm import FCMNotification
+import config
 
-push_service = FCMNotification(api_key="<api-key>")
+push_service = FCMNotification(api_key=config.Config.API_Key)
 
-# OR initialize with proxies
-
-proxy_dict = {
-          "http"  : "http://127.0.0.1",
-          "https" : "http://127.0.0.1",
-        }
-push_service = FCMNotification(api_key="<api-key>", proxy_dict=proxy_dict)
-
-# Your api-key can be gotten from:  https://console.firebase.google.com/project/<project-name>/settings/cloudmessaging
-
-registration_id = "<device registration_id>"
-message_title = "Uber update"
-message_body = "Hi john, your customized news for today is ready"
+registration_id = "ekhPxU_7Zbc:APA91bH-GC_b1vxPaJvsaHrO5bNa_6cpH46s24RtD6XOced8_au2rrgpX4j-EYcBAbGe0_ueDgBxFn0O5zpm3G2YO4JKIbZuEEVI9-fK0vJJNQIbTEM4M1of8B2yoJiSu0WrlA8gRYXs"
+message_title = "BroCast Title"
+message_body = "This is a message that hopefully is shown as a push notification on my emulator"
 result = push_service.notify_single_device(registration_id=registration_id, message_title=message_title, message_body=message_body)
-
-# Send to multiple devices by passing a list of ids.
-registration_ids = ["<device registration_id 1>", "<device registration_id 2>", ...]
-message_title = "Uber update"
-message_body = "Hope you're having fun this weekend, don't forget to check today's news"
-result = push_service.notify_multiple_devices(registration_ids=registration_ids, message_title=message_title, message_body=message_body)
 
 print(result)
