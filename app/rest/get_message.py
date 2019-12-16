@@ -53,7 +53,8 @@ class GetMessage(Resource):
             sender = True
             if m.recipient_id == logged_in_bro.id:
                 sender = not sender
-            message_list.append({'sender': sender, 'body': m.body})
+            # We'll only send the hours, minutes and seconds. Our plan is to remove old messages automatically
+            message_list.append({'sender': sender, 'body': m.body, 'timestamp': m.timestamp.strftime("%H:%M:%S")})
         return jsonify({'result': True,
                         'message_list': message_list})
 
@@ -99,6 +100,7 @@ class GetMessage(Resource):
             if bro_associate.first() is None:
                 return {'result': False}
 
+        # TODO: if there are too many messages automatically remove 1
         bro_message = Message(
             sender_id=logged_in_bro.id,
             recipient_id=bro_to_send_to.id,
