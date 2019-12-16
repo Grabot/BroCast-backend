@@ -11,7 +11,8 @@ def send_notification(bro, title, body):
         tag="message",
         title_loc_key="notification_message",
         message_title=title,
-        message_body=body
+        message_body=body,
+        sound="brodio"
     )
     print(send_result)
 
