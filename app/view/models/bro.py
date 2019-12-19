@@ -15,7 +15,9 @@ class Bro(db.Model):
     """
     __tablename__ = 'Bro'
     id = db.Column(db.Integer, primary_key=True)
-    bro_name = db.Column(db.String(64), index=True, unique=True)
+    # The bro name and the bromotion don't have to be unique. But the combination has to be! Do that in the code.
+    bro_name = db.Column(db.String(64), index=True, unique=False)
+    bromotion = db.Column(db.String(8), index=True, unique=False)
     bros = db.relationship('BroBros',
                            foreign_keys=[BroBros.bro_id],
                            backref=db.backref('bro_bros', lazy='joined'),
