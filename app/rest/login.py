@@ -5,9 +5,9 @@ from app.view.models.bro import Bro
 
 
 class Login(Resource):
-    def get(self, bro_name, password):
+    def get(self, bro_name, bromotion, password):
         # We don't do the case sensitivity test here because the bro should give the proper name
-        bro = Bro.query.filter_by(bro_name=bro_name).first()
+        bro = Bro.query.filter_by(bro_name=bro_name).filter_by(bromotion=bromotion).first()
         if bro is None or not bro.check_password(password):
             return {'result': False,
                     'reason': 'Invalid bro name or password'}
@@ -16,16 +16,16 @@ class Login(Resource):
         return {'result': True,
                 'token': token}
 
-    def put(self, bro_name, password):
+    def put(self, bro_name, bromotion, password):
         pass
 
-    def delete(self, bro_name, password):
+    def delete(self, bro_name, bromotion, password):
         pass
 
-    def post(self, bro_name, password):
+    def post(self, bro_name, bromotion, password):
         pass
 
 
 api = Api(app_api)
-api.add_resource(Login, '/api/v1.0/login/<string:bro_name>/<string:password>', endpoint='login')
+api.add_resource(Login, '/api/v1.0/login/<string:bro_name>/<string:bromotion>/<string:password>', endpoint='login')
 

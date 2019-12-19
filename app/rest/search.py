@@ -11,7 +11,7 @@ class Search(Resource):
         bros = Bro.query.filter(func.lower(Bro.bro_name) == func.lower(bro))
         potential_bros = []
         for bro in bros:
-            potential_bros.append({'bro_name': bro.bro_name, 'id': bro.id})
+            potential_bros.append({'bro_name': bro.bro_name, 'bromotion': bro.bromotion, 'id': bro.id})
         return jsonify({'bros': potential_bros})
 
     def put(self, bro):
