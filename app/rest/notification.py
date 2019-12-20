@@ -1,7 +1,7 @@
 from pyfcm import FCMNotification
 from config import Config
 
-push_service = FCMNotification(api_key="AAAA8jx_OQM:APA91bHyg05-yjvRv0yhD9o1bVyiniAsZsak7JUZlLLMu7U2iPoDJubrDHYI-29c373NAWEzoWiBEJQCWvQ1Pw246XkjBZbMgDw0zn1mndYbyZ4NkVmzccrFJYPbx4A-KOt85rtR_kBj")
+push_service = FCMNotification(api_key=Config.API_Key)
 
 
 def send_notification(bro, title, body):
