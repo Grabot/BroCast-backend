@@ -7,8 +7,8 @@ from sqlalchemy import func
 
 
 class GetBros(Resource):
-    def get(self, bro):
-        logged_in_bro = Bro.query.filter(func.lower(Bro.bro_name) == func.lower(bro))
+    def get(self, bro, bromotion):
+        logged_in_bro = Bro.query.filter(func.lower(Bro.bro_name) == func.lower(bro)).filter_by(bromotion=bromotion)
         index = 0
         for b in logged_in_bro:
             index += 1
@@ -23,7 +23,7 @@ class GetBros(Resource):
             bros_bro = Bro.query.filter_by(id=b.bros_bro_id).first()
             # We don't expect this to not return anything but we have a check anyway
             if bros_bro is not None:
-                bro_list.append({'bro_name': bros_bro.bro_name, 'id': bros_bro.id})
+                bro_list.append({'bro_name': bros_bro.bro_name, 'bromotion': bros_bro.bromotion, 'id': bros_bro.id})
 
         # We also want the bros that are in his list via invitation rather than being invitation or other way around.
         bro_bros = logged_in_bro.bro_bros
@@ -35,16 +35,16 @@ class GetBros(Resource):
         return jsonify({'result': True,
                         'bro_list': bro_list})
 
-    def put(self, bro):
+    def put(self, bro, bromotion):
         pass
 
-    def delete(self, bro):
+    def delete(self, bro, bromotion):
         pass
 
-    def post(self, bro):
+    def post(self, bro, bromotion):
         pass
 
 
 api = Api(app_api)
-api.add_resource(GetBros, '/api/v1.0/get/bros/<string:bro>', endpoint='get_bros')
+api.add_resource(GetBros, '/api/v1.0/get/bros/<string:bro>/<string:bromotion>', endpoint='get_bros')
 

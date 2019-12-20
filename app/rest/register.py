@@ -8,6 +8,8 @@ from sqlalchemy import func
 
 class Register(Resource):
     def get(self, bro_name, bromotion, password, token):
+        print("token")
+        print(token)
         # First check if there is a bro with that name and emotion in the database
         bro_check = Bro.query.filter(func.lower(Bro.bro_name) == func.lower(bro_name)).filter_by(bromotion=bromotion).first()
         if bro_check is not None:

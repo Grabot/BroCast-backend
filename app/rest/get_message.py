@@ -12,8 +12,8 @@ from app.rest.notification import send_notification
 
 
 class GetMessage(Resource):
-    def get(self, bro, bros_bro, page):
-        logged_in_bro = Bro.query.filter(func.lower(Bro.bro_name) == func.lower(bro))
+    def get(self, bro, bromotion, bros_bro, bros_bromotion, page):
+        logged_in_bro = Bro.query.filter(func.lower(Bro.bro_name) == func.lower(bro)).filter_by(bromotion=bromotion)
         index = 0
         for b in logged_in_bro:
             index += 1
@@ -22,7 +22,7 @@ class GetMessage(Resource):
             return {'result': False}
         # We now no FOR SURE that it only found 1
         logged_in_bro = logged_in_bro.first()
-        bro_to_be_added = Bro.query.filter(func.lower(Bro.bro_name) == func.lower(bros_bro))
+        bro_to_be_added = Bro.query.filter(func.lower(Bro.bro_name) == func.lower(bros_bro)).filter_by(bromotion=bros_bromotion)
         index = 0
         for b in bro_to_be_added:
             index += 1
@@ -58,13 +58,13 @@ class GetMessage(Resource):
         return jsonify({'result': True,
                         'message_list': message_list})
 
-    def put(self, bro, bros_bro, page):
+    def put(self, bro, bromotion, bros_bro, bros_bromotion, page):
         pass
 
-    def delete(self, bro, bros_bro, page):
+    def delete(self, bro, bromotion, bros_bro, bros_bromotion, page):
         pass
 
-    def post(self, bro, bros_bro, page):
+    def post(self, bro, bromotion, bros_bro, bros_bromotion, page):
         json = request.get_json()
         # If there is no message we give an error.
         if len(json['message']) == 0:
@@ -72,7 +72,7 @@ class GetMessage(Resource):
 
         message = json['message']
 
-        logged_in_bro = Bro.query.filter(func.lower(Bro.bro_name) == func.lower(bro))
+        logged_in_bro = Bro.query.filter(func.lower(Bro.bro_name) == func.lower(bro)).filter_by(bromotion=bromotion)
         index = 0
         for b in logged_in_bro:
             index += 1
@@ -81,7 +81,7 @@ class GetMessage(Resource):
             return {'result': False}
         # We now no FOR SURE that it only found 1
         logged_in_bro = logged_in_bro.first()
-        bro_to_send_to = Bro.query.filter(func.lower(Bro.bro_name) == func.lower(bros_bro))
+        bro_to_send_to = Bro.query.filter(func.lower(Bro.bro_name) == func.lower(bros_bro)).filter_by(bromotion=bros_bromotion)
         index = 0
         for b in bro_to_send_to:
             index += 1
@@ -111,11 +111,11 @@ class GetMessage(Resource):
         db.session.add(bro_message)
         db.session.commit()
 
-        send_notification(bro_to_send_to, "you have a new message from " + str(bro), message)
+        send_notification(bro_to_send_to, "you have a new message from " + str(bro) + " " + str(bromotion), message)
 
         return {'result': True}
 
 
 api = Api(app_api)
-api.add_resource(GetMessage, '/api/v1.0/message/<string:bro>/<string:bros_bro>/<int:page>', endpoint='get_message')
+api.add_resource(GetMessage, '/api/v1.0/message/<string:bro>/<string:bromotion>/<string:bros_bro>/<string:bros_bromotion>/<int:page>', endpoint='get_message')
 

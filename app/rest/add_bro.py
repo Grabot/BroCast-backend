@@ -9,11 +9,11 @@ from app import db
 
 
 class AddBro(Resource):
-    def get(self, bro, bros_bro):
+    def get(self, bro, bromotion, bros_bro, bros_bromotion):
         print("bro %s wants to add %s as a bro" % (bro, bros_bro))
         # We expect there to be only 1 but we don't do the 'first' call on the query
         # because we want it to fail if there are multiple results found for the bro_name
-        logged_in_bro = Bro.query.filter(func.lower(Bro.bro_name) == func.lower(bro))
+        logged_in_bro = Bro.query.filter(func.lower(Bro.bro_name) == func.lower(bro)).filter_by(bromotion=bromotion)
         # TODO @Sander: I know this is bad. But I'm to lazy to fix it now. But you should make it better at some point
         index = 0
         for b in logged_in_bro:
@@ -23,7 +23,7 @@ class AddBro(Resource):
             return {'result': False}
         # We now no FOR SURE that it only found 1
         logged_in_bro = logged_in_bro.first()
-        bro_to_be_added = Bro.query.filter(func.lower(Bro.bro_name) == func.lower(bros_bro))
+        bro_to_be_added = Bro.query.filter(func.lower(Bro.bro_name) == func.lower(bros_bro)).filter_by(bromotion=bros_bromotion)
         index = 0
         for b in bro_to_be_added:
             index += 1
@@ -53,16 +53,16 @@ class AddBro(Resource):
         db.session.commit()
         return {'result': True}
 
-    def put(self, bro, bros_bro):
+    def put(self, bro, bromotion, bros_bro, bros_bromotion):
         pass
 
-    def delete(self, bro, bros_bro):
+    def delete(self, bro, bromotion, bros_bro, bros_bromotion):
         pass
 
-    def post(self, bro, bros_bro):
+    def post(self, bro, bromotion, bros_bro, bros_bromotion):
         pass
 
 
 api = Api(app_api)
-api.add_resource(AddBro, '/api/v1.0/add/<string:bro>/<string:bros_bro>', endpoint='add_bro')
+api.add_resource(AddBro, '/api/v1.0/add/<string:bro>/<string:bromotion>/<string:bros_bro>/<string:bros_bromotion>', endpoint='add_bro')
 
