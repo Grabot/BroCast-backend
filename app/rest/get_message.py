@@ -111,6 +111,7 @@ class GetMessage(Resource):
         db.session.add(bro_message)
         db.session.commit()
 
+        # TODO: make sure that if it fails the server keeps running
         send_notification(bro_to_send_to, "you have a new message from " + str(bro) + " " + str(bromotion), message)
 
         return {'result': True}

@@ -7,8 +7,8 @@ from sqlalchemy import func
 
 
 class UpdateRegistrationId(Resource):
-    def get(self, bro, token):
-        logged_in_bro = Bro.query.filter(func.lower(Bro.bro_name) == func.lower(bro))
+    def get(self, bro, bromotion, token):
+        logged_in_bro = Bro.query.filter(func.lower(Bro.bro_name) == func.lower(bro)).filter_by(bromotion=bromotion)
         index = 0
         for b in logged_in_bro:
             index += 1
@@ -22,16 +22,16 @@ class UpdateRegistrationId(Resource):
         db.session.commit()
         return {'result': True}
 
-    def put(self, bro, token):
+    def put(self, bro, bromotion, token):
         pass
 
-    def delete(self, bro, token):
+    def delete(self, bro, bromotion, token):
         pass
 
-    def post(self, bro, token):
+    def post(self, bro, bromotion, token):
         pass
 
 
 api = Api(app_api)
-api.add_resource(UpdateRegistrationId, '/api/v1.0/update/token/<bro>/<token>', endpoint='update_registration')
+api.add_resource(UpdateRegistrationId, '/api/v1.0/update/token/<bro>/<bromotion>/<token>', endpoint='update_registration')
 
