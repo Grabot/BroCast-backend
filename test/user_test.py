@@ -1,9 +1,13 @@
 import unittest
 from app import create_app, db
 from app.view.models.bro import Bro
+from app.view.models.bro_bros import BroBros
+from app.view.models.message import Message
 from config import Config
 from sqlalchemy import func
 from config import TestConfig
+from datetime import datetime
+import time
 
 
 class BroModelTest(unittest.TestCase):
@@ -148,6 +152,199 @@ class BroModelTest(unittest.TestCase):
         bro5.remove_bro(bro6)
         db.session.commit()
         self.assertFalse(bro5.get_bro(bro6))
+
+    def test_read_messages(self):
+        bro7 = Bro(bro_name="bro7")
+        bro8 = Bro(bro_name="bro8")
+        bro9 = Bro(bro_name="bro9")
+        db.session.add(bro7)
+        db.session.add(bro8)
+        db.session.add(bro9)
+        db.session.commit()
+
+        bro7.add_bro(bro8)
+        bro7.add_bro(bro9)
+        bro7.last_message_read_time = datetime.utcnow()
+        bro8.last_message_read_time = datetime.utcnow()
+        bro9.last_message_read_time = datetime.utcnow()
+        db.session.commit()
+
+        bro_associate78 = BroBros.query.filter_by(bro_id=bro7.id, bros_bro_id=bro8.id)
+        if bro_associate78.first() is None:
+            # If the association does not exist it should exist in the other way around.
+            # If this is not the case than we will show an error.
+            bro_associate78 = BroBros.query.filter_by(bro_id=bro8.id, bros_bro_id=bro7.id)
+            if bro_associate78.first() is None:
+                # The test failed
+                self.assertTrue(False)
+        # We now have the information to send a message between bro7 and bro8
+        message = "message"
+        bro_message = Message(
+            sender_id=bro7.id,
+            recipient_id=bro8.id,
+            bro_bros_id=bro_associate78.first().id,
+            body=message
+        )
+        db.session.add(bro_message)
+        db.session.commit()
+
+        new_messages = bro7.get_message_count(bro8)
+        self.assertEqual(new_messages, 1)
+
+        new_messages = bro8.get_message_count(bro7)
+        self.assertEqual(new_messages, 1)
+
+        new_messages = bro7.get_message_count(bro9)
+        self.assertEqual(new_messages, 0)
+
+        new_messages = bro8.get_message_count(bro9)
+        self.assertEqual(new_messages, 0)
+
+        message = "message"
+        bro_message = Message(
+            sender_id=bro7.id,
+            recipient_id=bro8.id,
+            bro_bros_id=bro_associate78.first().id,
+            body=message
+        )
+        db.session.add(bro_message)
+        db.session.commit()
+
+        new_messages = bro7.get_message_count(bro8)
+        self.assertEqual(new_messages, 2)
+
+        bro_associate79 = BroBros.query.filter_by(bro_id=bro7.id, bros_bro_id=bro9.id)
+        if bro_associate79.first() is None:
+            # If the association does not exist it should exist in the other way around.
+            # If this is not the case than we will show an error.
+            bro_associate79 = BroBros.query.filter_by(bro_id=bro9.id, bros_bro_id=bro7.id)
+            if bro_associate79.first() is None:
+                # The test failed
+                self.assertTrue(False)
+        # We now have the information to send a message between bro7 and bro8
+        message = "message"
+        bro_message = Message(
+            sender_id=bro7.id,
+            recipient_id=bro9.id,
+            bro_bros_id=bro_associate79.first().id,
+            body=message
+        )
+        db.session.add(bro_message)
+        db.session.commit()
+
+        new_messages = bro7.get_message_count(bro8)
+        self.assertEqual(new_messages, 2)
+        new_messages = bro7.get_message_count(bro9)
+        self.assertEqual(new_messages, 1)
+        new_messages = bro9.get_message_count(bro7)
+        self.assertEqual(new_messages, 1)
+        new_messages = bro8.get_message_count(bro9)
+        self.assertEqual(new_messages, 0)
+        new_messages = bro9.get_message_count(bro8)
+        self.assertEqual(new_messages, 0)
+
+    def test_last_message_time(self):
+        bro10 = Bro(bro_name="bro10")
+        bro11 = Bro(bro_name="bro11")
+        bro12 = Bro(bro_name="bro12")
+        db.session.add(bro10)
+        db.session.add(bro11)
+        db.session.add(bro12)
+        db.session.commit()
+
+        bro10.add_bro(bro11)
+        bro10.add_bro(bro12)
+        bro10.last_message_read_time = datetime.utcnow()
+        bro11.last_message_read_time = datetime.utcnow()
+        bro12.last_message_read_time = datetime.utcnow()
+        db.session.commit()
+
+        bro_associate1011 = BroBros.query.filter_by(bro_id=bro10.id, bros_bro_id=bro11.id)
+        if bro_associate1011.first() is None:
+            # If the association does not exist it should exist in the other way around.
+            # If this is not the case than we will show an error.
+            bro_associate1011 = BroBros.query.filter_by(bro_id=bro11.id, bros_bro_id=bro10.id)
+            if bro_associate1011.first() is None:
+                # The test failed
+                self.assertTrue(False)
+        # We now have the information to send a message between bro7 and bro8
+        # We hardcode the timestamp, normally this will be datetime now.
+        message = "message"
+        bro_message = Message(
+            sender_id=bro10.id,
+            recipient_id=bro11.id,
+            bro_bros_id=bro_associate1011.first().id,
+            body=message,
+            timestamp=datetime(2019, 1, 1)
+        )
+        db.session.add(bro_message)
+        db.session.commit()
+
+        timestamp = bro10.get_last_message_time(bro11)
+        self.assertEqual(timestamp, datetime(2019, 1, 1))
+
+        message = "message"
+        bro_message = Message(
+            sender_id=bro11.id,
+            recipient_id=bro10.id,
+            bro_bros_id=bro_associate1011.first().id,
+            body=message,
+            timestamp=datetime(2019, 10, 1)
+        )
+        db.session.add(bro_message)
+        db.session.commit()
+
+        timestamp = bro10.get_last_message_time(bro11)
+        self.assertNotEqual(timestamp, datetime(2019, 1, 1))
+        self.assertEqual(timestamp, datetime(2019, 10, 1))
+
+        message = "message"
+        bro_message = Message(
+            sender_id=bro11.id,
+            recipient_id=bro10.id,
+            bro_bros_id=bro_associate1011.first().id,
+            body=message,
+            timestamp=datetime(2019, 4, 1)
+        )
+        db.session.add(bro_message)
+        db.session.commit()
+        timestamp = bro10.get_last_message_time(bro11)
+        self.assertEqual(timestamp, datetime(2019, 10, 1))
+
+        # We now have the information to send a message between bro7 and bro8
+        # We hardcode the timestamp, normally this will be datetime now.
+        message = "message"
+        bro_message = Message(
+            sender_id=bro10.id,
+            recipient_id=bro11.id,
+            bro_bros_id=bro_associate1011.first().id,
+            body=message,
+            timestamp=datetime(2019, 4, 1)
+        )
+        db.session.add(bro_message)
+        db.session.commit()
+
+        timestamp = bro10.get_last_message_time(bro11)
+        self.assertEqual(timestamp, datetime(2019, 10, 1))
+
+        # We now have the information to send a message between bro7 and bro8
+        # We hardcode the timestamp, normally this will be datetime now.
+        message = "message"
+        bro_message = Message(
+            sender_id=bro10.id,
+            recipient_id=bro11.id,
+            bro_bros_id=bro_associate1011.first().id,
+            body=message,
+            timestamp=datetime(2019, 11, 1)
+        )
+        db.session.add(bro_message)
+        db.session.commit()
+
+        timestamp = bro10.get_last_message_time(bro11)
+        self.assertEqual(timestamp, datetime(2019, 11, 1))
+
+        unixtime1 = time.mktime(timestamp.timetuple())
+        unixtime2 = time.mktime(datetime(2019, 10, 1).timetuple())
 
 
 if __name__ == '__main__':

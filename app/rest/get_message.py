@@ -9,6 +9,7 @@ from app.view.models.message import Message
 from sqlalchemy import func
 from app import db
 from app.rest.notification import send_notification
+from datetime import datetime
 
 
 class GetMessage(Resource):
@@ -111,8 +112,12 @@ class GetMessage(Resource):
         db.session.add(bro_message)
         db.session.commit()
 
-        # TODO: make sure that if it fails the server keeps running
         send_notification(bro_to_send_to, "you have a new message from " + str(bro) + " " + str(bromotion), message)
+
+        # update the message read time for the bro who send the message (otherwise the message shows up as not read)
+        logged_in_bro.last_message_read_time = datetime.utcnow()
+        db.session.add(logged_in_bro)
+        db.session.commit()
 
         return {'result': True}
 
