@@ -13,6 +13,6 @@ class Message(db.Model):
     bro_bros_id = db.Column(db.Integer, db.ForeignKey('BroBros.id'))
     sender_id = db.Column(db.Integer, db.ForeignKey('Bro.id'))
     recipient_id = db.Column(db.Integer, db.ForeignKey('Bro.id'))
-    body = db.Column(db.String(140))
+    body = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
 

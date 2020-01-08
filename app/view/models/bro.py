@@ -28,7 +28,7 @@ class Bro(db.Model):
                                backref=db.backref('bros', lazy='joined'),
                                lazy='dynamic',
                                cascade='all, delete-orphan')
-    password_hash = db.Column(db.String(255))
+    password_hash = db.Column(db.String(512))
     registration_id = db.Column(db.String(255))
     messages_sent = db.relationship('Message',
                                     foreign_keys='Message.sender_id',
