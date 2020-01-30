@@ -52,7 +52,7 @@ def create_emoji_v1_0():
             char = details.split("(")[1].split(")")[0]
             name = details.split(")")[1].rstrip("\n\r")[1:]
 
-            APIS.append(26)
+            APIS.append(27)
             # The flags that were flaged to not work in 24 also don't work in 25, we include them in 26
             if name not in skip24:
                 APIS.append(24)
