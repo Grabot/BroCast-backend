@@ -34,6 +34,26 @@ def create_emoji_v1_0():
                 "flag for Wallis & Futuna",
                 "flag for Kosovo",
                 "flag for Mayotte"]
+
+    skip28 = ["flag for French Southern Territories",
+                "flag for Réunion",
+                "flag for Martinique",
+                "flag for Caribbean Netherlands",
+                "flag for St. Barthélemy"]
+
+    skip27 = ["flag for Ceuta & Melilla",
+                "flag for Western Sahara",
+                "flag for Diego Garcia",
+                "flag for Falkland Islands",
+                "flag for French Guiana",
+                "flag for Guadeloupe",
+                "flag for South Georgia & South Sandwich Islands",
+                "flag for St. Martin",
+                "flag for New Caledonia",
+                "flag for St. Pierre & Miquelon",
+                "flag for Wallis & Futuna",
+                "flag for Kosovo",
+                "flag for Mayotte"]
     file = open("data/emoji-data_1_0.txt", encoding="utf8")
     result = {}
     result['emoji'] = []
@@ -52,8 +72,16 @@ def create_emoji_v1_0():
             char = details.split("(")[1].split(")")[0]
             name = details.split(")")[1].rstrip("\n\r")[1:]
 
-            APIS.append(27)
-            # The flags that were flaged to not work in 24 also don't work in 25, we include them in 26
+            APIS.append(30)
+            APIS.append(29)
+            if name not in skip28:
+                APIS.append(28)
+                if name not in skip27:
+                    APIS.append(27)
+                    APIS.append(26)
+                    APIS.append(25)
+
+            # The flags that were flagged to not work in 24 also don't work in 25, we include them in 26
             if name not in skip24:
                 APIS.append(24)
                 if "V7.0" not in details and "V8.0" not in details:
