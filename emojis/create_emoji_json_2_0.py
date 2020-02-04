@@ -25,15 +25,15 @@ def create_emoji_v1_0():
 
             category = d['category']
             if "Smileys & Emotion" in d['category'] or "People & Body" in d['category']:
-                category = "Smileys"
+                category = "Smileys and people"
             elif "Animals" in d['category']:
-                category = "Animals"
+                category = "Animals and nature"
             elif "Food" in d['category']:
-                category = "Food"
-            elif "Travel" in d['category']:
-                category = "Travel"
+                category = "Food and drinks"
             elif "Activities" in d['category']:
-                category = "Activities"
+                category = "Sports and activities"
+            elif "Travel" in d['category']:
+                category = "Travel and places"
             elif "Objects" in d['category']:
                 category = "Objects"
             elif "Symbols" in d['category']:
