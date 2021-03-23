@@ -1,1 +1,1 @@
-from app.view.models import bro
+from app.models import bro

@@ -4,8 +4,6 @@ services:
     build: .
     depends_on:
       - db
-    environment:
-      SQLALCHEMY_DATABASE_URI: postgresql+psycopg2://test:test@db/test
     networks:
       - default
     ports:
@@ -14,9 +12,9 @@ services:
 
   db:
     environment:
-      POSTGRES_USER: test
-      POSTGRES_PASSWORD: test
-      POSTGRES_DB: test
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: mysecretpassword
+      POSTGRES_DB: testdb
     image: postgres:latest
     networks:
       - default
