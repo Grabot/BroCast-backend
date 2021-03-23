@@ -1,0 +1,25 @@
+version: '3.6'
+services:
+  api:
+    build: .
+    depends_on:
+      - db
+    environment:
+      SQLALCHEMY_DATABASE_URI: postgresql+psycopg2://test:test@db/test
+    networks:
+      - default
+    ports:
+      - 5000:5000
+    restart: always
+
+  db:
+    environment:
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: test
+    image: postgres:latest
+    networks:
+      - default
+    ports:
+      - 5432:5432
+    restart: always

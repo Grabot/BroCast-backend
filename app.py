@@ -1,25 +1,6 @@
-from flask import Flask
-from flask_restful import Api, Resource
+from app import create_app
 
-app = Flask(__name__, static_url_path="")
-api = Api(app)
+app = create_app()
 
-
-class Bro(Resource):
-    def __init__(self):
-        print("broer")
-
-    def get(self):
-        print("getting")
-        return {'bro': 'get'}
-
-    def post(self):
-        print("posting")
-        return {'bro': 'post'}
-
-
-api.add_resource(Bro, '/bro', endpoint='bros')
-
-
-if __name__ == '__main__':
-    app.run(debug=True)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", debug=True)
