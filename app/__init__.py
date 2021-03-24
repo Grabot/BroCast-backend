@@ -10,14 +10,12 @@ migrate = Migrate()
 
 def create_app():
     app = Flask(__name__)
-    print("is it going to print this?")
     app.config.from_object(Config)
-    print(app.config["SQLALCHEMY_DATABASE_URI"])
     db.init_app(app)
     migrate.init_app(app, db)
 
-    from app.routes import app_view as home_bp
-    app.register_blueprint(home_bp)
+    from app.rest import app_api as api_bp
+    app.register_blueprint(api_bp)
 
     from app.models import bro
 

@@ -15,3 +15,11 @@ class Bro(db.Model):
     bromotion = db.Column(db.Text, index=True, unique=False)
     password_hash = db.Column(db.Text)
 
+    @property
+    def serialize(self):
+        """Return object data in easily serializable format"""
+        return {
+            'bro_name': self.bro_name,
+            'bromotion': self.bromotion
+        }
+
