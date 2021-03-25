@@ -14,10 +14,7 @@ services:
 
   db:
     container_name: db
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: mysecretpassword
-      POSTGRES_DB: testdb
+    env_file: .env
     image: postgres:latest
     networks:
       - default

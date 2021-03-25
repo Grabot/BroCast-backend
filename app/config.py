@@ -14,11 +14,11 @@ class DevelopmentConfig(Config):
     POSTGRES_URL = os.environ["POSTGRES_URL"]
     POSTGRES_PORT = os.environ["POSTGRES_PORT"]
     POSTGRES_USER = os.environ["POSTGRES_USER"]
-    POSTGRES_PW = os.environ["POSTGRES_PW"]
+    POSTGRES_PASSWORD = os.environ["POSTGRES_PASSWORD"]
     POSTGRES_DB = os.environ["POSTGRES_DB"]
 
     DB_URL = 'postgresql+psycopg2://{user}:{pw}@{url}:{port}/{db}'.format(
-        user=POSTGRES_USER, pw=POSTGRES_PW, url=POSTGRES_URL, port=POSTGRES_PORT, db=POSTGRES_DB)
+        user=POSTGRES_USER, pw=POSTGRES_PASSWORD, url=POSTGRES_URL, port=POSTGRES_PORT, db=POSTGRES_DB)
 
     SQLALCHEMY_DATABASE_URI = DB_URL
 
@@ -27,11 +27,11 @@ class ManageConfig(Config):
     POSTGRES_URL = os.environ["POSTGRES_URL_LOCAL"]
     POSTGRES_PORT = os.environ["POSTGRES_PORT"]
     POSTGRES_USER = os.environ["POSTGRES_USER"]
-    POSTGRES_PW = os.environ["POSTGRES_PW"]
+    POSTGRES_PASSWORD = os.environ["POSTGRES_PASSWORD"]
     POSTGRES_DB = os.environ["POSTGRES_DB"]
 
     DB_URL = 'postgresql+psycopg2://{user}:{pw}@{url}:{port}/{db}'.format(
-        user=POSTGRES_USER, pw=POSTGRES_PW, url=POSTGRES_URL, port=POSTGRES_PORT, db=POSTGRES_DB)
+        user=POSTGRES_USER, pw=POSTGRES_PASSWORD, url=POSTGRES_URL, port=POSTGRES_PORT, db=POSTGRES_DB)
 
     SQLALCHEMY_DATABASE_URI = DB_URL
 
