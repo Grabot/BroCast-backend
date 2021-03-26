@@ -7,10 +7,11 @@ from app.models.bro import Bro
 class All(Resource):
 
     def get(self):
+        print("quick test")
         bros = Bro.query.all()
         return {
             "bro_list": [bro.serialize for bro in bros]
-        }
+        }, 200
 
     def put(self):
         pass
