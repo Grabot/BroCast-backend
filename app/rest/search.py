@@ -23,14 +23,17 @@ class Search(Resource):
         json_data = request.get_json(force=True)
         bro_name = json_data["bro_name"]
         bromotion = json_data["bromotion"]
-        if bromotion == "None":
+        if bromotion == "":
             bros = Bro.query.filter(func.lower(Bro.bro_name) == func.lower(bro_name))
         else:
             bros = Bro.query.filter(func.lower(Bro.bro_name) == func.lower(bro_name)).filter_by(bromotion=bromotion)
-        potential_bros = []
+        bro_list = []
         for bro in bros:
-            potential_bros.append({'bro_name': bro.bro_name, 'bromotion': bro.bromotion, 'id': bro.id})
-        return jsonify({'bros': potential_bros})
+            bro_list.append(bro.serialize)
+        return {
+            "result": True,
+            "bro_list": bro_list
+        }
 
 
 api = Api(app_api)

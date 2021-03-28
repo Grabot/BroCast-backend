@@ -45,8 +45,8 @@ class Bro(db.Model):
     def serialize(self):
         """Return object data in easily serializable format"""
         return {
+            'id': self.id,
             'bro_name': self.bro_name,
-            'bromotion': self.bromotion,
-            'password': self.password_hash
+            'bromotion': self.bromotion
         }
 
