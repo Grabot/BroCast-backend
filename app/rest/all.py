@@ -7,8 +7,13 @@ from flask import request
 
 class All(Resource):
 
+    # noinspection PyMethodMayBeStatic
     def get(self):
-        pass
+        bros = Bro.query.all()
+        return {
+            "result": True,
+            "bro_list": [bro.serialize for bro in bros]
+        }
 
     def put(self):
         pass
