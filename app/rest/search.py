@@ -23,6 +23,7 @@ class Search(Resource):
         json_data = request.get_json(force=True)
         bro_name = json_data["bro_name"]
         bromotion = json_data["bromotion"]
+        # TODO: @Skools Levenhstein distance?
         if bromotion == "":
             bros = Bro.query.filter(func.lower(Bro.bro_name) == func.lower(bro_name))
         else:

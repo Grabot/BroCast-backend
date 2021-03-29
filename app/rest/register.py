@@ -35,12 +35,12 @@ class Register(Resource):
         bro.hash_password(password)
         db.session.add(bro)
         db.session.commit()
-        token = bro.generate_auth_token()
+        token = bro.generate_auth_token().decode('ascii')
         return {
             'result': True,
             'message': 'Congratulations, you have just added a bro',
             'bro': bro.serialize,
-            'token': token.decode('ascii')
+            'token': token
         }, 200
 
 

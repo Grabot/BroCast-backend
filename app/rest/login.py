@@ -25,7 +25,11 @@ class Login(Resource):
         password = json_data["password"]
         token = json_data["token"]
 
-        bro = Bro.verify_auth_token(token)
+        print(token)
+        print("the token is ^^")
+        bro = None
+        if token is not None and not "":
+            bro = Bro.verify_auth_token(token)
         if not bro:
             # The token was wrong (or was expired) Try to log in with username password and generate a new token
             bro = Bro.query.filter_by(bro_name=bro_name, bromotion=bromotion).first()
