@@ -43,14 +43,17 @@ class SendMessage(Resource):
 
         bro_message = Message(
             sender_id=logged_in_bro.id,
-            recipient_id=bros_bro_id.id,
+            recipient_id=bros_bro_id,
             bro_bros_id=bro_associate.first().id,
             body=message
         )
 
         db.session.add(bro_message)
         db.session.commit()
-        return {'result': True}
+        return {
+            'result': True,
+            'message': 'message send to bro: %s' % message
+        }
 
 
 api = Api(app_api)

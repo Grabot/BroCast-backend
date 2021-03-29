@@ -15,3 +15,15 @@ class Message(db.Model):
     recipient_id = db.Column(db.Integer, db.ForeignKey('Bro.id'))
     body = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+
+    @property
+    def serialize(self):
+        """Return object data in easily serializable format"""
+        return {
+            'id': self.id,
+            'bro_bros_id': self.bro_bros_id,
+            'sender_id': self.sender_id,
+            'recipient_id': self.recipient_id,
+            'body': self.body,
+            'timestamp': self.timestamp.strftime('%Y-%m-%dT%H:%M:%S.%f')
+        }

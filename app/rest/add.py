@@ -33,27 +33,16 @@ class Add(Resource):
             }
 
         bro_to_be_added = Bro.query.filter_by(id=bros_bro_id).first()
-        print(bro_to_be_added)
-
-        bro_association_1 = BroBros.query.filter_by(bro_id=logged_in_bro.id, bros_bro_id=bro_to_be_added.id).first()
-        if bro_association_1 is not None:
+        if bro_to_be_added is None:
             return {
-                "result": True,
-                "message": "You're already bros with the selected bro!"
+                "result": False,
+                "message": "Could not find your bro"
             }
 
-        bro_association_2 = BroBros.query.filter_by(bro_id=bro_to_be_added.id, bros_bro_id=logged_in_bro.id).first()
-        if bro_association_2 is not None:
-            db.session.commit()
-            return {
-                "result": True,
-                "message": "You're already bros with the selected bro!"
-            }
-
-        print("create association")
-        # If there is no association in the database we will create one.
         logged_in_bro.add_bro(bro_to_be_added)
+        bro_to_be_added.add_bro(logged_in_bro)
         db.session.commit()
+
         return {
             "result": True,
             "message": "You and bro %s %s are now bros!" % (bro_to_be_added.bro_name, bro_to_be_added.bromotion)

@@ -1,13 +1,11 @@
-from app.rest import app_api
+from flask import request
 from flask_restful import Api
 from flask_restful import Resource
-from flask import request
-from flask import jsonify
+
 from app.models.bro import Bro
 from app.models.bro_bros import BroBros
 from app.models.message import Message
-from sqlalchemy import func
-from app import db
+from app.rest import app_api
 
 
 class GetMessages(Resource):
@@ -44,30 +42,24 @@ class GetMessages(Resource):
         print(bro_association_1)
         print(bro_association_2)
         if bro_association_1 is not None and bro_association_2 is not None:
-            messages = Message.query.filter_by(bros_bro_id=bro_association_1.id).\
-                union(Message.query.filter_by(bros_bro_id=bro_association_2.id)).\
+            messages = Message.query.filter_by(bro_bros_id=bro_association_1.id).\
+                union(Message.query.filter_by(bro_bros_id=bro_association_2.id)).\
                 order_by(Message.timestamp.desc()).paginate(1, 20 * page, False).items
-
-        if bro_association_1 is not None and bro_association_2 is None:
-            messages = Message.query.filter_by(bro_bros_id=bro_association_1.id). \
-                order_by(Message.timestamp.desc()).paginate(1, 20 * page, False).items
-
-        if bro_association_2 is not None and bro_association_1 is None:
-            messages = Message.query.filter_by(bro_bros_id=bro_association_2.id). \
-                order_by(Message.timestamp.desc()).paginate(1, 20 * page, False).items
+            print(messages)
+        else:
+            return{
+                'result': False,
+                'Message': 'An unknown error has occurred'
+            }
 
         if messages is None:
             return {'result': False}
 
         print(messages)
-        message_list = []
-        for m in messages:
-            sender = True
-            if m.recipient_id == logged_in_bro.id:
-                sender = not sender
-            message_list.append({'sender': sender, 'body': m.body})
-        return jsonify({'result': True,
-                        'message_list': message_list})
+        return {
+            "result": True,
+            "bro_list": [message.serialize for message in messages]
+        }
 
 
 api = Api(app_api)
