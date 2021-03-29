@@ -1,3 +1,4 @@
+from app.models.bro_bros import BroBros
 from app.rest import app_api
 from flask_restful import Api
 from flask_restful import Resource
@@ -9,7 +10,7 @@ class All(Resource):
 
     # noinspection PyMethodMayBeStatic
     def get(self):
-        bros = Bro.query.all()
+        bros = BroBros.query.all()
         return {
             "result": True,
             "bro_list": [bro.serialize for bro in bros]
