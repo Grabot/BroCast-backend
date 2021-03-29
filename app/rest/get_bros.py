@@ -41,7 +41,7 @@ class GetBros(Resource):
         bro_ids.remove(logged_in_bro.id)
 
         all_bros = Bro.query.filter(Bro.id.in_(bro_ids)).all()
-        
+
         return {
                 "result": True,
                 "bro_list": [bro.serialize for bro in all_bros]

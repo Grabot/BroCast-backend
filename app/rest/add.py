@@ -22,8 +22,9 @@ class Add(Resource):
     def post(self):
         json_data = request.get_json(force=True)
         token = json_data["token"]
-        bros_bro_bro_name = json_data["bros_bro_bro_name"]
-        bros_bro_bromotion = json_data["bros_bro_bromotion"]
+        bros_bro_id = json_data["bros_bro_id"]
+        print("the bro id")
+        print(bros_bro_id)
         logged_in_bro = Bro.verify_auth_token(token)
         if not logged_in_bro:
             return {
@@ -31,19 +32,8 @@ class Add(Resource):
                 "message": "Your credentials are not valid."
             }
 
-        print("bro %s wants to add %s %s as a bro" % (logged_in_bro.bro_name, bros_bro_bro_name, bros_bro_bromotion))
-        bro_to_be_added = Bro.query.filter(
-            func.lower(Bro.bro_name) == func.lower(bros_bro_bro_name),
-            Bro.bromotion == bros_bro_bromotion)
-
-        if bro_to_be_added.count() != 1:
-            # The bro's should both be found within the database so this will give an error!
-            return {
-                "result": False,
-                "message": "The Bro could not be added"
-            }
-        bro_to_be_added = bro_to_be_added.first()
-        print(bro_to_be_added.serialize)
+        bro_to_be_added = Bro.query.filter_by(id=bros_bro_id).first()
+        print(bro_to_be_added)
 
         bro_association_1 = BroBros.query.filter_by(bro_id=logged_in_bro.id, bros_bro_id=bro_to_be_added.id).first()
         if bro_association_1 is not None:

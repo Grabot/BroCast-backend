@@ -28,6 +28,13 @@ class Bro(db.Model):
                                backref=db.backref('bros', lazy='joined'),
                                lazy='dynamic',
                                cascade='all, delete-orphan')
+    messages_sent = db.relationship('Message',
+                                    foreign_keys='Message.sender_id',
+                                    backref='sender', lazy='dynamic')
+    messages_received = db.relationship('Message',
+                                        foreign_keys='Message.recipient_id',
+                                        backref='recipient', lazy='dynamic')
+    last_message_read_time = db.Column(db.DateTime)
     password_hash = db.Column(db.Text)
 
     def hash_password(self, password):
@@ -36,7 +43,8 @@ class Bro(db.Model):
     def verify_password(self, password):
         return pwd_context.verify(password, self.password_hash)
 
-    def generate_auth_token(self, expiration=600):
+    # Expiration is 1 day
+    def generate_auth_token(self, expiration=86400):
         s = Serializer(Config.SECRET_KEY, expires_in=expiration)
         return s.dumps({'id': self.id})
 
