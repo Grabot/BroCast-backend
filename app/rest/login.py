@@ -25,8 +25,6 @@ class Login(Resource):
         password = json_data["password"]
         token = json_data["token"]
 
-        print(token)
-        print("the token is ^^")
         bro = None
         if token is not None and not "":
             bro = Bro.verify_auth_token(token)
