@@ -58,7 +58,7 @@ class GetMessages(Resource):
         print(messages)
         return {
             "result": True,
-            "bro_list": [message.serialize for message in messages]
+            "message_list": [message.serialize for message in messages]
         }
 
 
