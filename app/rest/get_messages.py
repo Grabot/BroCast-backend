@@ -30,24 +30,23 @@ class GetMessages(Resource):
                 "message": "Your credentials are not valid."
             }
         message_bro = Bro.query.filter_by(id=bros_bro_id).first()
-        print(message_bro)
+        if message_bro is None:
+            return {
+                'result': False,
+                'Message': 'The bro is not known'
+            }
 
-        # The messages. We will fill the messages based on how the association is linked
-        messages = None
         # Find the association between the bros only 1 way can exist, 2 or none should not be possible,
         # but an error should be given nonetheless
         bro_association_1 = BroBros.query.filter_by(bro_id=logged_in_bro.id, bros_bro_id=message_bro.id).first()
         bro_association_2 = BroBros.query.filter_by(bro_id=message_bro.id, bros_bro_id=logged_in_bro.id).first()
-        print("quick test")
-        print(bro_association_1)
-        print(bro_association_2)
+        messages = None
         if bro_association_1 is not None and bro_association_2 is not None:
             messages = Message.query.filter_by(bro_bros_id=bro_association_1.id).\
                 union(Message.query.filter_by(bro_bros_id=bro_association_2.id)).\
                 order_by(Message.timestamp.desc()).paginate(1, 20 * page, False).items
-            print(messages)
         else:
-            return{
+            return {
                 'result': False,
                 'Message': 'An unknown error has occurred'
             }
@@ -55,7 +54,7 @@ class GetMessages(Resource):
         if messages is None:
             return {'result': False}
 
-        print(messages)
+        # print(messages)
         return {
             "result": True,
             "message_list": [message.serialize for message in messages]
