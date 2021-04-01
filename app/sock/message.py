@@ -67,7 +67,7 @@ class NamespaceMessage(Namespace):
             room = get_a_room_you_two(bro_id, bros_bro_id)
             print("send a message in room %s" % room)
             emit('server_message_sent', data, broadcast=True)
-            emit("message_event", {"message": message.serialize}, room=room)
+            emit("message_event_send", message.serialize, room=room)
 
     # noinspection PyMethodMayBeStatic
     def on_join(self, data):
