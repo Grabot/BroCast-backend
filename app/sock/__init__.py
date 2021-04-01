@@ -2,4 +2,4 @@ from flask import Blueprint
 
 app_sock = Blueprint('sock', __name__)
 
-from app.sock import test
+from app.sock import message
