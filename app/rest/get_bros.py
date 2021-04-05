@@ -30,15 +30,11 @@ class GetBros(Resource):
         bro_bros = logged_in_bro.bros
         bro_ids = set()
         for b in bro_bros:
-            bro_ids.add(b.bro_id)
             bro_ids.add(b.bros_bro_id)
 
         bro_bros = logged_in_bro.bro_bros
         for b in bro_bros:
             bro_ids.add(b.bro_id)
-            bro_ids.add(b.bros_bro_id)
-
-        bro_ids.remove(logged_in_bro.id)
 
         all_bros = Bro.query.filter(Bro.id.in_(bro_ids)).all()
 
