@@ -32,13 +32,6 @@ def send_message(data):
     return bro_message
 
 
-def get_a_room_you_two(bro_id, bros_bro_id):
-    if bro_id >= bros_bro_id:
-        return str(bros_bro_id) + "_" + str(bro_id)
-    else:
-        return str(bro_id) + "_" + str(bros_bro_id)
-
-
 class NamespaceMessage(Namespace):
 
     # noinspection PyMethodMayBeStatic
@@ -55,28 +48,29 @@ class NamespaceMessage(Namespace):
 
     # noinspection PyMethodMayBeStatic
     def on_message(self, data):
-        print("message?")
-        print(data)
-        print(request.sid)
         message = send_message(data)
         if message is False:
             print("something has gone wrong")
         else:
             bro_id = data["bro_id"]
             bros_bro_id = data["bros_bro_id"]
-            room = get_a_room_you_two(bro_id, bros_bro_id)
-            print("send a message in room %s" % room)
-            emit('server_message_sent', data, broadcast=True)
-            emit("message_event_send", message.serialize, room=room)
+            bros_bro = BroBros.get_bros_bro(bros_bro_id)
+            if bros_bro is not None:
+                room = bros_bro.room_name
+                print("send a message in room %s" % room)
+                emit("message_event_send", message.serialize, room=room)
 
     # noinspection PyMethodMayBeStatic
     def on_join(self, data):
         bro_id = data["bro_id"]
         bros_bro_id = data["bros_bro_id"]
-        room = get_a_room_you_two(bro_id, bros_bro_id)
-        print("joining room %s" % room)
-        join_room(room)
-        emit("message_event", 'User has entered room %s' % room, room=room)
+        bros_bro = BroBros.get_bros_bro(bros_bro_id)
+        # We'll assume this will always work
+        if bros_bro is not None:
+            room = bros_bro.room_name
+            print("joining room %s" % room)
+            join_room(room)
+            emit("message_event", 'User has entered room %s' % room, room=room)
 
     # noinspection PyMethodMayBeStatic
     def on_leave(self, data):

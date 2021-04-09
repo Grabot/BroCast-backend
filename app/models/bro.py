@@ -6,6 +6,13 @@ from app import db
 from app.models.bro_bros import BroBros
 
 
+def get_a_room_you_two(bro_id, bros_bro_id):
+    if bro_id >= bros_bro_id:
+        return str(bros_bro_id) + "_" + str(bro_id)
+    else:
+        return str(bro_id) + "_" + str(bros_bro_id)
+
+
 class Bro(db.Model):
     """
     Bro that is stored in the database.
@@ -34,7 +41,6 @@ class Bro(db.Model):
     messages_received = db.relationship('Message',
                                         foreign_keys='Message.recipient_id',
                                         backref='recipient', lazy='dynamic')
-    last_message_read_time = db.Column(db.DateTime)
     password_hash = db.Column(db.Text)
 
     def hash_password(self, password):
@@ -57,12 +63,12 @@ class Bro(db.Model):
             return None  # valid token, but expired
         except BadSignature:
             return None  # invalid token
-        user = Bro.query.get(data['id'])
-        return user
+        bro = Bro.query.get(data['id'])
+        return bro
 
     def add_bro(self, bro):
         if not self.get_bro(bro):
-            b = BroBros(bro_id=self.id, bros_bro_id=bro.id)
+            b = BroBros(bro_id=self.id, bros_bro_id=bro.id, room_name=get_a_room_you_two(self.id, bro.id))
             db.session.add(b)
 
     def remove_bro(self, bro):

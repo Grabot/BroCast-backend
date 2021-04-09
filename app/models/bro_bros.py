@@ -1,17 +1,25 @@
 from app import db
+from datetime import datetime
 
 
 class BroBros(db.Model):
     """
-    Bro that is stored in the database.
-    The bro has a unique id and bro name
-    The bros of the bro are stored and the message he send and received as well.
-    The password is hashed and it can be checked.
+    A connection between one bro and another bro.
+    Here we store which bros are connected
+    and also the last time both bros read the chat
     """
     __tablename__ = 'BroBros'
     id = db.Column(db.Integer, primary_key=True)
     bro_id = db.Column(db.Integer, db.ForeignKey('Bro.id'))
     bros_bro_id = db.Column(db.Integer, db.ForeignKey('Bro.id'))
+    room_name = db.Column(db.String)
+    last_message_read_time_bro = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    last_message_read_time_bros_bro = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+
+    @staticmethod
+    def get_bros_bro(bros_bro_id):
+        bros_bro = BroBros.query.get(bros_bro_id)
+        return bros_bro
 
     @property
     def serialize(self):
@@ -19,6 +27,7 @@ class BroBros(db.Model):
         return {
             'id': self.id,
             'bro_id': self.bro_id,
-            'bros_bro_id': self.bros_bro_id
+            'bros_bro_id': self.bros_bro_id,
+            'room_name': self.room_name
         }
 

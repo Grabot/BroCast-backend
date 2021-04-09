@@ -22,6 +22,7 @@ class SendMessage(Resource):
 
     # noinspection PyMethodMayBeStatic
     def post(self):
+        # TODO: @Skools remove this? Message sending done via sockets
         json_data = request.get_json(force=True)
         token = json_data["token"]
         bros_bro_id = json_data["bros_bro_id"]
