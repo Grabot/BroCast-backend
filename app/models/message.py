@@ -10,7 +10,6 @@ class Message(db.Model):
     """
     __tablename__ = 'Message'
     id = db.Column(db.Integer, primary_key=True)
-    bro_bros_id = db.Column(db.Integer, db.ForeignKey('BroBros.id'))
     sender_id = db.Column(db.Integer, db.ForeignKey('Bro.id'))
     recipient_id = db.Column(db.Integer, db.ForeignKey('Bro.id'))
     body = db.Column(db.Text)
@@ -21,7 +20,6 @@ class Message(db.Model):
         """Return object data in easily serializable format"""
         return {
             'id': self.id,
-            'bro_bros_id': self.bro_bros_id,
             'sender_id': self.sender_id,
             'recipient_id': self.recipient_id,
             'body': self.body,

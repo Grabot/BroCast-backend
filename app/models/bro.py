@@ -67,23 +67,28 @@ class Bro(db.Model):
         return bro
 
     def add_bro(self, bro):
-        if not self.get_bro(bro):
+        if not self.have_bro(bro):
             b = BroBros(bro_id=self.id, bros_bro_id=bro.id, room_name=get_a_room_you_two(self.id, bro.id))
             db.session.add(b)
 
     def remove_bro(self, bro):
         # This is to remove a bro connection, not the bro itself.
-        if self.get_bro(bro):
+        if self.have_bro(bro):
             bro_bros_query = BroBros.query.filter_by(bro_id=self.id, bros_bro_id=bro.id).first()
             # Just a safety check to make sure it exists before deleting it.
             if bro_bros_query is not None:
                 BroBros.query.filter_by(bro_id=self.id, bros_bro_id=bro.id).delete()
 
-    def get_bro(self, bro):
+    def have_bro(self, bro):
         # see if the bro that is passed is already in the BroBros list
         if bro.id is None:
             return False
-        return self.bros.filter_by(bros_bro_id=bro.id).first() is not None
+        return self.bros.filter_by(bro_id=self.id, bros_bro_id=bro.id).first() is not None
+
+    def get_bro(self, bro):
+        if bro.id is None:
+            return False
+        return self.bros.filter_by(bro_id=self.id, bros_bro_id=bro.id).first()
 
     @property
     def serialize(self):

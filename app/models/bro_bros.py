@@ -14,12 +14,6 @@ class BroBros(db.Model):
     bros_bro_id = db.Column(db.Integer, db.ForeignKey('Bro.id'))
     room_name = db.Column(db.String)
     last_message_read_time_bro = db.Column(db.DateTime, index=True, default=datetime.utcnow)
-    last_message_read_time_bros_bro = db.Column(db.DateTime, index=True, default=datetime.utcnow)
-
-    @staticmethod
-    def get_bros_bro(bros_bro_id):
-        bros_bro = BroBros.query.get(bros_bro_id)
-        return bros_bro
 
     @property
     def serialize(self):
