@@ -6,6 +6,7 @@ from flask_socketio import emit
 from app import socks
 from app.models.bro import get_a_room_you_two
 from app.sock.message import send_message
+from app.sock.last_read_time import update_last_read_time
 
 
 class NamespaceSock(Namespace):
@@ -33,6 +34,7 @@ class NamespaceSock(Namespace):
         room = get_a_room_you_two(bro_id, bros_bro_id)
         print("joining room %s" % room)
         join_room(room)
+        update_last_read_time(bro_id, bros_bro_id)
         emit("message_event", 'User has entered room %s' % room, room=room)
 
     # noinspection PyMethodMayBeStatic
