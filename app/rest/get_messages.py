@@ -39,9 +39,10 @@ class GetMessages(Resource):
         if messages is None:
             return {'result': False}
 
+        last_read_time = get_last_read_time_bro(logged_in_bro.id, bros_bro_id)
         return {
             "result": True,
-            "last_read_time_bro": get_last_read_time_bro(logged_in_bro.id, bros_bro_id),
+            "last_read_time_bro": last_read_time.strftime('%Y-%m-%dT%H:%M:%S.%f'),
             "message_list": [message.serialize for message in messages]
         }
 
