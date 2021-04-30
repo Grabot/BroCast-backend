@@ -7,7 +7,8 @@ from app.models.bro_bros import BroBros
 
 def update_read_time(bro_id, bros_bro_id, room):
     read_time = update_last_read_time(bro_id, bros_bro_id)
-    emit("message_event_read", read_time.strftime('%Y-%m-%dT%H:%M:%S.%f'), room=room)
+    if read_time is not None:
+        emit("message_event_read", read_time.strftime('%Y-%m-%dT%H:%M:%S.%f'), room=room)
 
 
 def update_last_read_time(bro_id, bros_bro_id):
@@ -33,6 +34,5 @@ def get_last_read_time_bro(bro_id, bros_bro_id):
     if bro_associate is None:
         return None
 
-    print(bro_associate.last_message_read_time_bro)
     return bro_associate.last_message_read_time_bro
 
