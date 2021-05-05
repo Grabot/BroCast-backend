@@ -50,9 +50,12 @@ class Bro(db.Model):
         return pwd_context.verify(password, self.password_hash)
 
     # Expiration is 1 day
-    def generate_auth_token(self, expiration=86400):
+    def generate_auth_token(self, expiration=60):
         s = Serializer(Config.SECRET_KEY, expires_in=expiration)
         return s.dumps({'id': self.id})
+
+    def set_bromotion(self, bromotion):
+        self.bromotion = bromotion
 
     @staticmethod
     def verify_auth_token(token):
