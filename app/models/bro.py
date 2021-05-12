@@ -41,6 +41,7 @@ class Bro(db.Model):
     messages_received = db.relationship('Message',
                                         foreign_keys='Message.recipient_id',
                                         backref='recipient', lazy='dynamic')
+    registration_id = db.Column(db.String(255))
     password_hash = db.Column(db.Text)
 
     def hash_password(self, password):
@@ -50,7 +51,7 @@ class Bro(db.Model):
         return pwd_context.verify(password, self.password_hash)
 
     # Expiration is 1 day
-    def generate_auth_token(self, expiration=60):
+    def generate_auth_token(self, expiration=86400):
         s = Serializer(Config.SECRET_KEY, expires_in=expiration)
         return s.dumps({'id': self.id})
 
@@ -92,6 +93,12 @@ class Bro(db.Model):
         if bro.id is None:
             return False
         return self.bros.filter_by(bro_id=self.id, bros_bro_id=bro.id).first()
+
+    def set_registration_id(self, registration_id):
+        self.registration_id = registration_id
+
+    def get_registration_id(self):
+        return self.registration_id
 
     @property
     def serialize(self):

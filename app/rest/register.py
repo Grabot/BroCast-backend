@@ -24,7 +24,8 @@ class Register(Resource):
         bro_name = json_data["bro_name"]
         bromotion = json_data["bromotion"]
         password = json_data["password"]
-        if bro_name is None or bromotion is None or password is None:
+        registration_id = json_data["registration_id"]
+        if bro_name is None or bromotion is None or password is None or registration_id is None:
             abort(400)  # missing arguments
         if Bro.query.filter_by(bro_name=bro_name, bromotion=bromotion).first() is not None:
             return {
@@ -33,6 +34,8 @@ class Register(Resource):
             }, 400
         bro = Bro(bro_name=bro_name, bromotion=bromotion)
         bro.hash_password(password)
+        bro.set_registration_id(registration_id)
+        print("registrating with id %s" % registration_id)
         db.session.add(bro)
         db.session.commit()
         token = bro.generate_auth_token().decode('ascii')

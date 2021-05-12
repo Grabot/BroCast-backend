@@ -28,6 +28,7 @@ class Login(Resource):
         bro = None
         if token is not None and not "":
             bro = Bro.verify_auth_token(token)
+
         if not bro:
             # The token was wrong (or was expired) Try to log in with username password and generate a new token
             bro = Bro.query.filter_by(bro_name=bro_name, bromotion=bromotion).first()
@@ -36,9 +37,9 @@ class Login(Resource):
                    'result': False,
                    'message': 'The given credentials are not correct!'
                 }, 401
-            else:
-                # Valid login, but token was wrong (or expired) generate a new one for the user.
-                token = bro.generate_auth_token().decode('ascii')
+
+        # Valid login, we refresh the token for this user.
+        token = bro.generate_auth_token().decode('ascii')
         return {
             'result': True,
             'message': 'Congratulations, you have just logged in',

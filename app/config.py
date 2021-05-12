@@ -8,6 +8,7 @@ load_dotenv()
 class Config(object):
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SECRET_KEY = os.environ["SECRET_KEY"]
+    NOTIFICATION_KEY = os.environ["NOTIFICATION_KEY"]
     DEBUG = True
 
 
