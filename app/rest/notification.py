@@ -13,7 +13,7 @@ def send_notification(data):
     bros_bro_id = data["bros_bro_id"]
 
     bro_to_notify = Bro.query.filter_by(id=bros_bro_id).first()
-    if bro_to_notify is None:
+    if bro_to_notify is None or bro_to_notify.get_registration_id() == "":
         return ""
 
     bro_who_send = Bro.query.filter_by(id=bro_id).first()
@@ -23,11 +23,24 @@ def send_notification(data):
     message_body = data["message"]
     message_title = "message from %s %s" % (bro_who_send.bro_name, bro_who_send.bromotion)
 
+    data_message = {
+        "id": bro_who_send.id,
+        "bro_name": bro_who_send.bro_name,
+        "bromotion": bro_who_send.bromotion
+    }
+
     registration_id = bro_to_notify.get_registration_id()
     result = ""
     try:
-        result = push_service.notify_single_device(registration_id=registration_id, message_title=message_title,
-                                                   message_body=message_body)
+        result = push_service.notify_single_device(
+            registration_id=registration_id,
+            tag="message",
+            title_loc_key="notification_message",
+            message_title=message_title,
+            message_body=message_body,
+            data_message=data_message,
+            sound="brodio"
+        )
     except AuthenticationError:
         print("There was a big issue with the firebase key. Fix it, quick!")
     except FCMServerError:
