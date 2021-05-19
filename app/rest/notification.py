@@ -34,8 +34,6 @@ def send_notification(data):
     try:
         result = push_service.notify_single_device(
             registration_id=registration_id,
-            tag="message",
-            title_loc_key="notification_message",
             message_title=message_title,
             message_body=message_body,
             data_message=data_message,
