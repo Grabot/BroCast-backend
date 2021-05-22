@@ -21,23 +21,20 @@ def send_notification(data):
         return ""
 
     message_body = data["message"]
-    message_title = "message from %s %s" % (bro_who_send.bro_name, bro_who_send.bromotion)
 
     data_message = {
         "id": bro_who_send.id,
         "bro_name": bro_who_send.bro_name,
-        "bromotion": bro_who_send.bromotion
+        "bromotion": bro_who_send.bromotion,
+        "message_body": message_body
     }
 
     registration_id = bro_to_notify.get_registration_id()
     result = ""
     try:
-        result = push_service.notify_single_device(
+        result = push_service.single_device_data_message(
             registration_id=registration_id,
-            message_title=message_title,
-            message_body=message_body,
-            data_message=data_message,
-            sound="brodio"
+            data_message=data_message
         )
     except AuthenticationError:
         print("There was a big issue with the firebase key. Fix it, quick!")
