@@ -13,6 +13,7 @@ class Message(db.Model):
     sender_id = db.Column(db.Integer, db.ForeignKey('Bro.id'))
     recipient_id = db.Column(db.Integer, db.ForeignKey('Bro.id'))
     body = db.Column(db.Text)
+    text_message = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
 
     @property
@@ -23,5 +24,6 @@ class Message(db.Model):
             'sender_id': self.sender_id,
             'recipient_id': self.recipient_id,
             'body': self.body,
+            'text_message': self.text_message,
             'timestamp': self.timestamp.strftime('%Y-%m-%dT%H:%M:%S.%f')
         }
