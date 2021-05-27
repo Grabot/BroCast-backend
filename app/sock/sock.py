@@ -30,19 +30,41 @@ class NamespaceSock(Namespace):
         bro_id = data["bro_id"]
         bros_bro_id = data["bros_bro_id"]
         room = get_a_room_you_two(bro_id, bros_bro_id)
-        print("joining room %s" % room)
         join_room(room)
         update_read_time(bro_id, bros_bro_id, room)
         emit("message_event", 'User has entered room %s' % room, room=room)
+
+    # noinspection PyMethodMayBeStatic
+    def on_join_solo(self, data):
+        token = data["token"]
+        logged_in_bro = Bro.verify_auth_token(token)
+
+        if logged_in_bro is None:
+            emit("message_event", 'User could not enter the room', room=request.sid)
+        else:
+            room = "room_%s" % logged_in_bro.id
+            join_room(room)
+            emit("message_event", 'User has entered room %s' % room, room=room)
 
     # noinspection PyMethodMayBeStatic
     def on_leave(self, data):
         bro_id = data["bro_id"]
         bros_bro_id = data["bros_bro_id"]
         room = get_a_room_you_two(bro_id, bros_bro_id)
-        print("leaving room %s" % room)
         leave_room(room)
         emit("message_event", 'User has left room %s' % room, room=room)
+
+    # noinspection PyMethodMayBeStatic
+    def on_leave_solo(self, data):
+        token = data["token"]
+        logged_in_bro = Bro.verify_auth_token(token)
+
+        if logged_in_bro is None:
+            emit("message_event", 'User could not leave the room', room=request.sid)
+        else:
+            room = "room_%s" % logged_in_bro.id
+            leave_room(room)
+            emit("message_event", 'User has entered room %s' % room, room=room)
 
     # noinspection PyMethodMayBeStatic
     def on_message(self, data):
@@ -100,6 +122,25 @@ class NamespaceSock(Namespace):
             db.session.add(logged_in_bro)
             db.session.commit()
             emit("message_event_password_change", "password change successful", room=request.sid)
+
+    # noinspection PyMethodMayBeStatic
+    def on_message_event_add_bro(self, data):
+        token = data["token"]
+        bros_bro_id = data["bros_bro_id"]
+        logged_in_bro = Bro.verify_auth_token(token)
+        if logged_in_bro:
+            bro_to_be_added = Bro.query.filter_by(id=bros_bro_id).first()
+            if bro_to_be_added:
+                logged_in_bro.add_bro(bro_to_be_added)
+                bro_to_be_added.add_bro(logged_in_bro)
+                db.session.commit()
+                bro_room = "room_%s" % bro_to_be_added.id
+                emit("message_event_add_bro_success", "bro was added!", room=request.sid)
+                emit("message_event_bro_added_you", "a bro has added you!", room=bro_room)
+            else:
+                emit("message_event_add_bro_failed", "failed to add bro", room=request.sid)
+        else:
+            emit("message_event_add_bro_failed", "failed to add bro", room=request.sid)
 
 
 socks.on_namespace(NamespaceSock('/api/v1.0/sock'))
