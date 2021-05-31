@@ -1,5 +1,6 @@
 from app.config import Config
 from app.models.bro import Bro
+from app.models.bro_bros import BroBros
 from pyfcm import FCMNotification
 from pyfcm.errors import AuthenticationError, FCMServerError, InvalidDataError, InternalPackageError
 
@@ -16,16 +17,15 @@ def send_notification(data):
     if bro_to_notify is None or bro_to_notify.get_registration_id() == "":
         return ""
 
-    bro_who_send = Bro.query.filter_by(id=bro_id).first()
-    if bro_who_send is None:
+    # We need the chat object of the bro we're notifying
+    bro_bros = BroBros.query.filter_by(bro_id=bros_bro_id, bros_bro_id=bro_id).first()
+    if bro_bros is None:
         return ""
 
     message_body = data["message"]
 
     data_message = {
-        "id": bro_who_send.id,
-        "bro_name": bro_who_send.bro_name,
-        "bromotion": bro_who_send.bromotion,
+        "chat": bro_bros.serialize,
         "message_body": message_body
     }
 
