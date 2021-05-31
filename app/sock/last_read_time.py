@@ -26,7 +26,7 @@ def update_last_read_time(bro_id, bros_bro_id):
     return read_time
 
 
-def get_last_read_time_bro(bro_id, bros_bro_id):
+def get_last_read_time_other_bro(bro_id, bros_bro_id):
     # Note that the id's are flipped, since we want the read time of the other bro
     bro_associate = BroBros.query.filter_by(bro_id=bros_bro_id, bros_bro_id=bro_id).first()
 

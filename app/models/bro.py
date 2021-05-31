@@ -3,6 +3,7 @@ from itsdangerous import (TimedJSONWebSignatureSerializer as Serializer, BadSign
 from app.config import Config
 from app import db
 from app.models.bro_bros import BroBros
+import random
 
 
 def get_a_room_you_two(bro_id, bros_bro_id):
@@ -71,7 +72,10 @@ class Bro(db.Model):
 
     def add_bro(self, bro):
         if not self.have_bro(bro):
-            b = BroBros(bro_id=self.id, bros_bro_id=bro.id, room_name=get_a_room_you_two(self.id, bro.id))
+            chat_name = bro.bro_name + " " + bro.bromotion
+            chat_colour = '%02X%02X%02X' % (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+            print("we are going to add a chat with the colour %s" % chat_colour)
+            b = BroBros(bro_id=self.id, bros_bro_id=bro.id, chat_name=chat_name, chat_colour=chat_colour, room_name=get_a_room_you_two(self.id, bro.id))
             db.session.add(b)
 
     def remove_bro(self, bro):

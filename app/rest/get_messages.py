@@ -3,7 +3,7 @@ from flask_restful import Api
 from flask_restful import Resource
 
 from app.models.bro import Bro
-from app.sock.last_read_time import get_last_read_time_bro
+from app.sock.last_read_time import get_last_read_time_other_bro
 from app.models.message import Message
 from app.rest import app_api
 
@@ -39,7 +39,7 @@ class GetMessages(Resource):
         if messages is None:
             return {'result': False}
 
-        last_read_time = get_last_read_time_bro(logged_in_bro.id, bros_bro_id)
+        last_read_time = get_last_read_time_other_bro(logged_in_bro.id, bros_bro_id)
         return {
             "result": True,
             "last_read_time_bro": last_read_time.strftime('%Y-%m-%dT%H:%M:%S.%f'),
