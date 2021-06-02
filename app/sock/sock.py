@@ -6,6 +6,7 @@ from flask import request
 from app import socks
 from app import db
 from app.models.bro import get_a_room_you_two, Bro
+from app.models.bro_bros import BroBros
 from app.rest.notification import send_notification
 from app.sock.message import send_message
 from app.sock.message import update_unread_messages
@@ -92,20 +93,23 @@ class NamespaceSock(Namespace):
     def on_bromotion_change(self, data):
         token = data["token"]
         logged_in_bro = Bro.verify_auth_token(token)
-        print("trying to change bromotion")
 
         if logged_in_bro is None:
             emit("message_event_bromotion_change", "token authentication failed", room=request.sid)
         else:
             print("trying to change bromotion harder")
             new_bromotion = data["bromotion"]
-            print("new bromotion ")
-            print(new_bromotion)
             if Bro.query.filter_by(bro_name=logged_in_bro.bro_name, bromotion=new_bromotion).first() is not None:
                 emit("message_event_bromotion_change", "broName bromotion combination taken", room=request.sid)
             else:
                 logged_in_bro.set_bromotion(new_bromotion)
+                all_chats = BroBros.query.filter_by(bros_bro_id=logged_in_bro.id).all()
 
+                for chat in all_chats:
+                    chat.chat_name = logged_in_bro.get_full_name()
+                    db.session.add(chat)
+
+                print("going to save the data!")
                 db.session.add(logged_in_bro)
                 db.session.commit()
                 emit("message_event_bromotion_change", "bromotion change successful", room=request.sid)

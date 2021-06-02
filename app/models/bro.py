@@ -59,6 +59,9 @@ class Bro(db.Model):
     def set_bromotion(self, bromotion):
         self.bromotion = bromotion
 
+    def get_full_name(self):
+        return self.bro_name + " " + self.bromotion
+
     @staticmethod
     def verify_auth_token(token):
         s = Serializer(Config.SECRET_KEY)
