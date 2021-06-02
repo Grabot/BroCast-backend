@@ -8,6 +8,7 @@ from app import db
 from app.models.bro import get_a_room_you_two, Bro
 from app.rest.notification import send_notification
 from app.sock.message import send_message
+from app.sock.message import update_unread_messages
 from app.sock.last_read_time import update_read_time
 
 
@@ -74,6 +75,9 @@ class NamespaceSock(Namespace):
         else:
             room = get_a_room_you_two(data["bro_id"], data["bros_bro_id"])
             send_notification(data)
+            update_unread_messages(data["bro_id"], data["bros_bro_id"])
+            room_solo_other_bro = "room_%s" % data["bros_bro_id"]
+            emit("message_event_send", message.serialize, room=room_solo_other_bro)
             print("send a message in room %s" % room)
             emit("message_event_send", message.serialize, room=room)
 

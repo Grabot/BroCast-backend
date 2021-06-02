@@ -21,6 +21,7 @@ def update_last_read_time(bro_id, bros_bro_id):
 
     read_time = datetime.utcnow()
     bro_associate.last_message_read_time_bro = read_time
+    bro_associate.read_messages()
     db.session.add(bro_associate)
     db.session.commit()
     return read_time

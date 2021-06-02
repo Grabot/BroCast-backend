@@ -16,6 +16,17 @@ class BroBros(db.Model):
     chat_colour = db.Column(db.String)
     room_name = db.Column(db.String)
     last_message_read_time_bro = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    last_time_activity = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    unread_messages = db.Column(db.Integer)
+
+    def update_unread_messages(self):
+        self.unread_messages += 1
+
+    def read_messages(self):
+        self.unread_messages = 0
+
+    def update_last_activity(self):
+        self.last_time_activity = datetime.utcnow()
 
     @property
     def serialize(self):
@@ -25,6 +36,8 @@ class BroBros(db.Model):
             'bros_bro_id': self.bros_bro_id,
             'chat_name': self.chat_name,
             'chat_colour': self.chat_colour,
+            'unread_messages': self.unread_messages,
+            'last_time_activity': self.last_time_activity.strftime('%Y-%m-%dT%H:%M:%S.%f'),
             'room_name': self.room_name
         }
 
