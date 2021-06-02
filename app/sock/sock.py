@@ -76,10 +76,10 @@ class NamespaceSock(Namespace):
             room = get_a_room_you_two(data["bro_id"], data["bros_bro_id"])
             send_notification(data)
             update_unread_messages(data["bro_id"], data["bros_bro_id"])
-            room_solo_other_bro = "room_%s" % data["bros_bro_id"]
-            emit("message_event_send", message.serialize, room=room_solo_other_bro)
             print("send a message in room %s" % room)
             emit("message_event_send", message.serialize, room=room)
+            room_solo_other_bro = "room_%s" % data["bros_bro_id"]
+            emit("message_event_send_solo", message.serialize, room=room_solo_other_bro)
 
     # noinspection PyMethodMayBeStatic
     def on_message_read(self, data):
