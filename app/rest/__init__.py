@@ -9,3 +9,4 @@ from app.rest import search
 from app.rest import get_bros
 from app.rest import get_messages
 from app.rest import remove_registration
+from app.rest import get_chat

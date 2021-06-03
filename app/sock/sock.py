@@ -90,6 +90,26 @@ class NamespaceSock(Namespace):
         update_read_time(bro_id, bros_bro_id, room)
 
     # noinspection PyMethodMayBeStatic
+    def on_message_event_change_chat_details(self, data):
+        print("going to change the chat details!")
+        token = data["token"]
+        bros_bro_id = data["bros_bro_id"]
+        description = data["description"]
+        logged_in_bro = Bro.verify_auth_token(token)
+
+        if logged_in_bro is None:
+            emit("message_event_change_chat_details_failed", "token authentication failed", room=request.sid)
+        else:
+            chat = BroBros.query.filter_by(bro_id=logged_in_bro.id, bros_bro_id=bros_bro_id).first()
+            if chat is None:
+                emit("message_event_change_chat_details_failed", "chat finding failed", room=request.sid)
+            else:
+                chat.update_description(description)
+                db.session.add(chat)
+                db.session.commit()
+                emit("message_event_change_chat_details_success", "chat updated successfully", room=request.sid)
+
+    # noinspection PyMethodMayBeStatic
     def on_bromotion_change(self, data):
         token = data["token"]
         logged_in_bro = Bro.verify_auth_token(token)

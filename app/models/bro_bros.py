@@ -13,6 +13,7 @@ class BroBros(db.Model):
     bro_id = db.Column(db.Integer, db.ForeignKey('Bro.id'))
     bros_bro_id = db.Column(db.Integer, db.ForeignKey('Bro.id'))
     chat_name = db.Column(db.String)
+    chat_description = db.Column(db.String)
     chat_colour = db.Column(db.String)
     room_name = db.Column(db.String)
     last_message_read_time_bro = db.Column(db.DateTime, index=True, default=datetime.utcnow)
@@ -28,6 +29,9 @@ class BroBros(db.Model):
     def update_last_activity(self):
         self.last_time_activity = datetime.utcnow()
 
+    def update_description(self, description):
+        self.chat_description = description
+
     @property
     def serialize(self):
         return {
@@ -35,6 +39,7 @@ class BroBros(db.Model):
             'bro_id': self.bro_id,
             'bros_bro_id': self.bros_bro_id,
             'chat_name': self.chat_name,
+            'chat_description': self.chat_description,
             'chat_colour': self.chat_colour,
             'unread_messages': self.unread_messages,
             'last_time_activity': self.last_time_activity.strftime('%Y-%m-%dT%H:%M:%S.%f'),

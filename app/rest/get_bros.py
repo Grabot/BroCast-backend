@@ -32,8 +32,6 @@ class GetBros(Resource):
         for b in bro_bros:
             bro_ids.add(b.bros_bro_id)
 
-        # all_bros = Bro.query.filter(Bro.id.in_(bro_ids)).all()
-
         return {
                 "result": True,
                 "bro_list": [bro_bro.serialize for bro_bro in bro_bros]
