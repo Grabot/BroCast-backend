@@ -82,6 +82,7 @@ class Bro(db.Model):
                 bro_id=self.id,
                 bros_bro_id=bro.id,
                 chat_name=chat_name,
+                chat_description="",
                 chat_colour=chat_colour,
                 room_name=get_a_room_you_two(self.id, bro.id),
                 unread_messages=0,
