@@ -32,6 +32,9 @@ class BroBros(db.Model):
     def update_description(self, description):
         self.chat_description = description
 
+    def update_colour(self, colour):
+        self.chat_colour = colour
+
     @property
     def serialize(self):
         return {
