@@ -97,7 +97,6 @@ class NamespaceSock(Namespace):
         if logged_in_bro is None:
             emit("message_event_bromotion_change", "token authentication failed", room=request.sid)
         else:
-            print("trying to change bromotion harder")
             new_bromotion = data["bromotion"]
             if Bro.query.filter_by(bro_name=logged_in_bro.bro_name, bromotion=new_bromotion).first() is not None:
                 emit("message_event_bromotion_change", "broName bromotion combination taken", room=request.sid)
@@ -109,7 +108,6 @@ class NamespaceSock(Namespace):
                     chat.chat_name = logged_in_bro.get_full_name()
                     db.session.add(chat)
 
-                print("going to save the data!")
                 db.session.add(logged_in_bro)
                 db.session.commit()
                 emit("message_event_bromotion_change", "bromotion change successful", room=request.sid)
@@ -118,12 +116,10 @@ class NamespaceSock(Namespace):
     def on_password_change(self, data):
         token = data["token"]
         logged_in_bro = Bro.verify_auth_token(token)
-        print("trying to change password")
 
         if logged_in_bro is None:
             emit("message_event_password_change", "password change failed", room=request.sid)
         else:
-            print("trying to change password harder")
             new_password = data["password"]
             logged_in_bro.hash_password(new_password)
 
