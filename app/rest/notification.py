@@ -30,9 +30,8 @@ def send_notification(data):
     }
 
     registration_id = bro_to_notify.get_registration_id()
-    result = ""
     try:
-        result = push_service.single_device_data_message(
+        push_service.single_device_data_message(
             registration_id=registration_id,
             data_message=data_message
         )
@@ -45,6 +44,5 @@ def send_notification(data):
     except InternalPackageError:
         print("there was an error or something. Not in the package, but the package within the package? internally? "
               "Let's hope this never happens")
-    print(result)
 
 

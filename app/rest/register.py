@@ -35,7 +35,6 @@ class Register(Resource):
         bro = Bro(bro_name=bro_name, bromotion=bromotion)
         bro.hash_password(password)
         bro.set_registration_id(registration_id)
-        print("registrating with id %s" % registration_id)
         db.session.add(bro)
         db.session.commit()
         token = bro.generate_auth_token().decode('ascii')

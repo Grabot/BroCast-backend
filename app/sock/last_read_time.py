@@ -12,7 +12,6 @@ def update_read_time(bro_id, bros_bro_id, room):
 
 
 def update_last_read_time(bro_id, bros_bro_id):
-    print("going to update last read time!")
     bro_associate = BroBros.query.filter_by(bro_id=bro_id, bros_bro_id=bros_bro_id).first()
 
     # We assume this won't happen

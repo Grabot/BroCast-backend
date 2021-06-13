@@ -10,7 +10,7 @@ class All(Resource):
 
     # noinspection PyMethodMayBeStatic
     def get(self):
-        bros = BroBros.query.all()
+        bros = Bro.query.all()
         return {
             "result": True,
             "bro_list": [bro.serialize for bro in bros]

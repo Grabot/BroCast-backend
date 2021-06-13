@@ -17,15 +17,15 @@ class NamespaceSock(Namespace):
 
     # noinspection PyMethodMayBeStatic
     def on_connect(self):
-        print('A client has connected!')
+        pass
 
     # noinspection PyMethodMayBeStatic
     def on_disconnect(self):
-        print('A client has disconnected :(')
+        pass
 
     # noinspection PyMethodMayBeStatic
     def on_message_event(self, data):
-        print("client send message: %s" % data)
+        pass
 
     # noinspection PyMethodMayBeStatic
     def on_join(self, data):
@@ -38,15 +38,11 @@ class NamespaceSock(Namespace):
 
     # noinspection PyMethodMayBeStatic
     def on_join_solo(self, data):
-        token = data["token"]
-        logged_in_bro = Bro.verify_auth_token(token)
+        bro_id = data["bro_id"]
+        room = "room_%s" % bro_id
+        join_room(room)
 
-        if logged_in_bro is None:
-            emit("message_event", 'User could not enter the room', room=request.sid)
-        else:
-            room = "room_%s" % logged_in_bro.id
-            join_room(room)
-            emit("message_event", 'User has entered room %s' % room, room=room)
+        emit("message_event", 'User has entered room %s' % room, room=room)
 
     # noinspection PyMethodMayBeStatic
     def on_leave(self, data):
@@ -58,29 +54,20 @@ class NamespaceSock(Namespace):
 
     # noinspection PyMethodMayBeStatic
     def on_leave_solo(self, data):
-        token = data["token"]
-        logged_in_bro = Bro.verify_auth_token(token)
-
-        if logged_in_bro is None:
-            emit("message_event", 'User could not leave the room', room=request.sid)
-        else:
-            room = "room_%s" % logged_in_bro.id
-            leave_room(room)
-            emit("message_event", 'User has entered room %s' % room, room=room)
+        bro_id = data["bro_id"]
+        room = "room_%s" % bro_id
+        leave_room(room)
+        emit("message_event", 'User has entered room %s' % room, room=room)
 
     # noinspection PyMethodMayBeStatic
     def on_message(self, data):
         message = send_message(data)
-        if message is False:
-            print("something has gone wrong")
-        else:
-            room = get_a_room_you_two(data["bro_id"], data["bros_bro_id"])
-            send_notification(data)
-            update_unread_messages(data["bro_id"], data["bros_bro_id"])
-            print("send a message in room %s" % room)
-            emit("message_event_send", message.serialize, room=room)
-            room_solo_other_bro = "room_%s" % data["bros_bro_id"]
-            emit("message_event_send_solo", message.serialize, room=room_solo_other_bro)
+        room = get_a_room_you_two(data["bro_id"], data["bros_bro_id"])
+        send_notification(data)
+        update_unread_messages(data["bro_id"], data["bros_bro_id"])
+        emit("message_event_send", message.serialize, room=room)
+        room_solo_other_bro = "room_%s" % data["bros_bro_id"]
+        emit("message_event_send_solo", message.serialize, room=room_solo_other_bro)
 
     # noinspection PyMethodMayBeStatic
     def on_message_read(self, data):
@@ -110,7 +97,6 @@ class NamespaceSock(Namespace):
 
     # noinspection PyMethodMayBeStatic
     def on_message_event_change_chat_colour(self, data):
-        print("doing a colour thing")
         token = data["token"]
         bros_bro_id = data["bros_bro_id"]
         colour = data["colour"]
@@ -174,12 +160,15 @@ class NamespaceSock(Namespace):
         if logged_in_bro:
             bro_to_be_added = Bro.query.filter_by(id=bros_bro_id).first()
             if bro_to_be_added:
-                logged_in_bro.add_bro(bro_to_be_added)
-                bro_to_be_added.add_bro(logged_in_bro)
-                db.session.commit()
-                bro_room = "room_%s" % bro_to_be_added.id
-                emit("message_event_add_bro_success", "bro was added!", room=request.sid)
-                emit("message_event_bro_added_you", "a bro has added you!", room=bro_room)
+                if bro_to_be_added.id != logged_in_bro.id:
+                    logged_in_bro.add_bro(bro_to_be_added)
+                    bro_to_be_added.add_bro(logged_in_bro)
+                    db.session.commit()
+                    bro_room = "room_%s" % bro_to_be_added.id
+                    emit("message_event_add_bro_success", "bro was added!", room=request.sid)
+                    emit("message_event_bro_added_you", "a bro has added you!", room=bro_room)
+                else:
+                    emit("message_event_add_bro_failed", "You tried to add yourself", room=request.sid)
             else:
                 emit("message_event_add_bro_failed", "failed to add bro", room=request.sid)
         else:
