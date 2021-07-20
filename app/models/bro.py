@@ -44,6 +44,7 @@ class Bro(db.Model):
                                         backref='recipient', lazy='dynamic')
     registration_id = db.Column(db.String(255))
     password_hash = db.Column(db.Text)
+    device_type = db.Column(db.Text, default="Android")
 
     def hash_password(self, password):
         self.password_hash = pwd_context.encrypt(password)
@@ -51,6 +52,11 @@ class Bro(db.Model):
     def verify_password(self, password):
         return pwd_context.verify(password, self.password_hash)
 
+    def get_device_type(self):
+        return self.device_type
+
+    def set_device_type(self, device_type):
+        self.device_type = device_type
     # Expiration is 1 week
     def generate_auth_token(self, expiration=604800):
         s = Serializer(Config.SECRET_KEY, expires_in=expiration)

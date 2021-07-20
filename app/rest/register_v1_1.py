@@ -24,15 +24,16 @@ class Register(Resource):
         bro_name = json_data["bro_name"]
         bromotion = json_data["bromotion"]
         password = json_data["password"]
+        device_type = json_data["device_type"]
         registration_id = json_data["registration_id"]
-        if bro_name is None or bromotion is None or password is None or registration_id is None:
+        if bro_name is None or bromotion is None or password is None or registration_id is None or device_type is None:
             abort(400)  # missing arguments
         if Bro.query.filter_by(bro_name=bro_name, bromotion=bromotion).first() is not None:
             return {
                 'result': False,
                 'message': "Bro name with bromotion combination is already taken, please provide another one."
             }, 400
-        bro = Bro(bro_name=bro_name, bromotion=bromotion, device_type="Android")
+        bro = Bro(bro_name=bro_name, bromotion=bromotion, device_type=device_type)
         bro.hash_password(password)
         bro.set_registration_id(registration_id)
         db.session.add(bro)
@@ -47,4 +48,4 @@ class Register(Resource):
 
 
 api = Api(app_api)
-api.add_resource(Register, '/api/v1.0/register', endpoint='register')
+api.add_resource(Register, '/api/v1.1/register', endpoint='register')

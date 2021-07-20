@@ -30,11 +30,20 @@ def send_notification(data):
     }
 
     registration_id = bro_to_notify.get_registration_id()
+    device_type_bro_to_notify = bro_to_notify.get_device_type()
     try:
-        push_service.single_device_data_message(
-            registration_id=registration_id,
-            data_message=data_message
-        )
+        if device_type_bro_to_notify == "Android":
+            push_service.single_device_data_message(
+                registration_id=registration_id,
+                data_message=data_message
+            )
+        else:
+            friend_name = bro_bros.bro_name + " " + bro_bros.bromotion
+            push_service.notify_single_device(
+                registration_id=registration_id,
+                message_title=friend_name,
+                message_body=message_body
+            )
     except AuthenticationError:
         print("There was a big issue with the firebase key. Fix it, quick!")
     except FCMServerError:
