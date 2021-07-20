@@ -22,15 +22,21 @@ def send_message(data):
 
 
 def update_unread_messages(bro_id, bros_bro_id):
-    # The other bro now gets an extra unread message
+    own_chat = BroBros.query.filter_by(bro_id=bro_id, bros_bro_id=bros_bro_id).first()
     other_bro_chat = BroBros.query.filter_by(bro_id=bros_bro_id, bros_bro_id=bro_id).first()
 
     # We assume this won't happen
-    if other_bro_chat is None:
+    if own_chat is None or other_bro_chat is None:
         return None
 
+    # The other bro now gets an extra unread message
     other_bro_chat.update_unread_messages()
     other_bro_chat.update_last_activity()
+    # We update the activity on our own chat object as well
+    own_chat.update_last_activity()
+
     db.session.add(other_bro_chat)
+    db.session.add(own_chat)
     db.session.commit()
+
     return True

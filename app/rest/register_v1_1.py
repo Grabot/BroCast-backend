@@ -7,7 +7,7 @@ from flask import abort
 from app.models.bro import Bro
 
 
-class Register(Resource):
+class Register_v1_1(Resource):
 
     def get(self):
         pass
@@ -48,4 +48,4 @@ class Register(Resource):
 
 
 api = Api(app_api)
-api.add_resource(Register, '/api/v1.1/register', endpoint='register')
+api.add_resource(Register_v1_1, '/api/v1.1/register', endpoint='registerv1_1')

@@ -7,7 +7,7 @@ from app.rest import app_api
 from app import db
 
 
-class Login(Resource):
+class Login_v1_1(Resource):
 
     def get(self):
         pass
@@ -63,4 +63,4 @@ class Login(Resource):
 
 
 api = Api(app_api)
-api.add_resource(Login, '/api/v1.0/login', endpoint='login')
+api.add_resource(Login_v1_1, '/api/v1.1/login', endpoint='login_v1_1')
