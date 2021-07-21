@@ -12,3 +12,19 @@ from app.rest import get_bros
 from app.rest import get_messages
 from app.rest import remove_registration
 from app.rest import get_chat
+from flask import render_template
+
+
+@app_api.route("/privacy")
+def privacy():
+    return render_template('privacy.html')
+
+
+@app_api.route("/about")
+def about():
+    return render_template('about.html')
+
+
+@app_api.route("/")
+def home():
+    return render_template('index.html')
