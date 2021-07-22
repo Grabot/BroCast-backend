@@ -24,13 +24,15 @@ def send_notification(data):
 
     message_body = data["message"]
 
+    chat = bro_bros.serialize
+
     registration_id = bro_to_notify.get_registration_id()
     device_type_bro_to_notify = bro_to_notify.get_device_type()
     try:
         if device_type_bro_to_notify == "Android":
 
             data_message = {
-                "chat": bro_bros.serialize,
+                "chat": chat,
                 "message_body": message_body
             }
 
@@ -39,10 +41,9 @@ def send_notification(data):
                 data_message=data_message
             )
         else:
-            friend_name = bro_to_notify.bro_name + " " + bro_to_notify.bromotion
             push_service.notify_single_device(
                 registration_id=registration_id,
-                message_title=friend_name,
+                message_title=chat["chat_name"],
                 message_body=message_body
             )
     except AuthenticationError:
