@@ -1,4 +1,5 @@
 from flask import Blueprint
+from flask import render_template
 
 app_api = Blueprint('api', __name__)
 
@@ -12,7 +13,7 @@ from app.rest import get_bros
 from app.rest import get_messages
 from app.rest import remove_registration
 from app.rest import get_chat
-from flask import render_template
+from app.rest import block_bro
 
 
 @app_api.route("/privacy")

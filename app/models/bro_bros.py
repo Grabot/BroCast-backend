@@ -19,6 +19,7 @@ class BroBros(db.Model):
     last_message_read_time_bro = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     last_time_activity = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     unread_messages = db.Column(db.Integer)
+    blocked = db.Column(db.Boolean, default=False)
 
     def update_unread_messages(self):
         self.unread_messages += 1
@@ -35,6 +36,9 @@ class BroBros(db.Model):
     def update_colour(self, colour):
         self.chat_colour = colour
 
+    def block_chat(self, blocked):
+        self.blocked = blocked
+
     @property
     def serialize(self):
         return {
@@ -46,6 +50,7 @@ class BroBros(db.Model):
             'chat_colour': self.chat_colour,
             'unread_messages': self.unread_messages,
             'last_time_activity': self.last_time_activity.strftime('%Y-%m-%dT%H:%M:%S.%f'),
-            'room_name': self.room_name
+            'room_name': self.room_name,
+            'blocked': self.blocked
         }
 
