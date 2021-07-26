@@ -53,6 +53,7 @@ class BlockBro(Resource):
             chat.block_chat(True)
         else:
             chat.block_chat(False)
+        chat.add_blocked_timestamp()
         db.session.add(chat)
         db.session.commit()
 

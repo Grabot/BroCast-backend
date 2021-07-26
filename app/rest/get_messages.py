@@ -3,6 +3,7 @@ from flask_restful import Api
 from flask_restful import Resource
 
 from app.models.bro import Bro
+from app.models.bro_bros import BroBros
 from app.sock.last_read_time import get_last_read_time_other_bro
 from app.models.message import Message
 from app.rest import app_api
@@ -30,11 +31,19 @@ class GetMessages(Resource):
                 "message": "Your credentials are not valid."
             }
 
-        # Find the association between the bros only 1 way can exist, 2 or none should not be possible,
-        # but an error should be given nonetheless
+        other_chat = BroBros.query.filter_by(bro_id=bros_bro_id, bros_bro_id=logged_in_bro.id).first()
+        if other_chat is None:
+            return {
+                "result": False,
+                "message": "Chat not found."
+            }
+
         messages = Message.query.filter_by(sender_id=logged_in_bro.id, recipient_id=bros_bro_id).\
             union(Message.query.filter_by(sender_id=bros_bro_id, recipient_id=logged_in_bro.id)).\
             order_by(Message.timestamp.desc()).paginate(1, 20 * page, False).items
+
+        if other_chat.has_been_blocked():
+            print("this user has been blocked! don't show messages send while blocked")
 
         if messages is None:
             return {'result': False}

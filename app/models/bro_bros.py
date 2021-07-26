@@ -1,5 +1,6 @@
 from app import db
 from datetime import datetime
+from sqlalchemy import types
 
 
 class BroBros(db.Model):
@@ -20,6 +21,7 @@ class BroBros(db.Model):
     last_time_activity = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     unread_messages = db.Column(db.Integer)
     blocked = db.Column(db.Boolean, default=False)
+    blocked_timestamps = db.Column(types.ARRAY(db.DateTime))
 
     def update_unread_messages(self):
         self.unread_messages += 1
@@ -38,6 +40,21 @@ class BroBros(db.Model):
 
     def block_chat(self, blocked):
         self.blocked = blocked
+
+    def add_blocked_timestamp(self):
+        if self.blocked_timestamps is None:
+            self.blocked_timestamps = []
+        blocks = []
+        for blocked_time in self.blocked_timestamps:
+            blocks.append(blocked_time)
+        blocks.append(datetime.now())
+        self.blocked_timestamps = blocks
+
+    def get_blocked_timestamps(self):
+        return self.blocked_timestamps
+
+    def has_been_blocked(self):
+        return self.blocked_timestamps is not None and len(self.blocked_timestamps) >= 1
 
     @property
     def serialize(self):
