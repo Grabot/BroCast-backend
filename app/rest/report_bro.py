@@ -8,7 +8,7 @@ from app.models.bro_bros import BroBros
 from app.rest import app_api
 
 
-class BlockBro(Resource):
+class ReportBro(Resource):
 
     def get(self):
         pass
@@ -25,7 +25,6 @@ class BlockBro(Resource):
         bros_bro_id = json_data["bros_bro_id"]
         token = json_data["token"]
         logged_in_bro = Bro.verify_auth_token(token)
-        blocked = json_data["blocked"]
         if not logged_in_bro:
             return {
                 "result": False,
@@ -43,20 +42,15 @@ class BlockBro(Resource):
                 "result": False,
                 "message": "Chat not found."
             }
-
-        if blocked == "true":
-            chat.block_chat(True)
-        else:
-            chat.block_chat(False)
-        chat.add_blocked_timestamp()
+        chat.bro_removed()
+        chat.block_chat(True)
         db.session.add(chat)
         db.session.commit()
 
         return {
                 "result": True,
-                "chat": chat.serialize
             }
 
 
 api = Api(app_api)
-api.add_resource(BlockBro, '/api/v1.1/block/bro', endpoint='block_bro')
+api.add_resource(ReportBro, '/api/v1.1/report/bro', endpoint='report_bro')

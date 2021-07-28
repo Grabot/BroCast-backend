@@ -92,9 +92,14 @@ class Bro(db.Model):
                 chat_colour=chat_colour,
                 room_name=get_a_room_you_two(self.id, bro.id),
                 unread_messages=0,
-                last_time_activity=datetime.utcnow()
+                last_time_activity=datetime.utcnow(),
+                blocked=False,
+                removed=False
             )
             db.session.add(b)
+
+    def get_bros(self):
+        return [bro for bro in self.bros if not bro.removed]
 
     def remove_bro(self, bro):
         # This is to remove a bro connection, not the bro itself.

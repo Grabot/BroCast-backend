@@ -7,6 +7,7 @@ from app.models.bro_bros import BroBros
 from app.sock.last_read_time import get_last_read_time_other_bro
 from app.models.message import Message
 from app.rest import app_api
+from datetime import datetime
 
 
 class GetMessages(Resource):
@@ -31,8 +32,8 @@ class GetMessages(Resource):
                 "message": "Your credentials are not valid."
             }
 
-        other_chat = BroBros.query.filter_by(bro_id=bros_bro_id, bros_bro_id=logged_in_bro.id).first()
-        if other_chat is None:
+        chat = BroBros.query.filter_by(bro_id=logged_in_bro.id, bros_bro_id=bros_bro_id).first()
+        if chat is None:
             return {
                 "result": False,
                 "message": "Chat not found."
@@ -42,8 +43,16 @@ class GetMessages(Resource):
             union(Message.query.filter_by(sender_id=bros_bro_id, recipient_id=logged_in_bro.id)).\
             order_by(Message.timestamp.desc()).paginate(1, 20 * page, False).items
 
-        if other_chat.has_been_blocked():
-            print("this user has been blocked! don't show messages send while blocked")
+        if chat.has_been_blocked():
+            blocked_timestamps = chat.get_blocked_timestamps()
+            for b in range(0, len(blocked_timestamps), 2):
+                block_1 = blocked_timestamps[b]
+                block_2 = datetime.utcnow()
+                if b < len(blocked_timestamps) - 1:
+                    block_2 = blocked_timestamps[b+1]
+                # We go over the block timestamp pairs.
+                # If the user is currently blocked, the last pair will be the block time and now
+                messages = [message for message in messages if not block_1 <= message.get_timestamp() <= block_2]
 
         if messages is None:
             return {'result': False}

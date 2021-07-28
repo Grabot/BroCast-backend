@@ -30,7 +30,6 @@ def send_notification(data):
     device_type_bro_to_notify = bro_to_notify.get_device_type()
     try:
         if device_type_bro_to_notify == "Android":
-
             data_message = {
                 "chat": chat,
                 "message_body": message_body

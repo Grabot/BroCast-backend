@@ -14,6 +14,7 @@ from app.rest import get_messages
 from app.rest import remove_registration
 from app.rest import get_chat
 from app.rest import block_bro
+from app.rest import report_bro
 
 
 @app_api.route("/privacy")

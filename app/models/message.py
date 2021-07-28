@@ -16,6 +16,9 @@ class Message(db.Model):
     text_message = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
 
+    def get_timestamp(self):
+        return self.timestamp
+
     @property
     def serialize(self):
         """Return object data in easily serializable format"""
