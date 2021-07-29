@@ -15,6 +15,8 @@ from app.rest import remove_registration
 from app.rest import get_chat
 from app.rest import block_bro
 from app.rest import report_bro
+from app.rest import remove_bro
+from app.rest import read_logs
 
 
 @app_api.route("/privacy")
@@ -25,6 +27,11 @@ def privacy():
 @app_api.route("/about")
 def about():
     return render_template('about.html')
+
+
+@app_api.route("/terms")
+def terms():
+    return render_template('terms.html')
 
 
 @app_api.route("/")

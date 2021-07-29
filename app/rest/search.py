@@ -1,7 +1,6 @@
 from app.rest import app_api
 from flask_restful import Api
 from flask_restful import Resource
-from flask import jsonify
 from flask import request
 from app.models.bro import Bro
 from sqlalchemy import func

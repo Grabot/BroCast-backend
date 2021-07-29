@@ -1,4 +1,3 @@
-from app.models.bro_bros import BroBros
 from app.rest import app_api
 from flask_restful import Api
 from flask_restful import Resource
