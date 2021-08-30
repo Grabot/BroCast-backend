@@ -6,6 +6,8 @@ from app.models.bro_bros import BroBros
 import random
 from datetime import datetime
 
+from app.models.broup import Broup
+
 
 def get_a_room_you_two(bro_id, bros_bro_id):
     if bro_id >= bros_bro_id:
@@ -31,6 +33,9 @@ class Bro(db.Model):
                            backref=db.backref('bro_bros', lazy='joined'),
                            lazy='dynamic',
                            cascade='all, delete-orphan')
+    broups = db.relationship('Broup',
+                            foreign_keys='Broup.bro_id',
+                            backref='recipient', lazy='dynamic')
     bro_bros = db.relationship('BroBros',
                                foreign_keys=[BroBros.bros_bro_id],
                                backref=db.backref('bros', lazy='joined'),
@@ -98,8 +103,29 @@ class Bro(db.Model):
             )
             db.session.add(b)
 
+    def add_broup(self, broup_name, bro_ids):
+        broup_colour = '%02X%02X%02X' % (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+        b = Broup(
+            bro_id=self.id,
+            bro_ids=bro_ids,
+            broup_name=broup_name,
+            broup_description="",
+            broup_colour=broup_colour,
+            room_name="1",
+            unread_messages=0,
+            last_time_activity=datetime.utcnow(),
+            blocked=False,
+            removed=False
+        )
+        print("going to add a broup")
+        print(b)
+        db.session.add(b)
+
     def get_bros(self):
         return [bro for bro in self.bros if not bro.removed]
+
+    def get_broups(self):
+        return [broup for broup in self.broups if not broup.removed]
 
     def remove_bro(self, bro):
         # This is to remove a bro connection, not the bro itself.

@@ -41,7 +41,7 @@ class GetMessages(Resource):
 
         messages = Message.query.filter_by(sender_id=logged_in_bro.id, recipient_id=bros_bro_id).\
             union(Message.query.filter_by(sender_id=bros_bro_id, recipient_id=logged_in_bro.id)).\
-            order_by(Message.timestamp.desc()).paginate(1, 20 * page, False).items
+            order_by(Message.timestamp.desc()).paginate(page, 20, False).items
 
         if chat.has_been_blocked():
             blocked_timestamps = chat.get_blocked_timestamps()

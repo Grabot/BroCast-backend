@@ -27,9 +27,12 @@ class GetBros(Resource):
                 "message": "Your credentials are not valid."
             }
 
+        bro_list = [bro_bro.serialize for bro_bro in logged_in_bro.get_bros()]
+        broup_list = [broup.serialize for broup in logged_in_bro.get_broups()]
+
         return {
                 "result": True,
-                "bro_list": [bro_bro.serialize for bro_bro in logged_in_bro.get_bros()]
+                "bro_list": bro_list + broup_list
             }
 
 
