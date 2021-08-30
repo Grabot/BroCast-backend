@@ -105,6 +105,7 @@ class Bro(db.Model):
 
     def add_broup(self, broup_name, bro_ids):
         broup_colour = '%02X%02X%02X' % (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+        # TODO: @Skools fix the room name generation.
         b = Broup(
             bro_id=self.id,
             bro_ids=bro_ids,
