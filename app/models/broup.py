@@ -9,6 +9,7 @@ class Broup(db.Model):
     """
     __tablename__ = 'Broup'
     id = db.Column(db.Integer, primary_key=True)
+    broup_id = db.Column(db.Integer, unique=True)
     bro_id = db.Column(db.Integer, db.ForeignKey('Bro.id'))
     bro_ids = db.Column(types.ARRAY(db.Integer))
     broup_name = db.Column(db.String)

@@ -7,7 +7,7 @@ from app import socks
 from app import db
 from app.models.bro import get_a_room_you_two, Bro
 from app.models.bro_bros import BroBros
-from app.sock.message import send_message
+from app.sock.message import send_message, send_message_broup
 from app.sock.last_read_time import update_read_time
 
 
@@ -60,6 +60,10 @@ class NamespaceSock(Namespace):
     # noinspection PyMethodMayBeStatic
     def on_message(self, data):
         send_message(data)
+
+    # noinspection PyMethodMayBeStatic
+    def on_message_broup(self, data):
+        send_message_broup(data)
 
     # noinspection PyMethodMayBeStatic
     def on_message_read(self, data):

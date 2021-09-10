@@ -2,6 +2,7 @@ from datetime import datetime
 
 from app import db
 from app.models.bro_bros import BroBros
+from app.models.broup import Broup
 from app.models.message import Message
 from app.rest.notification import send_notification
 from app.models.bro import get_a_room_you_two
@@ -51,3 +52,15 @@ def send_message(data):
     db.session.add(own_chat)
     db.session.add(bro_message)
     db.session.commit()
+
+
+def send_message_broup(data):
+    print("sending a message in a broup")
+    bro_id = data["bro_id"]
+    broup_id = data["broup_id"]
+    message = data["message"]
+    text_message = data["text_message"]
+    print("broup id %s" % broup_id)
+
+    broup = Broup.query.filter_by(id=broup_id).first()
+
