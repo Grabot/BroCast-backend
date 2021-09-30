@@ -3,6 +3,7 @@ from datetime import datetime
 from app import db
 from app.models.bro_bros import BroBros
 from app.models.broup import Broup
+from app.models.broup_message import BroupMessage
 from app.models.message import Message
 from app.rest.notification import send_notification
 from app.models.bro import get_a_room_you_two
@@ -64,3 +65,21 @@ def send_message_broup(data):
 
     broup = Broup.query.filter_by(broup_id=broup_id).first()
 
+    # We assume this won't happen
+    if broup is None:
+        return None
+
+    broup_message = BroupMessage(
+        sender_id=bro_id,
+        broup_id=broup_id,
+        body=message,
+        text_message=text_message,
+        timestamp=datetime.utcnow()
+    )
+
+    # TODO: SKools add functionality to send notifications to all broup members
+    broup.update_last_activity()
+
+    db.session.add(broup)
+    db.session.add(broup_message)
+    db.session.commit()

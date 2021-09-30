@@ -23,6 +23,9 @@ class Broup(db.Model):
     removed = db.Column(db.Boolean, default=False)
     blocked_timestamps = db.Column(types.ARRAY(db.DateTime))
 
+    def update_last_activity(self):
+        self.last_time_activity = datetime.utcnow()
+
     @property
     def serialize(self):
         return {
