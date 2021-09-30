@@ -56,12 +56,10 @@ def send_message(data):
 
 
 def send_message_broup(data):
-    print("sending a message in a broup")
     bro_id = data["bro_id"]
     broup_id = data["broup_id"]
     message = data["message"]
     text_message = data["text_message"]
-    print("broup id %s" % broup_id)
 
     broup = Broup.query.filter_by(broup_id=broup_id).first()
 
