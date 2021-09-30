@@ -4,9 +4,7 @@ from datetime import datetime
 
 class BroupMessage(db.Model):
     """
-    The Message object. Here we have the Bro who send the message and the Bro who received it.
-    We also include the BroBros associate table. This allows use to find all the messages they send to each other.
-    Finally we include the body of the message.
+    The Broup Message object. Here we have the Bro who send the message and the Broup who received it.
     """
     __tablename__ = 'BroupMessage'
     id = db.Column(db.Integer, primary_key=True)

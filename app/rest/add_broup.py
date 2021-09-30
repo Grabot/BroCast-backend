@@ -1,10 +1,12 @@
 from app.models.bro import Bro
 from app import db
+from app.models.broup import Broup
 from app.rest import app_api
 from flask_restful import Api
 from flask_restful import Resource
 from flask import request
 from json import loads
+from sqlalchemy import func
 
 
 class AddBroup(Resource):
@@ -34,8 +36,16 @@ class AddBroup(Resource):
 
         print("checking participants")
         participants = loads(json_data["participants"])
-        broup_name = "broup_1"
+
+        broup_name = json_data["broup_name"]
+        print("broup name: %s" % broup_name)
         broup_name += " " + logged_in_bro.bromotion
+
+        max_broup_id = db.session.query(func.max(Broup.broup_id)).scalar()
+        if max_broup_id is None:
+            max_broup_id = 0
+        broup_id = max_broup_id + 1
+
         bro_ids = []
         broup = [logged_in_bro]
         for part in participants:
@@ -49,8 +59,7 @@ class AddBroup(Resource):
             bro_ids.append(bro_for_broup.id)
 
         for bro in broup:
-            bro.add_broup(broup_name, bro_ids)
-            print(bro.serialize)
+            bro.add_broup(broup_name, broup_id, bro_ids)
 
         db.session.commit()
 

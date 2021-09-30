@@ -7,7 +7,6 @@ from flask_restful import Resource
 from app.models.bro import Bro
 from app.models.broup import Broup
 from app.models.broup_message import BroupMessage
-from app.models.message import Message
 from app.rest import app_api
 
 
@@ -23,7 +22,6 @@ class GetMessagesBroup(Resource):
 
     # noinspection PyMethodMayBeStatic
     def post(self, page):
-        print("this is broup messages broup")
         json_data = request.get_json(force=True)
         token = json_data["token"]
         broup_id = json_data["broup_id"]
@@ -34,20 +32,16 @@ class GetMessagesBroup(Resource):
                 "message": "Your credentials are not valid."
             }
 
-        chat = Broup.query.filter_by(id=broup_id).first()
+        print("getting messages of a broup")
+        chat = Broup.query.filter_by(broup_id=broup_id).first()
         if chat is None:
             return {
                 "result": False,
                 "message": "Chat not found."
             }
 
-        # TODO: @Skools add broup message object with only sender id and broup id link
-        # messages = Message.query.filter_by(sender_id=logged_in_bro.id, recipient_id=bros_bro_id).\
-        #     union(Message.query.filter_by(sender_id=bros_bro_id, recipient_id=logged_in_bro.id)).\
-        #     order_by(Message.timestamp.desc()).paginate(page, 20, False).items
         messages = BroupMessage.query.filter_by(broup_id=broup_id).\
             order_by(BroupMessage.timestamp.desc()).paginate(page, 20, False).items
-
 
         # TODO: @Skools Add mute functionality.
         # if chat.has_been_blocked():

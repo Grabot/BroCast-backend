@@ -103,10 +103,10 @@ class Bro(db.Model):
             )
             db.session.add(b)
 
-    def add_broup(self, broup_name, bro_ids):
+    def add_broup(self, broup_name, broup_id, bro_ids):
         broup_colour = '%02X%02X%02X' % (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
-        # TODO: @Skools fix the room name generation.
         b = Broup(
+            broup_id=broup_id,
             bro_id=self.id,
             bro_ids=bro_ids,
             broup_name=broup_name,

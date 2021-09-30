@@ -9,7 +9,7 @@ class Broup(db.Model):
     """
     __tablename__ = 'Broup'
     id = db.Column(db.Integer, primary_key=True)
-    broup_id = db.Column(db.Integer, unique=True)
+    broup_id = db.Column(db.Integer, unique=False)
     bro_id = db.Column(db.Integer, db.ForeignKey('Bro.id'))
     bro_ids = db.Column(types.ARRAY(db.Integer))
     broup_name = db.Column(db.String)
@@ -26,7 +26,7 @@ class Broup(db.Model):
     @property
     def serialize(self):
         return {
-            'id': self.id,
+            'id': self.broup_id,
             'bro_id': self.bro_id,
             'bro_ids': self.bro_ids,
             'broup_name': self.broup_name,

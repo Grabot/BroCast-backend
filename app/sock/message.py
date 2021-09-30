@@ -62,5 +62,5 @@ def send_message_broup(data):
     text_message = data["text_message"]
     print("broup id %s" % broup_id)
 
-    broup = Broup.query.filter_by(id=broup_id).first()
+    broup = Broup.query.filter_by(broup_id=broup_id).first()
 
