@@ -9,7 +9,7 @@ class BroupMessage(db.Model):
     __tablename__ = 'BroupMessage'
     id = db.Column(db.Integer, primary_key=True)
     sender_id = db.Column(db.Integer, db.ForeignKey('Bro.id'))
-    broup_id = db.Column(db.Integer, db.ForeignKey('Broup.id'))
+    broup_id = db.Column(db.Integer)  # Foreign key to Broup
     body = db.Column(db.Text)
     text_message = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
