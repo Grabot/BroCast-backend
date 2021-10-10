@@ -29,6 +29,11 @@ class GetChat(Resource):
             }
 
         chat = BroBros.query.filter_by(bro_id=bro_id, bros_bro_id=bros_bro_id).first()
+        if chat is None:
+            return {
+                "result": False,
+                "message": "Chat not found."
+            }
 
         return {
                 "result": True,

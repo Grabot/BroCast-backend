@@ -34,11 +34,9 @@ class AddBroup(Resource):
                 "message": "Your credentials are not valid."
             }
 
-        print("checking participants")
         participants = loads(json_data["participants"])
 
         broup_name = json_data["broup_name"]
-        print("broup name: %s" % broup_name)
         broup_name += " " + logged_in_bro.bromotion
 
         max_broup_id = db.session.query(func.max(Broup.broup_id)).scalar()
@@ -63,7 +61,6 @@ class AddBroup(Resource):
 
         db.session.commit()
 
-        print("all good")
         return {
             'result': True,
             "message": "Congratulations, a broup was created"
