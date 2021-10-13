@@ -44,7 +44,7 @@ class AddBroup(Resource):
             max_broup_id = 0
         broup_id = max_broup_id + 1
 
-        bro_ids = []
+        bro_ids = [logged_in_bro.id]
         broup = [logged_in_bro]
         for part in participants:
             bro_for_broup = Bro.query.filter_by(id=part).first()
