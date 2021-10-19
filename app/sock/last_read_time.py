@@ -36,3 +36,7 @@ def get_last_read_time_other_bro(bro_id, bros_bro_id):
 
     return bro_associate.last_message_read_time_bro
 
+
+def update_read_time_broup(bro_id, broup_id, broup_room):
+    # TODO: @SKools implementatie
+    print("updating broup read time")

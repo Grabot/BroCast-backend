@@ -56,16 +56,13 @@ def send_message(data):
 
 
 def send_message_broup(data):
+    print("sending message in a broup")
     bro_id = data["bro_id"]
     broup_id = data["broup_id"]
     message = data["message"]
     text_message = data["text_message"]
 
     broup = Broup.query.filter_by(broup_id=broup_id).first()
-
-    # We assume this won't happen
-    if broup is None:
-        return None
 
     broup_message = BroupMessage(
         sender_id=bro_id,
@@ -75,9 +72,18 @@ def send_message_broup(data):
         timestamp=datetime.utcnow()
     )
 
-    # TODO: SKools add functionality to send notifications to all broup members
-    broup.update_last_activity()
+    # TODO: @Skools add a way to find out which bro should not get a notification (blocking, muting etc.)
+    if broup is not None:
 
-    db.session.add(broup)
+        # TODO: SKools add functionality to send notifications to all broup members
+        broup.update_last_activity()
+        db.session.add(broup)
+        broup_room = "broup_%s" % broup_id
+        emit("message_event_send", broup_message.serialize, room=broup_room)
+        # TODO: @Skools find all solo rooms for broup bros
+        # room_solo_other_bro = "room_%s" % bros_bro_id
+        # emit("message_event_send_solo", bro_message.serialize, room=room_solo_other_bro)
+
     db.session.add(broup_message)
     db.session.commit()
+    print("message is send in broup. Send sock notification")

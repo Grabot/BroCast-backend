@@ -9,6 +9,7 @@ from app.models.bro import get_a_room_you_two, Bro
 from app.models.bro_bros import BroBros
 from app.sock.message import send_message, send_message_broup
 from app.sock.last_read_time import update_read_time
+from app.sock.last_read_time import update_read_time_broup
 
 
 class NamespaceSock(Namespace):
@@ -43,12 +44,31 @@ class NamespaceSock(Namespace):
         emit("message_event", 'User has entered room %s' % room, room=room)
 
     # noinspection PyMethodMayBeStatic
+    def on_join_broup(self, data):
+        bro_id = data["bro_id"]
+        broup_id = data["broup_id"]
+        broup_room = "broup_%s" % broup_id
+        print("joining the broup room: %s" % broup_room)
+        join_room(broup_room)
+        update_read_time_broup(bro_id, broup_id, broup_room)
+        emit("message_event", 'User has entered room %s' % broup_room, room=broup_room)
+
+    # noinspection PyMethodMayBeStatic
     def on_leave(self, data):
         bro_id = data["bro_id"]
         bros_bro_id = data["bros_bro_id"]
         room = get_a_room_you_two(bro_id, bros_bro_id)
         leave_room(room)
         emit("message_event", 'User has left room %s' % room, room=room)
+
+    # noinspection PyMethodMayBeStatic
+    def on_leave_broup(self, data):
+        bro_id = data["bro_id"]
+        broup_id = data["broup_id"]
+        broup_room = "broup_%s" % broup_id
+        print("leaving the broup room: %s" % broup_room)
+        leave_room(broup_room)
+        emit("message_event", 'User has left room %s' % broup_room, room=broup_room)
 
     # noinspection PyMethodMayBeStatic
     def on_leave_solo(self, data):
@@ -71,6 +91,13 @@ class NamespaceSock(Namespace):
         bros_bro_id = data["bros_bro_id"]
         room = get_a_room_you_two(bro_id, bros_bro_id)
         update_read_time(bro_id, bros_bro_id, room)
+
+    # noinspection PyMethodMayBeStatic
+    def on_message_read_broup(self, data):
+        bro_id = data["bro_id"]
+        broup_id = data["broup_id"]
+        broup_room = "broup_%s" % broup_id
+        update_read_time_broup(bro_id, broup_id, broup_room)
 
     # noinspection PyMethodMayBeStatic
     def on_message_event_change_chat_details(self, data):
