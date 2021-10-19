@@ -7,6 +7,7 @@ from flask_restful import Resource
 from flask import request
 from json import loads
 from sqlalchemy import func
+import random
 
 
 class AddBroup(Resource):
@@ -56,8 +57,9 @@ class AddBroup(Resource):
             broup_name += " " + bro_for_broup.bromotion
             bro_ids.append(bro_for_broup.id)
 
+        broup_colour = '%02X%02X%02X' % (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
         for bro in broup:
-            bro.add_broup(broup_name, broup_id, bro_ids)
+            bro.add_broup(broup_name, broup_id, bro_ids, broup_colour)
 
         db.session.commit()
 

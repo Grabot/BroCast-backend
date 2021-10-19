@@ -3,7 +3,6 @@ from itsdangerous import (TimedJSONWebSignatureSerializer as Serializer, BadSign
 from app.config import Config
 from app import db
 from app.models.bro_bros import BroBros
-import random
 from datetime import datetime
 
 from app.models.broup import Broup
@@ -103,8 +102,7 @@ class Bro(db.Model):
             )
             db.session.add(b)
 
-    def add_broup(self, broup_name, broup_id, bro_ids):
-        broup_colour = '%02X%02X%02X' % (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+    def add_broup(self, broup_name, broup_id, bro_ids, broup_colour):
         b = Broup(
             broup_id=broup_id,
             bro_id=self.id,

@@ -7,6 +7,7 @@ from app import socks
 from app import db
 from app.models.bro import get_a_room_you_two, Bro
 from app.models.bro_bros import BroBros
+from app.models.broup import Broup
 from app.sock.message import send_message, send_message_broup
 from app.sock.last_read_time import update_read_time
 from app.sock.last_read_time import update_read_time_broup
@@ -109,12 +110,15 @@ class NamespaceSock(Namespace):
         if logged_in_bro is None:
             emit("message_event_change_chat_details_failed", "token authentication failed", room=request.sid)
         else:
-            chat = BroBros.query.filter_by(bro_id=logged_in_bro.id, bros_bro_id=bros_bro_id).first()
-            if chat is None:
+            chat1 = BroBros.query.filter_by(bro_id=logged_in_bro.id, bros_bro_id=bros_bro_id).first()
+            chat2 = BroBros.query.filter_by(bro_id=bros_bro_id, bros_bro_id=logged_in_bro.id).first()
+            if chat1 is None or chat2 is None:
                 emit("message_event_change_chat_details_failed", "chat finding failed", room=request.sid)
             else:
-                chat.update_description(description)
-                db.session.add(chat)
+                chat1.update_description(description)
+                db.session.add(chat1)
+                chat2.update_description(description)
+                db.session.add(chat2)
                 db.session.commit()
                 emit("message_event_change_chat_details_success", "chat updated successfully", room=request.sid)
 
@@ -128,14 +132,57 @@ class NamespaceSock(Namespace):
         if logged_in_bro is None:
             emit("message_event_change_chat_colour_failed", "token authentication failed", room=request.sid)
         else:
-            chat = BroBros.query.filter_by(bro_id=logged_in_bro.id, bros_bro_id=bros_bro_id).first()
-            if chat is None:
+            chat1 = BroBros.query.filter_by(bro_id=logged_in_bro.id, bros_bro_id=bros_bro_id).first()
+            chat2 = BroBros.query.filter_by(bro_id=logged_in_bro.id, bros_bro_id=bros_bro_id).first()
+            if chat1 is None or chat2 is None:
                 emit("message_event_change_chat_colour_failed", "chat colour change failed", room=request.sid)
             else:
-                chat.update_colour(colour)
-                db.session.add(chat)
+                chat1.update_colour(colour)
+                db.session.add(chat1)
+                chat2.update_colour(colour)
+                db.session.add(chat2)
                 db.session.commit()
                 emit("message_event_change_chat_colour_success", "chat colour updated successfully", room=request.sid)
+
+    # noinspection PyMethodMayBeStatic
+    def on_message_event_change_broup_details(self, data):
+        token = data["token"]
+        broup_id = data["broup_id"]
+        description = data["description"]
+        logged_in_bro = Bro.verify_auth_token(token)
+
+        if logged_in_bro is None:
+            emit("message_event_change_broup_details_failed", "token authentication failed", room=request.sid)
+        else:
+            broup_objects = Broup.query.filter_by(broup_id=broup_id)
+            if broup_objects is None:
+                emit("message_event_change_broup_details_failed", "broup finding failed", room=request.sid)
+            else:
+                for broup in broup_objects:
+                    broup.update_description(description)
+                    db.session.add(broup)
+                db.session.commit()
+                emit("message_event_change_broup_details_success", "broup updated successfully", room=request.sid)
+
+    # noinspection PyMethodMayBeStatic
+    def on_message_event_change_broup_colour(self, data):
+        token = data["token"]
+        broup_id = data["broup_id"]
+        colour = data["colour"]
+        logged_in_bro = Bro.verify_auth_token(token)
+
+        if logged_in_bro is None:
+            emit("message_event_change_broup_colour_failed", "token authentication failed", room=request.sid)
+        else:
+            broup_objects = Broup.query.filter_by(broup_id=broup_id)
+            if broup_objects is None:
+                emit("message_event_change_broup_details_failed", "broup finding failed", room=request.sid)
+            else:
+                for broup in broup_objects:
+                    broup.update_colour(colour)
+                    db.session.add(broup)
+                db.session.commit()
+                emit("message_event_change_broup_colour_success", "broup colour updated successfully", room=request.sid)
 
     # noinspection PyMethodMayBeStatic
     def on_bromotion_change(self, data):

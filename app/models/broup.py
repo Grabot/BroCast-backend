@@ -26,6 +26,12 @@ class Broup(db.Model):
     def update_last_activity(self):
         self.last_time_activity = datetime.utcnow()
 
+    def update_description(self, description):
+        self.broup_description = description
+
+    def update_colour(self, colour):
+        self.broup_colour = colour
+
     @property
     def serialize(self):
         return {
