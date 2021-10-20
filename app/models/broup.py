@@ -13,6 +13,7 @@ class Broup(db.Model):
     bro_id = db.Column(db.Integer, db.ForeignKey('Bro.id'))
     bro_ids = db.Column(types.ARRAY(db.Integer))
     broup_name = db.Column(db.String)
+    alias = db.Column(db.String)
     broup_description = db.Column(db.String)
     broup_colour = db.Column(db.String)
     room_name = db.Column(db.String)
@@ -29,6 +30,9 @@ class Broup(db.Model):
     def update_description(self, description):
         self.broup_description = description
 
+    def update_alias(self, alias):
+        self.alias = alias
+
     def update_colour(self, colour):
         self.broup_colour = colour
 
@@ -39,6 +43,7 @@ class Broup(db.Model):
             'bro_id': self.bro_id,
             'bro_ids': self.bro_ids,
             'broup_name': self.broup_name,
+            'alias': self.alias,
             'broup_description': self.broup_description,
             'broup_colour': self.broup_colour,
             'unread_messages': self.unread_messages,

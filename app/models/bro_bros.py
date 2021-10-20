@@ -14,6 +14,7 @@ class BroBros(db.Model):
     bro_id = db.Column(db.Integer, db.ForeignKey('Bro.id'))
     bros_bro_id = db.Column(db.Integer, db.ForeignKey('Bro.id'))
     chat_name = db.Column(db.String)
+    alias = db.Column(db.String)
     chat_description = db.Column(db.String)
     chat_colour = db.Column(db.String)
     room_name = db.Column(db.String)
@@ -35,6 +36,9 @@ class BroBros(db.Model):
 
     def update_description(self, description):
         self.chat_description = description
+
+    def update_alias(self, alias):
+        self.alias = alias
 
     def update_colour(self, colour):
         self.chat_colour = colour
@@ -73,6 +77,7 @@ class BroBros(db.Model):
             'bro_id': self.bro_id,
             'bros_bro_id': self.bros_bro_id,
             'chat_name': self.chat_name,
+            'alias': self.alias,
             'chat_description': self.chat_description,
             'chat_colour': self.chat_colour,
             'unread_messages': self.unread_messages,
