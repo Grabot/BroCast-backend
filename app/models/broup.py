@@ -12,6 +12,7 @@ class Broup(db.Model):
     broup_id = db.Column(db.Integer, unique=False)
     bro_id = db.Column(db.Integer, db.ForeignKey('Bro.id'))
     bro_ids = db.Column(types.ARRAY(db.Integer))
+    bro_admin_ids = db.Column(types.ARRAY(db.Integer))
     broup_name = db.Column(db.String)
     alias = db.Column(db.String)
     broup_description = db.Column(db.String)
@@ -42,6 +43,7 @@ class Broup(db.Model):
             'id': self.broup_id,
             'bro_id': self.bro_id,
             'bro_ids': self.bro_ids,
+            'bro_admin_ids': self.bro_admin_ids,
             'broup_name': self.broup_name,
             'alias': self.alias,
             'broup_description': self.broup_description,

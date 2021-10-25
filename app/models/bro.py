@@ -4,7 +4,7 @@ from app.config import Config
 from app import db
 from app.models.bro_bros import BroBros
 from datetime import datetime
-
+import random
 from app.models.broup import Broup
 
 
@@ -102,11 +102,12 @@ class Bro(db.Model):
             )
             db.session.add(b)
 
-    def add_broup(self, broup_name, broup_id, bro_ids, broup_colour):
+    def add_broup(self, broup_name, broup_id, bro_ids, broup_colour, admins):
         b = Broup(
             broup_id=broup_id,
             bro_id=self.id,
             bro_ids=bro_ids,
+            bro_admin_ids=admins,
             broup_name=broup_name,
             broup_description="",
             broup_colour=broup_colour,

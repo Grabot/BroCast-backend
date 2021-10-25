@@ -46,6 +46,7 @@ class AddBroup(Resource):
         broup_id = max_broup_id + 1
 
         bro_ids = [logged_in_bro.id]
+        admins = [logged_in_bro.id]
         broup = [logged_in_bro]
         for part in participants:
             bro_for_broup = Bro.query.filter_by(id=part).first()
@@ -59,7 +60,7 @@ class AddBroup(Resource):
 
         broup_colour = '%02X%02X%02X' % (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
         for bro in broup:
-            bro.add_broup(broup_name, broup_id, bro_ids, broup_colour)
+            bro.add_broup(broup_name, broup_id, bro_ids, broup_colour, admins)
 
         db.session.commit()
 
