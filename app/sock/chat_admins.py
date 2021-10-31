@@ -55,3 +55,29 @@ def change_broup_dismiss_admin(data):
                  room=request.sid)
 
 
+def change_broup_remove_bro(data):
+    token = data["token"]
+    broup_id = data["broup_id"]
+    bro_id = data["bro_id"]
+    logged_in_bro = Bro.verify_auth_token(token)
+
+    if logged_in_bro is None:
+        emit("message_event_change_broup_remove_bro_failed", "token authentication failed", room=request.sid)
+    else:
+        broup_objects = Broup.query.filter_by(broup_id=broup_id)
+        remove_broup = Broup.query.filter_by(broup_id=broup_id, bro_id=bro_id).first()
+        if broup_objects is None or remove_broup is None:
+            emit("message_event_change_broup_remove_bro_failed", "broup finding failed", room=request.sid)
+        else:
+            for broup in broup_objects:
+                broup.remove_bro(bro_id)
+                db.session.add(broup)
+            db.session.delete(remove_broup)
+            db.session.commit()
+            emit("message_event_change_broup_remove_bro_success",
+                 {
+                     "result": True,
+                     "old_bro": bro_id
+                 },
+                 room=request.sid)
+

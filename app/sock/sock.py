@@ -18,7 +18,7 @@ from app.sock.chat_details import change_broup_alias
 from app.sock.chat_details import change_broup_colour
 from app.sock.chat_admins import change_broup_add_admin
 from app.sock.chat_admins import change_broup_dismiss_admin
-
+from app.sock.chat_admins import change_broup_remove_bro
 
 class NamespaceSock(Namespace):
 
@@ -138,6 +138,10 @@ class NamespaceSock(Namespace):
     # noinspection PyMethodMayBeStatic
     def on_message_event_change_broup_dismiss_admin(self, data):
         change_broup_dismiss_admin(data)
+
+    # noinspection PyMethodMayBeStatic
+    def on_message_event_change_broup_remove_bro(self, data):
+        change_broup_remove_bro(data)
 
     # noinspection PyMethodMayBeStatic
     def on_bromotion_change(self, data):

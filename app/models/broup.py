@@ -51,6 +51,18 @@ class Broup(db.Model):
                 new_admins.append(old)
         self.bro_admin_ids = new_admins
 
+    def remove_bro(self, bro_id):
+        if bro_id in self.bro_admin_ids:
+            self.dismiss_admin(bro_id)
+        if self.bro_ids is None:
+            self.bro_ids = []
+        old_bros = self.bro_ids
+        new_bros = []
+        for old in old_bros:
+            if old != bro_id:
+                new_bros.append(old)
+        self.bro_ids = new_bros
+
     def update_last_activity(self):
         self.last_time_activity = datetime.utcnow()
 
