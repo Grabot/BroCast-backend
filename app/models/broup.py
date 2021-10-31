@@ -25,6 +25,32 @@ class Broup(db.Model):
     removed = db.Column(db.Boolean, default=False)
     blocked_timestamps = db.Column(types.ARRAY(db.DateTime))
 
+    def get_admins(self):
+        return self.bro_admin_ids
+
+    def set_admins(self, bro_admin_ids):
+        self.bro_admin_ids = bro_admin_ids
+
+    def add_admin(self, bro_id):
+        if self.bro_admin_ids is None:
+            self.bro_admin_ids = []
+        old_admins = self.bro_admin_ids
+        new_admins = []
+        for old in old_admins:
+            new_admins.append(old)
+        new_admins.append(bro_id)
+        self.bro_admin_ids = new_admins
+
+    def dismiss_admin(self, bro_id):
+        if self.bro_admin_ids is None:
+            self.bro_admin_ids = []
+        old_admins = self.bro_admin_ids
+        new_admins = []
+        for old in old_admins:
+            if old != bro_id:
+                new_admins.append(old)
+        self.bro_admin_ids = new_admins
+
     def update_last_activity(self):
         self.last_time_activity = datetime.utcnow()
 

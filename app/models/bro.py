@@ -61,6 +61,7 @@ class Bro(db.Model):
 
     def set_device_type(self, device_type):
         self.device_type = device_type
+
     # Expiration is 1 week
     def generate_auth_token(self, expiration=604800):
         s = Serializer(Config.SECRET_KEY, expires_in=expiration)
@@ -117,8 +118,6 @@ class Bro(db.Model):
             blocked=False,
             removed=False
         )
-        print("going to add a broup")
-        print(b)
         db.session.add(b)
 
     def get_bros(self):
