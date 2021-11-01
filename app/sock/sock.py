@@ -18,7 +18,7 @@ from app.sock.chat_details import change_broup_alias
 from app.sock.chat_details import change_broup_colour
 from app.sock.chat_admins import change_broup_add_admin
 from app.sock.chat_admins import change_broup_dismiss_admin
-from app.sock.chat_admins import change_broup_remove_bro
+from app.sock.sock_add import change_broup_remove_bro
 from app.sock.sock_add import add_bro
 from app.sock.sock_add import add_broup
 from app.sock.sock_add import add_bro_to_broup

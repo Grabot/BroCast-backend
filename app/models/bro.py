@@ -88,10 +88,9 @@ class Bro(db.Model):
         bro = Bro.query.get(data['id'])
         return bro
 
-    def add_bro(self, bro):
+    def add_bro(self, bro, chat_colour):
         if not self.have_bro(bro):
             chat_name = bro.bro_name + " " + bro.bromotion
-            chat_colour = '%02X%02X%02X' % (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
             b = BroBros(
                 bro_id=self.id,
                 bros_bro_id=bro.id,

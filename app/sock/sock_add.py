@@ -17,8 +17,9 @@ def add_bro(data):
         bro_to_be_added = Bro.query.filter_by(id=bros_bro_id).first()
         if bro_to_be_added:
             if bro_to_be_added.id != logged_in_bro.id:
-                logged_in_bro.add_bro(bro_to_be_added)
-                bro_to_be_added.add_bro(logged_in_bro)
+                chat_colour = '%02X%02X%02X' % (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+                logged_in_bro.add_bro(bro_to_be_added, chat_colour)
+                bro_to_be_added.add_bro(logged_in_bro, chat_colour)
                 db.session.commit()
                 bro_room = "room_%s" % bro_to_be_added.id
                 emit("message_event_add_bro_success", "bro was added!", room=request.sid)
@@ -77,13 +78,11 @@ def add_broup(data):
 def add_bro_to_broup(data):
     token = data["token"]
     logged_in_bro = Bro.verify_auth_token(token)
-    print("adding bro to the broup")
     if not logged_in_bro:
         emit("message_event_add_bro_to_broup_failed", "adding bro to broup failed", room=request.sid)
     else:
         broup_id = data["broup_id"]
         bro_id = data["bro_id"]
-        print("broup %s and bro %s" % (broup_id, bro_id))
 
         broup_objects = Broup.query.filter_by(broup_id=broup_id)
         if broup_objects is None:
@@ -112,6 +111,8 @@ def add_bro_to_broup(data):
                 broup_description = broup.get_broup_description()
 
             new_bro_for_broup.add_broup(broup_name, broup_id, bro_ids, broup_colour, admins, broup_description)
+            new_bro_room = "room_%s" % new_bro_for_broup.id
+            emit("message_event_added_to_broup", "you got added to a broup!", room=new_bro_room)
 
             db.session.commit()
 
@@ -127,4 +128,51 @@ def add_bro_to_broup(data):
                          "result": True,
                          "chat": chat.serialize
                      }, room=request.sid)
+
+
+def remove_last_occur(old_string, bromotion):
+    new_string = ''
+    length = len(old_string)
+
+    for i in range(length-1, 0, -1):
+        if old_string[i] == bromotion:
+            new_string = old_string[0:i] + old_string[i + 1:length]
+            break
+    return new_string
+
+
+def change_broup_remove_bro(data):
+    token = data["token"]
+    broup_id = data["broup_id"]
+    bro_id = data["bro_id"]
+    logged_in_bro = Bro.verify_auth_token(token)
+
+    if logged_in_bro is None:
+        emit("message_event_change_broup_remove_bro_failed", "token authentication failed", room=request.sid)
+    else:
+        broup_objects = Broup.query.filter_by(broup_id=broup_id)
+        remove_broup = Broup.query.filter_by(broup_id=broup_id, bro_id=bro_id).first()
+        remove_bro = Bro.query.filter_by(id=bro_id).first()
+        if broup_objects is None or remove_broup is None or remove_bro is None:
+            emit("message_event_change_broup_remove_bro_failed", "broup finding failed", room=request.sid)
+        else:
+            remove_bromotion = remove_bro.get_bromotion()
+            for broup in broup_objects:
+                broup_name = remove_last_occur(broup.get_broup_name(), remove_bromotion)
+                broup.set_broup_name(broup_name)
+                broup.remove_bro(bro_id)
+                db.session.add(broup)
+
+            db.session.delete(remove_broup)
+            db.session.commit()
+
+            broup_room = "broup_%s" % broup_id
+            emit("message_event_broup_changed", "there was an update to a broup!", room=broup_room)
+
+            emit("message_event_change_broup_remove_bro_success",
+                 {
+                     "result": True,
+                     "old_bro": bro_id
+                 },
+                 room=request.sid)
 
