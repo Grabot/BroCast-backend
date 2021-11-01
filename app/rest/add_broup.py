@@ -23,13 +23,11 @@ class AddBroup(Resource):
 
     # noinspection PyMethodMayBeStatic
     def post(self):
-        print("adding a new broup")
         json_data = request.get_json(force=True)
 
         token = json_data["token"]
         logged_in_bro = Bro.verify_auth_token(token)
         if not logged_in_bro:
-            print("there was a problem")
             return {
                 "result": False,
                 "message": "Your credentials are not valid."

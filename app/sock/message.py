@@ -56,7 +56,6 @@ def send_message(data):
 
 
 def send_message_broup(data):
-    print("sending message in a broup")
     bro_id = data["bro_id"]
     broup_id = data["broup_id"]
     message = data["message"]

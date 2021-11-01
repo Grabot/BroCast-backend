@@ -19,6 +19,10 @@ from app.sock.chat_details import change_broup_colour
 from app.sock.chat_admins import change_broup_add_admin
 from app.sock.chat_admins import change_broup_dismiss_admin
 from app.sock.chat_admins import change_broup_remove_bro
+from app.sock.sock_add import add_bro
+from app.sock.sock_add import add_broup
+from app.sock.sock_add import add_bro_to_broup
+
 
 class NamespaceSock(Namespace):
 
@@ -183,25 +187,15 @@ class NamespaceSock(Namespace):
 
     # noinspection PyMethodMayBeStatic
     def on_message_event_add_bro(self, data):
-        token = data["token"]
-        bros_bro_id = data["bros_bro_id"]
-        logged_in_bro = Bro.verify_auth_token(token)
-        if logged_in_bro:
-            bro_to_be_added = Bro.query.filter_by(id=bros_bro_id).first()
-            if bro_to_be_added:
-                if bro_to_be_added.id != logged_in_bro.id:
-                    logged_in_bro.add_bro(bro_to_be_added)
-                    bro_to_be_added.add_bro(logged_in_bro)
-                    db.session.commit()
-                    bro_room = "room_%s" % bro_to_be_added.id
-                    emit("message_event_add_bro_success", "bro was added!", room=request.sid)
-                    emit("message_event_bro_added_you", "a bro has added you!", room=bro_room)
-                else:
-                    emit("message_event_add_bro_failed", "You tried to add yourself", room=request.sid)
-            else:
-                emit("message_event_add_bro_failed", "failed to add bro", room=request.sid)
-        else:
-            emit("message_event_add_bro_failed", "failed to add bro", room=request.sid)
+        add_bro(data)
+
+    # noinspection PyMethodMayBeStatic
+    def on_message_event_add_broup(self, data):
+        add_broup(data)
+
+    # noinspection PyMethodMayBeStatic
+    def on_message_event_add_bro_to_broup(self, data):
+        add_bro_to_broup(data)
 
 
 socks.on_namespace(NamespaceSock('/api/v1.0/sock'))

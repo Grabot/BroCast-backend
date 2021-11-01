@@ -32,7 +32,6 @@ class GetMessagesBroup(Resource):
                 "message": "Your credentials are not valid."
             }
 
-        print("getting messages of a broup")
         chat = Broup.query.filter_by(broup_id=broup_id, bro_id=logged_in_bro.id).first()
         if chat is None:
             return {

@@ -31,6 +31,31 @@ class Broup(db.Model):
     def set_admins(self, bro_admin_ids):
         self.bro_admin_ids = bro_admin_ids
 
+    def get_bro_id(self):
+        return self.bro_id
+
+    def get_broup_name(self):
+        return self.broup_name
+
+    def set_broup_name(self, broup_name):
+        self.broup_name = broup_name
+
+    def get_broup_colour(self):
+        return self.broup_colour
+
+    def add_participant(self, bro_id):
+        if self.bro_ids is None:
+            self.bro_ids = []
+        old_bros = self.bro_ids
+        new_bros = []
+        for old in old_bros:
+            new_bros.append(old)
+        new_bros.append(bro_id)
+        self.bro_ids = new_bros
+
+    def get_participants(self):
+        return self.bro_ids
+
     def add_admin(self, bro_id):
         if self.bro_admin_ids is None:
             self.bro_admin_ids = []
@@ -68,6 +93,9 @@ class Broup(db.Model):
 
     def update_description(self, description):
         self.broup_description = description
+
+    def get_broup_description(self):
+        return self.broup_description
 
     def update_alias(self, alias):
         self.alias = alias

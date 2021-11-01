@@ -1,12 +1,16 @@
+from app.models.bro import Bro
+from app import db
+from app.models.broup import Broup
 from app.rest import app_api
 from flask_restful import Api
 from flask_restful import Resource
 from flask import request
 from json import loads
-from app.models.bro import Bro
+from sqlalchemy import func
+import random
 
 
-class GetBroupBros(Resource):
+class AddBroToBroup(Resource):
 
     def get(self):
         pass
@@ -20,6 +24,7 @@ class GetBroupBros(Resource):
     # noinspection PyMethodMayBeStatic
     def post(self):
         json_data = request.get_json(force=True)
+
         token = json_data["token"]
         logged_in_bro = Bro.verify_auth_token(token)
         if not logged_in_bro:
@@ -28,29 +33,26 @@ class GetBroupBros(Resource):
                 "message": "Your credentials are not valid."
             }
 
-        participants = loads(json_data["participants"])
+        broup_id = json_data["broup_id"]
+        bro_id = json_data["bro_id"]
 
-        if not participants:
+        broup_objects = Broup.query.filter_by(broup_id=broup_id)
+        if broup_objects is None:
             return {
                 "result": False,
-                "message": "Something went wrong."
+                "message": "Could not find broup."
             }
+        else:
+            for broup in broup_objects:
+                db.session.add(broup)
 
-        bros = []
-        for part in participants:
-            bro_for_broup = Bro.query.filter_by(id=part).first()
-            if bro_for_broup is None:
-                return {
-                    'result': False
-                }
-            bros.append(bro_for_broup)
+            db.session.commit()
 
-        bro_list = [bro.serialize for bro in bros]
         return {
-                "result": True,
-                "bro_list": bro_list
-            }
+            'result': True,
+            "message": "Congratulations, the bro was added"
+        }, 200
 
 
 api = Api(app_api)
-api.add_resource(GetBroupBros, '/api/v1.2/get/broup_bros', endpoint='get_broup_bros')
+api.add_resource(AddBroToBroup, '/api/v1.2/add_bro_to_broup', endpoint='add_bro_to_broup')

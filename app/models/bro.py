@@ -70,6 +70,9 @@ class Bro(db.Model):
     def set_bromotion(self, bromotion):
         self.bromotion = bromotion
 
+    def get_bromotion(self):
+        return self.bromotion
+
     def get_full_name(self):
         return self.bro_name + " " + self.bromotion
 
@@ -103,16 +106,16 @@ class Bro(db.Model):
             )
             db.session.add(b)
 
-    def add_broup(self, broup_name, broup_id, bro_ids, broup_colour, admins):
+    def add_broup(self, broup_name, broup_id, bro_ids, broup_colour, admins, description=""):
         b = Broup(
             broup_id=broup_id,
             bro_id=self.id,
             bro_ids=bro_ids,
             bro_admin_ids=admins,
             broup_name=broup_name,
-            broup_description="",
+            broup_description=description,
             broup_colour=broup_colour,
-            room_name="1",
+            room_name="broup_%s" % broup_id,
             unread_messages=0,
             last_time_activity=datetime.utcnow(),
             blocked=False,
