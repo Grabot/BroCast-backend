@@ -65,19 +65,25 @@ def add_broup(data):
             bro.add_broup(broup_name, broup_id, bro_ids, broup_colour, admins)
 
         db.session.commit()
+
+        for part in participants:
+            room = "room_%s" % part
+            emit("message_event_added_to_broup", "you got added to a broup!", room=room)
+
         emit("message_event_add_broup_success", "broup was added!", room=request.sid)
-        # TODO: @Skools send broup creation update to all participants.
         return
 
 
 def add_bro_to_broup(data):
     token = data["token"]
     logged_in_bro = Bro.verify_auth_token(token)
+    print("adding bro to the broup")
     if not logged_in_bro:
         emit("message_event_add_bro_to_broup_failed", "adding bro to broup failed", room=request.sid)
     else:
         broup_id = data["broup_id"]
         bro_id = data["bro_id"]
+        print("broup %s and bro %s" % (broup_id, bro_id))
 
         broup_objects = Broup.query.filter_by(broup_id=broup_id)
         if broup_objects is None:
@@ -108,6 +114,9 @@ def add_bro_to_broup(data):
             new_bro_for_broup.add_broup(broup_name, broup_id, bro_ids, broup_colour, admins, broup_description)
 
             db.session.commit()
+
+            broup_room = "broup_%s" % broup_id
+            emit("message_event_broup_changed", "there was an update to a broup!", room=broup_room)
 
             chat = Broup.query.filter_by(broup_id=broup_id, bro_id=logged_in_bro.id).first()
             if not chat:

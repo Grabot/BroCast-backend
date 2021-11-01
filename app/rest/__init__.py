@@ -17,10 +17,9 @@ from app.rest import block_bro
 from app.rest import report_bro
 from app.rest import remove_bro
 from app.rest import read_logs
-from app.rest import add_broup
 from app.rest import get_messages_broup
 from app.rest import get_broup_bros
-from app.rest import add_bro_to_broup
+from app.rest import get_broup
 
 
 @app_api.route("/privacy")

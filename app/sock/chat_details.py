@@ -1,6 +1,6 @@
 from flask import request
 from flask_socketio import emit
-from app.models.bro import Bro
+from app.models.bro import Bro, get_a_room_you_two
 from app.models.bro_bros import BroBros
 from app import db
 from app.models.broup import Broup
@@ -25,7 +25,12 @@ def change_chat_details(data):
             chat2.update_description(description)
             db.session.add(chat2)
             db.session.commit()
-            emit("message_event_change_chat_details_success", "chat updated successfully", room=request.sid)
+            room = get_a_room_you_two(logged_in_bro.id, bros_bro_id)
+            emit("message_event_change_chat_details_success",
+                 {
+                     "result": True,
+                     "description": description
+                 }, room=room)
 
 
 def change_chat_alias(data):
@@ -57,7 +62,7 @@ def change_chat_colour(data):
         emit("message_event_change_chat_colour_failed", "token authentication failed", room=request.sid)
     else:
         chat1 = BroBros.query.filter_by(bro_id=logged_in_bro.id, bros_bro_id=bros_bro_id).first()
-        chat2 = BroBros.query.filter_by(bro_id=logged_in_bro.id, bros_bro_id=bros_bro_id).first()
+        chat2 = BroBros.query.filter_by(bro_id=bros_bro_id, bros_bro_id=logged_in_bro.id).first()
         if chat1 is None or chat2 is None:
             emit("message_event_change_chat_colour_failed", "chat colour change failed", room=request.sid)
         else:
@@ -66,7 +71,12 @@ def change_chat_colour(data):
             chat2.update_colour(colour)
             db.session.add(chat2)
             db.session.commit()
-            emit("message_event_change_chat_colour_success", "chat colour updated successfully", room=request.sid)
+            room = get_a_room_you_two(logged_in_bro.id, bros_bro_id)
+            emit("message_event_change_chat_colour_success",
+                 {
+                     "result": True,
+                     "colour": colour
+                 }, room=room)
 
 
 def change_broup_details(data):
@@ -86,7 +96,12 @@ def change_broup_details(data):
                 broup.update_description(description)
                 db.session.add(broup)
             db.session.commit()
-            emit("message_event_change_broup_details_success", "broup updated successfully", room=request.sid)
+            broup_room = "broup_%s" % broup_id
+            emit("message_event_change_broup_details_success",
+                 {
+                     "result": True,
+                     "description": description
+                 }, room=broup_room)
 
 
 def change_broup_alias(data):
@@ -125,5 +140,10 @@ def change_broup_colour(data):
                 broup.update_colour(colour)
                 db.session.add(broup)
             db.session.commit()
-            emit("message_event_change_broup_colour_success", "broup colour updated successfully", room=request.sid)
+            broup_room = "broup_%s" % broup_id
+            emit("message_event_change_broup_colour_success",
+                 {
+                     "result": True,
+                     "colour": colour
+                 }, room=broup_room)
 
