@@ -192,3 +192,45 @@ def change_bromotion(data):
             db.session.add(logged_in_bro)
             db.session.commit()
             emit("message_event_bromotion_change", "bromotion change successful", room=request.sid)
+
+
+def mute_broup(data):
+    token = data["token"]
+    broup_id = data["broup_id"]
+    bro_id = data["bro_id"]
+    mute_time = data["mute"]
+    mute = True
+    if mute_time == -1:
+        mute = False
+    logged_in_bro = Bro.verify_auth_token(token)
+
+    print("going to mute a broup with time %s" % mute_time)
+    print(mute)
+
+    if mute_time == 0:
+        # Muting for 8 hours (60*60*8) seconds
+        print("%s" % 28800)
+    elif mute_time == 1:
+        # Muting for a week (60 * 60 * 24 * 7) seconds
+        print("%s" % 604800)
+    elif mute_time == 2:
+        # TODO: Skools remove! This is for testing.
+        print("testing")
+
+    print("set an alarm?")
+    if logged_in_bro is None:
+        emit("message_event_change_broup_mute_failed", "token authentication failed", room=request.sid)
+    else:
+        broup_of_bro = Broup.query.filter_by(broup_id=broup_id, bro_id=bro_id).first()
+        if broup_of_bro is None:
+            emit("message_event_change_broup_mute_failed", "broup finding failed", room=request.sid)
+        else:
+            broup_of_bro.mute_broup(mute)
+            db.session.commit()
+            print("muting went fine.")
+            emit("message_event_change_broup_mute_success",
+                 {
+                     "result": True,
+                     "mute": mute
+                 }, room=request.sid)
+

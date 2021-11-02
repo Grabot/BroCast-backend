@@ -22,6 +22,7 @@ class BroBros(db.Model):
     last_time_activity = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     unread_messages = db.Column(db.Integer)
     blocked = db.Column(db.Boolean, default=False)
+    mute = db.Column(db.Boolean, default=False)
     removed = db.Column(db.Boolean, default=False)
     blocked_timestamps = db.Column(types.ARRAY(db.DateTime))
 
@@ -48,6 +49,12 @@ class BroBros(db.Model):
 
     def is_blocked(self):
         return self.blocked
+
+    def mute_chat(self, mute):
+        self.mute = mute
+
+    def is_muted(self):
+        return self.mute
 
     def bro_removed(self):
         self.removed = True
@@ -83,6 +90,7 @@ class BroBros(db.Model):
             'unread_messages': self.unread_messages,
             'last_time_activity': self.last_time_activity.strftime('%Y-%m-%dT%H:%M:%S.%f'),
             'room_name': self.room_name,
-            'blocked': self.blocked
+            'blocked': self.blocked,
+            'mute': self.mute
         }
 

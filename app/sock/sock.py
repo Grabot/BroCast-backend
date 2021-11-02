@@ -16,6 +16,7 @@ from app.sock.chat_details import change_broup_details
 from app.sock.chat_details import change_broup_alias
 from app.sock.chat_details import change_broup_colour
 from app.sock.chat_details import change_bromotion
+from app.sock.chat_details import mute_broup
 from app.sock.chat_admins import change_broup_add_admin
 from app.sock.chat_admins import change_broup_dismiss_admin
 from app.sock.sock_add import change_broup_remove_bro
@@ -177,6 +178,10 @@ class NamespaceSock(Namespace):
     # noinspection PyMethodMayBeStatic
     def on_message_event_add_bro_to_broup(self, data):
         add_bro_to_broup(data)
+
+    # noinspection PyMethodMayBeStatic
+    def on_message_event_change_broup_mute(self, data):
+        mute_broup(data)
 
 
 socks.on_namespace(NamespaceSock('/api/v1.0/sock'))
