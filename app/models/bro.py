@@ -117,7 +117,7 @@ class Bro(db.Model):
             room_name="broup_%s" % broup_id,
             unread_messages=0,
             last_time_activity=datetime.utcnow(),
-            blocked=False,
+            mute=False,
             removed=False
         )
         db.session.add(b)

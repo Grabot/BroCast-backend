@@ -6,7 +6,6 @@ from flask import request
 from app import socks
 from app import db
 from app.models.bro import get_a_room_you_two, Bro
-from app.models.bro_bros import BroBros
 from app.sock.message import send_message, send_message_broup
 from app.sock.last_read_time import update_read_time
 from app.sock.last_read_time import update_read_time_broup
@@ -16,6 +15,7 @@ from app.sock.chat_details import change_chat_colour
 from app.sock.chat_details import change_broup_details
 from app.sock.chat_details import change_broup_alias
 from app.sock.chat_details import change_broup_colour
+from app.sock.chat_details import change_bromotion
 from app.sock.chat_admins import change_broup_add_admin
 from app.sock.chat_admins import change_broup_dismiss_admin
 from app.sock.sock_add import change_broup_remove_bro
@@ -149,26 +149,7 @@ class NamespaceSock(Namespace):
 
     # noinspection PyMethodMayBeStatic
     def on_bromotion_change(self, data):
-        token = data["token"]
-        logged_in_bro = Bro.verify_auth_token(token)
-
-        if logged_in_bro is None:
-            emit("message_event_bromotion_change", "token authentication failed", room=request.sid)
-        else:
-            new_bromotion = data["bromotion"]
-            if Bro.query.filter_by(bro_name=logged_in_bro.bro_name, bromotion=new_bromotion).first() is not None:
-                emit("message_event_bromotion_change", "broName bromotion combination taken", room=request.sid)
-            else:
-                logged_in_bro.set_bromotion(new_bromotion)
-                all_chats = BroBros.query.filter_by(bros_bro_id=logged_in_bro.id).all()
-
-                for chat in all_chats:
-                    chat.chat_name = logged_in_bro.get_full_name()
-                    db.session.add(chat)
-
-                db.session.add(logged_in_bro)
-                db.session.commit()
-                emit("message_event_bromotion_change", "bromotion change successful", room=request.sid)
+        change_bromotion(data)
 
     # noinspection PyMethodMayBeStatic
     def on_password_change(self, data):

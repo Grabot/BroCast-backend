@@ -21,9 +21,21 @@ class Broup(db.Model):
     last_message_read_time_bro = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     last_time_activity = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     unread_messages = db.Column(db.Integer)
-    blocked = db.Column(db.Boolean, default=False)
+    mute = db.Column(db.Boolean, default=False)
     removed = db.Column(db.Boolean, default=False)
     blocked_timestamps = db.Column(types.ARRAY(db.DateTime))
+
+    def update_last_message_read_time_bro(self, read_time):
+        self.last_message_read_time_bro = read_time
+
+    def get_last_message_read_time_bro(self):
+        return self.last_message_read_time_bro
+
+    def update_unread_messages(self):
+        self.unread_messages += 1
+
+    def read_messages(self):
+        self.unread_messages = 0
 
     def get_admins(self):
         return self.bro_admin_ids
@@ -103,6 +115,18 @@ class Broup(db.Model):
     def update_colour(self, colour):
         self.broup_colour = colour
 
+    def mute_broup(self, mute):
+        self.mute = mute
+
+    def is_muted(self):
+        return self.mute
+
+    def broup_removed(self):
+        self.removed = True
+
+    def is_removed(self):
+        return self.removed
+
     @property
     def serialize(self):
         return {
@@ -117,5 +141,5 @@ class Broup(db.Model):
             'unread_messages': self.unread_messages,
             'last_time_activity': self.last_time_activity.strftime('%Y-%m-%dT%H:%M:%S.%f'),
             'room_name': self.room_name,
-            'blocked': self.blocked
+            'mute': self.mute
         }

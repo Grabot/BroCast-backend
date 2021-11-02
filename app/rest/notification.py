@@ -56,3 +56,66 @@ def send_notification(data):
               "Let's hope this never happens")
 
 
+def send_notification_broup(bro_ids, message_body, chat):
+    print("sending notifications to a whole broup")
+    bro_registration_ids_android = []
+    bro_registration_ids_other = []
+    for bro_id in bro_ids:
+        bro_to_notify = Bro.query.filter_by(id=bro_id).first()
+        if bro_to_notify is not None \
+                and bro_to_notify.get_registration_id() != "" \
+                and bro_to_notify.get_device_type() != "":
+            if bro_to_notify.get_device_type() == "Android":
+                bro_registration_ids_android.append(bro_to_notify.get_registration_id())
+            else:
+                bro_registration_ids_other.append(bro_to_notify.get_registration_id())
+
+    try:
+        if len(bro_registration_ids_android) >= 2:
+            print("sending to multiple androids")
+            print(bro_registration_ids_android)
+            data_message = {
+                "chat": chat,
+                "message_body": message_body
+            }
+
+            push_service.notify_multiple_devices(
+                registration_ids=bro_registration_ids_android,
+                data_message=data_message
+            )
+        elif len(bro_registration_ids_android) == 1:
+            print("sending to single androids")
+            data_message = {
+                "chat": chat,
+                "message_body": message_body
+            }
+
+            push_service.single_device_data_message(
+                registration_id=bro_registration_ids_android[0],
+                data_message=data_message
+            )
+        if len(bro_registration_ids_other) >= 2:
+            print("sending to multiple others")
+            print(bro_registration_ids_other)
+            push_service.notify_multiple_devices(
+                registration_ids=bro_registration_ids_other,
+                message_title=chat["chat_name"],
+                message_body=message_body
+            )
+        elif len(bro_registration_ids_other) == 1:
+            print("sending to single other")
+            push_service.notify_single_device(
+                registration_id=bro_registration_ids_other[0],
+                message_title=chat["chat_name"],
+                message_body=message_body
+            )
+    except AuthenticationError:
+        print("There was a big issue with the firebase key. Fix it, quick!")
+    except FCMServerError:
+        print("Something was wrong with the firebase server. Let's hope they fix it fast")
+    except InvalidDataError:
+        print("The message was not formatted correctly! Find out what happened!")
+    except InternalPackageError:
+        print("there was an error or something. Not in the package, but the package within the package? internally? "
+              "Let's hope this never happens")
+

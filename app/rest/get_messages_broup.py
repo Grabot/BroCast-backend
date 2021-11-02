@@ -1,12 +1,11 @@
 from datetime import datetime
-
 from flask import request
 from flask_restful import Api
 from flask_restful import Resource
-
 from app.models.bro import Bro
 from app.models.broup import Broup
 from app.models.broup_message import BroupMessage
+from app.sock.last_read_time import get_lowest_read_time_broup
 from app.rest import app_api
 
 
@@ -42,7 +41,7 @@ class GetMessagesBroup(Resource):
         messages = BroupMessage.query.filter_by(broup_id=broup_id).\
             order_by(BroupMessage.timestamp.desc()).paginate(page, 20, False).items
 
-        # TODO: @Skools Add mute functionality.
+        # TODO: @Skools Add block functionality.
         # if chat.has_been_blocked():
         #     blocked_timestamps = chat.get_blocked_timestamps()
         #     for b in range(0, len(blocked_timestamps), 2):
@@ -57,11 +56,10 @@ class GetMessagesBroup(Resource):
         if messages is None:
             return {'result': False}
 
-        # TODO: @Skools change this to work with broups. check all times? Pick the latests? (this is to show the blue checkmark)
-        # last_read_time = get_last_read_time_other_bro(logged_in_bro.id, bros_bro_id)
+        last_read_time = get_lowest_read_time_broup(broup_id, datetime.now())
         return {
             "result": True,
-            "last_read_time_bro": datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%f'),
+            "last_read_time_bro": last_read_time.strftime('%Y-%m-%dT%H:%M:%S.%f'),
             "message_list": [message.serialize for message in messages]
         }
 

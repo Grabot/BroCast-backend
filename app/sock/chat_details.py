@@ -147,3 +147,48 @@ def change_broup_colour(data):
                      "colour": colour
                  }, room=broup_room)
 
+
+def remove_last_occur(old_string, bromotion):
+    new_string = ''
+    length = len(old_string)
+
+    for i in range(length-1, 0, -1):
+        if old_string[i] == bromotion:
+            new_string = old_string[0:i] + old_string[i + 1:length]
+            break
+    return new_string
+
+
+def change_bromotion(data):
+    token = data["token"]
+    logged_in_bro = Bro.verify_auth_token(token)
+
+    if logged_in_bro is None:
+        emit("message_event_bromotion_change", "token authentication failed", room=request.sid)
+    else:
+        old_bromotion = logged_in_bro.get_bromotion()
+        new_bromotion = data["bromotion"]
+        if Bro.query.filter_by(bro_name=logged_in_bro.bro_name, bromotion=new_bromotion).first() is not None:
+            emit("message_event_bromotion_change", "broName bromotion combination taken", room=request.sid)
+        else:
+            logged_in_bro.set_bromotion(new_bromotion)
+            all_chats = BroBros.query.filter_by(bros_bro_id=logged_in_bro.id).all()
+            # update bromotion in the normal chats
+            for chat in all_chats:
+                chat.chat_name = logged_in_bro.get_full_name()
+                db.session.add(chat)
+
+            # update bromotion in all the broups this bro is a part of.
+            all_broups = Broup.query.filter_by(bro_id=logged_in_bro.id).all()
+            for brup in all_broups:
+                # We need to update all the broup objects of a single broup id
+                broups = Broup.query.filter_by(broup_id=brup.broup_id).all()
+                for broup in broups:
+                    broup_name = remove_last_occur(broup.get_broup_name(), old_bromotion)
+                    broup_name = broup_name + "" + new_bromotion
+                    broup.set_broup_name(broup_name)
+                    db.session.add(broup)
+
+            db.session.add(logged_in_bro)
+            db.session.commit()
+            emit("message_event_bromotion_change", "bromotion change successful", room=request.sid)

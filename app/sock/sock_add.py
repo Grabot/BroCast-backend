@@ -7,6 +7,7 @@ from sqlalchemy import func
 import random
 
 from app.models.broup import Broup
+from app.models.broup_message import BroupMessage
 
 
 def add_bro(data):
@@ -163,7 +164,18 @@ def change_broup_remove_bro(data):
                 broup.remove_bro(bro_id)
                 db.session.add(broup)
 
-            db.session.delete(remove_broup)
+            # It's possible, that the user left the broup and that there are no more bros left.
+            # In this case we will remove all the messages
+            if len(remove_broup.get_participants()) == 0:
+                messages = BroupMessage.query.filter_by(broup_id=broup_id)
+                for message in messages:
+                    db.session.delete(message)
+                remove_broup.broup_removed()
+                db.session.add(remove_broup)
+            else:
+                # We'll only remove the whole row if there are still bro's left in the broup
+                # If it was the last bro, we leave an empty broup shell in the database for functional reasons
+                db.session.delete(remove_broup)
             db.session.commit()
 
             broup_room = "broup_%s" % broup_id

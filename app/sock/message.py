@@ -1,11 +1,12 @@
 from datetime import datetime
-
+from flask import request
 from app import db
 from app.models.bro_bros import BroBros
 from app.models.broup import Broup
 from app.models.broup_message import BroupMessage
 from app.models.message import Message
 from app.rest.notification import send_notification
+from app.rest.notification import send_notification_broup
 from app.models.bro import get_a_room_you_two
 from flask_socketio import emit
 
@@ -61,8 +62,6 @@ def send_message_broup(data):
     message = data["message"]
     text_message = data["text_message"]
 
-    broup = Broup.query.filter_by(broup_id=broup_id, bro_id=bro_id).first()
-
     broup_message = BroupMessage(
         sender_id=bro_id,
         broup_id=broup_id,
@@ -71,17 +70,36 @@ def send_message_broup(data):
         timestamp=datetime.utcnow()
     )
 
-    # TODO: @Skools add a way to find out which bro should not get a notification (blocking, muting etc.)
-    if broup is not None:
+    broup_objects = Broup.query.filter_by(broup_id=broup_id)
+    if broup_objects is None:
+        emit("message_event_send_broup", "broup finding failed", room=request.sid)
+    else:
+        bro_ids = []
+        chat = ""
+        for broup in broup_objects:
+            if broup.bro_id == bro_id:
+                # The bro that send the message obviously also read it.
+                read_time = datetime.utcnow()
+                broup.update_last_message_read_time_bro(read_time)
+                # This should be the same for all broup objects
+                bro_ids = broup.get_participants()
+                chat = broup.serialize
+            else:
+                # The other bro's now gets an extra unread message and their chat is moved to the top of their list.
+                broup.update_unread_messages()
 
-        # TODO: SKools add functionality to send notifications to all broup members
-        broup.update_last_activity()
-        db.session.add(broup)
+            broup.update_last_activity()
+            db.session.add(broup)
+
+        send_notification_broup(bro_ids, message, chat)
         broup_room = "broup_%s" % broup_id
         emit("message_event_send", broup_message.serialize, room=broup_room)
-        # TODO: @Skools find all solo rooms for broup bros
-        # room_solo_other_bro = "room_%s" % bros_bro_id
-        # emit("message_event_send_solo", bro_message.serialize, room=room_solo_other_bro)
+        print("sending notification via socket to all bro's")
+        for other_bro_id in bro_ids:
+            if other_bro_id != bro_id:
+                solo_room = "room_%s" % other_bro_id
+                print("sending broup update to room %s" % solo_room)
+                emit("message_event_send_solo", broup_message.serialize, room=solo_room)
 
     db.session.add(broup_message)
     db.session.commit()
