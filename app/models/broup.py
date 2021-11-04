@@ -22,8 +22,8 @@ class Broup(db.Model):
     last_time_activity = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     unread_messages = db.Column(db.Integer)
     mute = db.Column(db.Boolean, default=False)
+    mute_timestamp = db.Column(db.DateTime)
     removed = db.Column(db.Boolean, default=False)
-    blocked_timestamps = db.Column(types.ARRAY(db.DateTime))
 
     def update_last_message_read_time_bro(self, read_time):
         self.last_message_read_time_bro = read_time
@@ -126,6 +126,12 @@ class Broup(db.Model):
 
     def is_removed(self):
         return self.removed
+
+    def get_mute_timestamp(self):
+        return self.mute_timestamp
+
+    def set_mute_timestamp(self, mute_timestamp):
+        self.mute_timestamp = mute_timestamp
 
     @property
     def serialize(self):

@@ -5,8 +5,8 @@ from app.models.bro_bros import BroBros
 from app.models.broup import Broup
 from app.models.broup_message import BroupMessage
 from app.models.message import Message
-from app.rest.notification import send_notification
-from app.rest.notification import send_notification_broup
+from app.sock.notification import send_notification
+from app.sock.notification import send_notification_broup
 from app.models.bro import get_a_room_you_two
 from flask_socketio import emit
 
@@ -91,7 +91,7 @@ def send_message_broup(data):
             broup.update_last_activity()
             db.session.add(broup)
 
-        send_notification_broup(bro_ids, message, chat)
+        send_notification_broup(bro_ids, message, chat, broup_objects, bro_id)
         broup_room = "broup_%s" % broup_id
         emit("message_event_send", broup_message.serialize, room=broup_room)
         print("sending notification via socket to all bro's")

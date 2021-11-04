@@ -1,15 +1,15 @@
+from datetime import datetime
 from app.config import Config
 from app.models.bro import Bro
 from app.models.bro_bros import BroBros
 from pyfcm import FCMNotification
 from pyfcm.errors import AuthenticationError, FCMServerError, InvalidDataError, InternalPackageError
-
+from app import db
 
 push_service = FCMNotification(api_key=Config.NOTIFICATION_KEY)
 
 
 def send_notification(data):
-
     bro_id = data["bro_id"]
     bros_bro_id = data["bros_bro_id"]
 
@@ -30,10 +30,13 @@ def send_notification(data):
     device_type_bro_to_notify = bro_to_notify.get_device_type()
     try:
         if device_type_bro_to_notify == "Android":
+            print("android type")
             data_message = {
                 "chat": chat,
                 "message_body": message_body
             }
+            print("data message")
+            print(data_message)
 
             push_service.single_device_data_message(
                 registration_id=registration_id,
@@ -56,20 +59,33 @@ def send_notification(data):
               "Let's hope this never happens")
 
 
-def send_notification_broup(bro_ids, message_body, chat):
+def send_notification_broup(bro_ids, message_body, chat, broup_objects, me_id):
     print("sending notifications to a whole broup")
     bro_registration_ids_android = []
     bro_registration_ids_other = []
     for bro_id in bro_ids:
         bro_to_notify = Bro.query.filter_by(id=bro_id).first()
+        broup = [br for br in broup_objects if br.bro_id == bro_id]
         if bro_to_notify is not None \
+                and broup is not None and broup[0] is not None \
+                and bro_to_notify.id != me_id \
                 and bro_to_notify.get_registration_id() != "" \
                 and bro_to_notify.get_device_type() != "":
             if bro_to_notify.get_device_type() == "Android":
-                bro_registration_ids_android.append(bro_to_notify.get_registration_id())
+                if broup[0].is_muted():
+                    if broup[0].get_mute_timestamp() and broup[0].get_mute_timestamp() < datetime.now().utcnow():
+                        print("the bro had it muted temporarily and the time has run out!")
+                        broup[0].set_mute_timestamp(None)
+                        broup[0].mute_broup(False)
+                        bro_registration_ids_android.append(bro_to_notify.get_registration_id())
+                        db.session.add(broup[0])
+                    else:
+                        print("the bro had it muted, but it shouldn't be unmuted yet.")
+                else:
+                    bro_registration_ids_android.append(bro_to_notify.get_registration_id())
             else:
                 bro_registration_ids_other.append(bro_to_notify.get_registration_id())
-
+    db.session.commit()
     try:
         if len(bro_registration_ids_android) >= 2:
             print("sending to multiple androids")
@@ -85,6 +101,7 @@ def send_notification_broup(bro_ids, message_body, chat):
             )
         elif len(bro_registration_ids_android) == 1:
             print("sending to single androids")
+            print(bro_registration_ids_android)
             data_message = {
                 "chat": chat,
                 "message_body": message_body
@@ -118,4 +135,3 @@ def send_notification_broup(bro_ids, message_body, chat):
     except InternalPackageError:
         print("there was an error or something. Not in the package, but the package within the package? internally? "
               "Let's hope this never happens")
-

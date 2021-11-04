@@ -24,6 +24,7 @@ class BroBros(db.Model):
     blocked = db.Column(db.Boolean, default=False)
     mute = db.Column(db.Boolean, default=False)
     removed = db.Column(db.Boolean, default=False)
+    mute_timestamp = db.Column(db.DateTime)
     blocked_timestamps = db.Column(types.ARRAY(db.DateTime))
 
     def update_unread_messages(self):
@@ -76,6 +77,12 @@ class BroBros(db.Model):
 
     def has_been_blocked(self):
         return self.blocked_timestamps is not None and len(self.blocked_timestamps) >= 1
+
+    def get_mute_timestamp(self):
+        return self.mute_timestamp
+
+    def set_mute_timestamp(self, mute_timestamp):
+        self.mute_timestamp = mute_timestamp
 
     @property
     def serialize(self):

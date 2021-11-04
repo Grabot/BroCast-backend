@@ -3,6 +3,7 @@ from flask_socketio import emit
 from app.models.bro import Bro, get_a_room_you_two
 from app.models.bro_bros import BroBros
 from app import db
+from datetime import datetime, timedelta
 from app.models.broup import Broup
 
 
@@ -199,25 +200,24 @@ def mute_broup(data):
     broup_id = data["broup_id"]
     bro_id = data["bro_id"]
     mute_time = data["mute"]
-    mute = True
-    if mute_time == -1:
-        mute = False
+
     logged_in_bro = Bro.verify_auth_token(token)
 
-    print("going to mute a broup with time %s" % mute_time)
-    print(mute)
-
-    if mute_time == 0:
-        # Muting for 8 hours (60*60*8) seconds
-        print("%s" % 28800)
+    mute = True
+    unmute_date = None
+    if mute_time == -1:
+        mute = False
+    elif mute_time == 0:
+        unmute_date = datetime.now().utcnow() + timedelta(hours=1)
     elif mute_time == 1:
-        # Muting for a week (60 * 60 * 24 * 7) seconds
-        print("%s" % 604800)
+        unmute_date = datetime.now().utcnow() + timedelta(hours=8)
     elif mute_time == 2:
-        # TODO: Skools remove! This is for testing.
-        print("testing")
+        unmute_date = datetime.now().utcnow() + timedelta(days=7)
+    elif mute_time == 3:
+        # TODO: Remove this is for testing
+        unmute_date = datetime.now().utcnow() + timedelta(minutes=2)
+        print("we are muting the chat untill %s utc time" % unmute_date)
 
-    print("set an alarm?")
     if logged_in_bro is None:
         emit("message_event_change_broup_mute_failed", "token authentication failed", room=request.sid)
     else:
@@ -226,8 +226,13 @@ def mute_broup(data):
             emit("message_event_change_broup_mute_failed", "broup finding failed", room=request.sid)
         else:
             broup_of_bro.mute_broup(mute)
+            if not mute:
+                broup_of_bro.set_mute_timestamp(None)
+            if unmute_date:
+                broup_of_bro.set_mute_timestamp(unmute_date)
+                print("setting the date now")
+            db.session.add(broup_of_bro)
             db.session.commit()
-            print("muting went fine.")
             emit("message_event_change_broup_mute_success",
                  {
                      "result": True,
