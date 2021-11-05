@@ -39,7 +39,6 @@ def change_chat_alias(data):
     bros_bro_id = data["bros_bro_id"]
     alias = data["alias"]
     logged_in_bro = Bro.verify_auth_token(token)
-    print("updating alias for chat")
     if logged_in_bro is None:
         emit("message_event_change_chat_alias_failed", "token authentication failed", room=request.sid)
     else:
@@ -196,7 +195,6 @@ def change_bromotion(data):
 
 
 def mute_broup(data):
-    print("broup mute")
     token = data["token"]
     broup_id = data["broup_id"]
     bro_id = data["bro_id"]
@@ -214,10 +212,6 @@ def mute_broup(data):
         unmute_date = datetime.now().utcnow() + timedelta(hours=8)
     elif mute_time == 2:
         unmute_date = datetime.now().utcnow() + timedelta(days=7)
-    elif mute_time == 3:
-        # TODO: Remove this is for testing
-        unmute_date = datetime.now().utcnow() + timedelta(minutes=2)
-        print("we are muting the broup untill %s utc time" % unmute_date)
 
     if logged_in_bro is None:
         emit("message_event_change_broup_mute_failed", "token authentication failed", room=request.sid)
@@ -231,18 +225,17 @@ def mute_broup(data):
                 broup_of_bro.set_mute_timestamp(None)
             if unmute_date:
                 broup_of_bro.set_mute_timestamp(unmute_date)
-                print("setting the date now")
             db.session.add(broup_of_bro)
             db.session.commit()
             emit("message_event_change_broup_mute_success",
                  {
                      "result": True,
+                     "id": broup_of_bro.broup_id,
                      "mute": mute
                  }, room=request.sid)
 
 
 def mute_chat(data):
-    print("chat mute")
     token = data["token"]
     bro_id = data["bro_id"]
     bros_bro_id = data["bros_bro_id"]
@@ -260,10 +253,6 @@ def mute_chat(data):
         unmute_date = datetime.now().utcnow() + timedelta(hours=8)
     elif mute_time == 2:
         unmute_date = datetime.now().utcnow() + timedelta(days=7)
-    elif mute_time == 3:
-        # TODO: Remove this is for testing
-        unmute_date = datetime.now().utcnow() + timedelta(minutes=2)
-        print("we are muting the chat untill %s utc time" % unmute_date)
 
     if logged_in_bro is None:
         emit("message_event_change_chat_mute_failed", "token authentication failed", room=request.sid)
@@ -277,12 +266,12 @@ def mute_chat(data):
                 chat.set_mute_timestamp(None)
             if unmute_date:
                 chat.set_mute_timestamp(unmute_date)
-                print("setting the date now")
             db.session.add(chat)
             db.session.commit()
             emit("message_event_change_chat_mute_success",
                  {
                      "result": True,
+                     "id": chat.bros_bro_id,
                      "mute": mute
                  }, room=request.sid)
 

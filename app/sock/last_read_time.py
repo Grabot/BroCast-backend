@@ -53,7 +53,6 @@ def get_lowest_read_time_broup(broup_id, read_time):
 
 
 def update_read_time_broup(bro_id, broup_id, broup_room):
-    print("updating broup read time")
     broup_of_bro = Broup.query.filter_by(broup_id=broup_id, bro_id=bro_id).first()
     # We assume this won't happen
     if broup_of_bro is None:

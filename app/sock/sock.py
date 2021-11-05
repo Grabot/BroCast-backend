@@ -62,7 +62,6 @@ class NamespaceSock(Namespace):
         bro_id = data["bro_id"]
         broup_id = data["broup_id"]
         broup_room = "broup_%s" % broup_id
-        print("joining the broup room: %s" % broup_room)
         join_room(broup_room)
         update_read_time_broup(bro_id, broup_id, broup_room)
         emit("message_event", 'User has entered room %s' % broup_room, room=broup_room)
@@ -80,7 +79,6 @@ class NamespaceSock(Namespace):
         bro_id = data["bro_id"]
         broup_id = data["broup_id"]
         broup_room = "broup_%s" % broup_id
-        print("leaving the broup room: %s" % broup_room)
         leave_room(broup_room)
         emit("message_event", 'User has left room %s' % broup_room, room=broup_room)
 
