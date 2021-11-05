@@ -77,7 +77,6 @@ def send_message_broup(data):
         emit("message_event_send_broup", "broup finding failed", room=request.sid)
     else:
         bro_ids = []
-        chat = ""
         for broup in broup_objects:
             if broup.bro_id == bro_id:
                 # The bro that send the message obviously also read it.
@@ -85,7 +84,6 @@ def send_message_broup(data):
                 broup.update_last_message_read_time_bro(read_time)
                 # This should be the same for all broup objects
                 bro_ids = broup.get_participants()
-                chat = broup.serialize
             else:
                 # The other bro's now gets an extra unread message and their chat is moved to the top of their list.
                 broup.update_unread_messages()
@@ -94,16 +92,13 @@ def send_message_broup(data):
             broup.check_mute()
             db.session.add(broup)
 
-        send_notification_broup(bro_ids, message, chat, broup_objects, bro_id)
+        send_notification_broup(bro_ids, message, broup_id, broup_objects, bro_id)
         broup_room = "broup_%s" % broup_id
         emit("message_event_send", broup_message.serialize, room=broup_room)
-        print("sending notification via socket to all bro's")
         for other_bro_id in bro_ids:
             if other_bro_id != bro_id:
                 solo_room = "room_%s" % other_bro_id
-                print("sending broup update to room %s" % solo_room)
                 emit("message_event_send_solo", broup_message.serialize, room=solo_room)
 
     db.session.add(broup_message)
     db.session.commit()
-    print("message is send in broup. Send sock notification")

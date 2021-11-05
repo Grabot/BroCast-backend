@@ -20,23 +20,16 @@ class GetBroup(Resource):
 
     # noinspection PyMethodMayBeStatic
     def post(self):
-        print("getting the broup")
         json_data = request.get_json(force=True)
-        token = json_data["token"]
-        logged_in_bro = Bro.verify_auth_token(token)
+        bro_id = json_data["bro_id"]
         broup_id = json_data["broup_id"]
-        if not logged_in_bro:
-            return {
-                "result": False,
-                "message": "Your credentials are not valid."
-            }
-        if not broup_id:
+        if not broup_id or not bro_id:
             return {
                 "result": False,
                 "message": "Broup not found."
             }
 
-        chat = Broup.query.filter_by(broup_id=broup_id, bro_id=logged_in_bro.id).first()
+        chat = Broup.query.filter_by(broup_id=broup_id, bro_id=bro_id).first()
 
         if chat is None:
             return {

@@ -40,6 +40,9 @@ class Broup(db.Model):
     def get_admins(self):
         return self.bro_admin_ids
 
+    def get_alias(self):
+        return self.alias
+
     def set_admins(self, bro_admin_ids):
         self.bro_admin_ids = bro_admin_ids
 

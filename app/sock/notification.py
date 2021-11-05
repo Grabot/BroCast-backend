@@ -44,7 +44,10 @@ def send_notification(data):
     try:
         if device_type_bro_to_notify == "Android":
             data_message = {
-                "chat": chat,
+                "id": chat["bros_bro_id"],
+                "chat_name": chat["chat_name"],
+                "alias": chat["alias"],
+                "broup": False,
                 "message_body": message_body
             }
 
@@ -53,9 +56,12 @@ def send_notification(data):
                 data_message=data_message
             )
         else:
+            chat_name = chat["chat_name"]
+            if chat["alias"] is not None and chat["alias"] != "":
+                chat_name = chat["alias"]
             push_service.notify_single_device(
                 registration_id=registration_id,
-                message_title=chat["chat_name"],
+                message_title=chat_name,
                 message_body=message_body
             )
     except AuthenticationError:
@@ -69,10 +75,12 @@ def send_notification(data):
               "Let's hope this never happens")
 
 
-def send_notification_broup(bro_ids, message_body, chat, broup_objects, me_id):
-    print("sending notifications to a whole broup")
+def send_notification_broup(bro_ids, message_body, broup_id, broup_objects, me_id):
     bro_registration_ids_android = []
     bro_registration_ids_other = []
+    # It might happen that we only have 1 bro to send it too,
+    # in this case we have extra information we can send with the notification to make it easier
+    broup_android = None
     for bro_id in bro_ids:
         bro_to_notify = Bro.query.filter_by(id=bro_id).first()
         broup = [br for br in broup_objects if br.bro_id == bro_id]
@@ -87,15 +95,15 @@ def send_notification_broup(bro_ids, message_body, chat, broup_objects, me_id):
             if not broup[0].is_muted():
                 if bro_to_notify.get_device_type() == "Android":
                     bro_registration_ids_android.append(bro_to_notify.get_registration_id())
+                    broup_android = broup[0]
                 else:
-                    bro_registration_ids_other.append(bro_to_notify.get_registration_id())
+                    bro_registration_ids_other.append([bro_to_notify.get_registration_id(), broup[0]])
 
     try:
         if len(bro_registration_ids_android) >= 2:
-            print("sending to multiple androids")
-            print(bro_registration_ids_android)
             data_message = {
-                "chat": chat,
+                "id": broup_id,
+                "broup": True,
                 "message_body": message_body
             }
 
@@ -104,30 +112,42 @@ def send_notification_broup(bro_ids, message_body, chat, broup_objects, me_id):
                 data_message=data_message
             )
         elif len(bro_registration_ids_android) == 1:
-            print("sending to single androids")
-            print(bro_registration_ids_android)
             data_message = {
-                "chat": chat,
+                "id": broup_id,
+                "broup": True,
                 "message_body": message_body
             }
-
+            if broup_android is not None:
+                data_message = {
+                    "id": broup_id,
+                    "chat_name": broup_android.get_broup_name(),
+                    "alias": broup_android.get_alias(),
+                    "broup": True,
+                    "message_body": message_body
+                }
             push_service.single_device_data_message(
                 registration_id=bro_registration_ids_android[0],
                 data_message=data_message
             )
         if len(bro_registration_ids_other) >= 2:
-            print("sending to multiple others")
-            print(bro_registration_ids_other)
-            push_service.notify_multiple_devices(
-                registration_ids=bro_registration_ids_other,
-                message_title=chat["chat_name"],
-                message_body=message_body
-            )
+            for other_phone in bro_registration_ids_other:
+                title = other_phone[1].get_broup_name()
+                alias = other_phone[1].get_alias()
+                if alias != "":
+                    title = alias
+                push_service.notify_single_device(
+                    registration_id=other_phone[0],
+                    message_title=title,
+                    message_body=message_body
+                )
         elif len(bro_registration_ids_other) == 1:
-            print("sending to single other")
+            title = bro_registration_ids_other[0][1].get_broup_name()
+            alias = bro_registration_ids_other[0][1].get_alias()
+            if alias != "":
+                title = alias
             push_service.notify_single_device(
-                registration_id=bro_registration_ids_other[0],
-                message_title=chat["chat_name"],
+                registration_id=bro_registration_ids_other[0][0],
+                message_title=title,
                 message_body=message_body
             )
     except AuthenticationError:
