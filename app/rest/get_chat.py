@@ -1,7 +1,7 @@
 from flask import request
 from flask_restful import Api
 from flask_restful import Resource
-
+from app import db
 from app.models.bro_bros import BroBros
 from app.rest import app_api
 
@@ -34,6 +34,10 @@ class GetChat(Resource):
                 "result": False,
                 "message": "Chat not found."
             }
+
+        if chat.check_mute():
+            db.session.add(chat)
+            db.session.commit()
 
         return {
                 "result": True,

@@ -57,6 +57,13 @@ class BroBros(db.Model):
     def is_muted(self):
         return self.mute
 
+    def check_mute(self):
+        if self.mute_timestamp is not None and self.mute_timestamp < datetime.now().utcnow():
+            self.set_mute_timestamp(None)
+            self.mute_chat(False)
+            return True
+        return False
+
     def bro_removed(self):
         self.removed = True
 

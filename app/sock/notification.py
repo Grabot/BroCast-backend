@@ -30,14 +30,10 @@ def send_notification(data):
     if not bro_bros.is_muted():
         registration_id = bro_to_notify.get_registration_id()
     else:
-        # chat was muted, but maybe it can be unmuted
-        if bro_bros.get_mute_timestamp() and bro_bros.get_mute_timestamp() < datetime.now().utcnow():
-            print("the bro had it muted temporarily and the time has run out!")
-            bro_bros.set_mute_timestamp(None)
-            bro_bros.mute_chat(False)
+        if bro_bros.check_mute():
             db.session.add(bro_bros)
             db.session.commit()
-
+        if not bro_bros.is_muted():
             registration_id = bro_to_notify.get_registration_id()
 
     if registration_id is None:
@@ -85,25 +81,15 @@ def send_notification_broup(bro_ids, message_body, chat, broup_objects, me_id):
                 and bro_to_notify.id != me_id \
                 and bro_to_notify.get_registration_id() != "" \
                 and bro_to_notify.get_device_type() != "":
+            if broup[0].check_mute():
+                db.session.add(broup[0])
+                db.session.commit()
             if not broup[0].is_muted():
                 if bro_to_notify.get_device_type() == "Android":
                     bro_registration_ids_android.append(bro_to_notify.get_registration_id())
                 else:
                     bro_registration_ids_other.append(bro_to_notify.get_registration_id())
-            else:
-                # broup was muted, but maybe it can be unmuted
-                if broup[0].get_mute_timestamp() and broup[0].get_mute_timestamp() < datetime.now().utcnow():
-                    print("the bro had it muted temporarily and the time has run out!")
-                    broup[0].set_mute_timestamp(None)
-                    broup[0].mute_broup(False)
-                    db.session.add(broup[0])
 
-                    if bro_to_notify.get_device_type() == "Android":
-                        bro_registration_ids_android.append(bro_to_notify.get_registration_id())
-                    else:
-                        bro_registration_ids_other.append(bro_to_notify.get_registration_id())
-
-    db.session.commit()
     try:
         if len(bro_registration_ids_android) >= 2:
             print("sending to multiple androids")

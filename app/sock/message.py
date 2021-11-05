@@ -37,6 +37,7 @@ def send_message(data):
         # The other bro now gets an extra unread message
         other_bro_chat.update_unread_messages()
         other_bro_chat.update_last_activity()
+        other_bro_chat.check_mute()
         db.session.add(other_bro_chat)
 
         room = get_a_room_you_two(bro_id, bros_bro_id)
@@ -51,6 +52,7 @@ def send_message(data):
     # We update the activity on our own chat object as well
     own_chat.update_last_activity()
 
+    own_chat.check_mute()
     db.session.add(own_chat)
     db.session.add(bro_message)
     db.session.commit()
@@ -89,6 +91,7 @@ def send_message_broup(data):
                 broup.update_unread_messages()
 
             broup.update_last_activity()
+            broup.check_mute()
             db.session.add(broup)
 
         send_notification_broup(bro_ids, message, chat, broup_objects, bro_id)

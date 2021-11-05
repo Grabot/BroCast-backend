@@ -4,6 +4,7 @@ from flask_restful import Resource
 from app.models.bro import Bro
 from app.models.broup import Broup
 from app.rest import app_api
+from app import db
 
 
 class GetBroup(Resource):
@@ -36,11 +37,16 @@ class GetBroup(Resource):
             }
 
         chat = Broup.query.filter_by(broup_id=broup_id, bro_id=logged_in_bro.id).first()
+
         if chat is None:
             return {
                 "result": False,
                 "message": "Chat not found."
             }
+
+        if chat.check_mute():
+            db.session.add(chat)
+            db.session.commit()
 
         return {
                 "result": True,
