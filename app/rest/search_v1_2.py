@@ -50,4 +50,4 @@ class Search_v1_2(Resource):
 
 
 api = Api(app_api)
-api.add_resource(Search_v1_2, '/api/v1.2/search', endpoint='search')
+api.add_resource(Search_v1_2, '/api/v1.2/search', endpoint='search_v1_2')

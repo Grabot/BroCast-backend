@@ -8,7 +8,9 @@ from app.rest import register_v1_1
 from app.rest import login
 from app.rest import login_v1_1
 from app.rest import all
+from app.rest import all_v1_2
 from app.rest import search
+from app.rest import search_v1_2
 from app.rest import get_bros
 from app.rest import get_messages
 from app.rest import remove_registration

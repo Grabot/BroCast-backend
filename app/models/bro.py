@@ -4,7 +4,6 @@ from app.config import Config
 from app import db
 from app.models.bro_bros import BroBros
 from datetime import datetime
-import random
 from app.models.broup import Broup
 
 
