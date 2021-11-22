@@ -19,12 +19,15 @@ def add_bro(data):
         if bro_to_be_added:
             if bro_to_be_added.id != logged_in_bro.id:
                 chat_colour = '%02X%02X%02X' % (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
-                logged_in_bro.add_bro(bro_to_be_added, chat_colour)
+                bros_bro = logged_in_bro.add_bro(bro_to_be_added, chat_colour)
                 bro_to_be_added.add_bro(logged_in_bro, chat_colour)
                 db.session.commit()
                 bro_room = "room_%s" % bro_to_be_added.id
-                emit("message_event_add_bro_success", "bro was added!", room=request.sid)
-                emit("message_event_bro_added_you", "a bro has added you!", room=bro_room)
+                if bros_bro:
+                    emit("message_event_add_bro_success", bros_bro.serialize, room=request.sid)
+                    emit("message_event_bro_added_you", "a bro has added you!", room=bro_room)
+                else:
+                    emit("message_event_add_bro_failed", "Bro was already added", room=request.sid)
             else:
                 emit("message_event_add_bro_failed", "You tried to add yourself", room=request.sid)
         else:

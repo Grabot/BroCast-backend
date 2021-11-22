@@ -95,6 +95,7 @@ class Bro(db.Model):
                 bros_bro_id=bro.id,
                 chat_name=chat_name,
                 chat_description="",
+                alias="",
                 chat_colour=chat_colour,
                 room_name=get_a_room_you_two(self.id, bro.id),
                 unread_messages=0,
@@ -103,6 +104,8 @@ class Bro(db.Model):
                 removed=False
             )
             db.session.add(b)
+            return b
+        return None
 
     def add_broup(self, broup_name, broup_id, bro_ids, broup_colour, admins, description=""):
         b = Broup(
@@ -112,6 +115,7 @@ class Bro(db.Model):
             bro_admin_ids=admins,
             broup_name=broup_name,
             broup_description=description,
+            alias="",
             broup_colour=broup_colour,
             room_name="broup_%s" % broup_id,
             unread_messages=0,

@@ -40,6 +40,16 @@ def send_message(data):
         other_bro_chat.check_mute()
         db.session.add(other_bro_chat)
 
+    # We update the activity on our own chat object as well
+    own_chat.update_last_activity()
+
+    own_chat.check_mute()
+    db.session.add(own_chat)
+    db.session.add(bro_message)
+    db.session.commit()
+
+    # We do it after saving so the message will have it's id.
+    if other_bro_chat is not None and not other_bro_chat.is_blocked():
         room = get_a_room_you_two(bro_id, bros_bro_id)
         emit("message_event_send", bro_message.serialize, room=room)
         room_solo_other_bro = "room_%s" % bros_bro_id
@@ -48,14 +58,6 @@ def send_message(data):
         # If the user is blocked or reported we don't want to send an update to the other bro.
         own_room = "room_%s" % bro_id
         emit("message_event_send", bro_message.serialize, room=own_room)
-
-    # We update the activity on our own chat object as well
-    own_chat.update_last_activity()
-
-    own_chat.check_mute()
-    db.session.add(own_chat)
-    db.session.add(bro_message)
-    db.session.commit()
 
 
 def send_message_broup(data):
@@ -73,10 +75,10 @@ def send_message_broup(data):
     )
 
     broup_objects = Broup.query.filter_by(broup_id=broup_id)
+    bro_ids = []
     if broup_objects is None:
         emit("message_event_send_broup", "broup finding failed", room=request.sid)
     else:
-        bro_ids = []
         for broup in broup_objects:
             if broup.bro_id == bro_id:
                 # The bro that send the message obviously also read it.
@@ -92,13 +94,15 @@ def send_message_broup(data):
             broup.check_mute()
             db.session.add(broup)
 
-        send_notification_broup(bro_ids, message, broup_id, broup_objects, bro_id)
-        broup_room = "broup_%s" % broup_id
-        emit("message_event_send", broup_message.serialize, room=broup_room)
+    db.session.add(broup_message)
+    db.session.commit()
+
+    send_notification_broup(bro_ids, message, broup_id, broup_objects, bro_id)
+    broup_room = "broup_%s" % broup_id
+    emit("message_event_send", broup_message.serialize, room=broup_room)
+    if broup_objects is not None:
         for other_bro_id in bro_ids:
             if other_bro_id != bro_id:
                 solo_room = "room_%s" % other_bro_id
                 emit("message_event_send_solo", broup_message.serialize, room=solo_room)
 
-    db.session.add(broup_message)
-    db.session.commit()
