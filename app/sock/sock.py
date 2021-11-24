@@ -55,7 +55,7 @@ class NamespaceSock(Namespace):
         room = "room_%s" % bro_id
         join_room(room)
 
-        emit("message_event", 'User has entered room %s' % room, room=room)
+        emit("message_event", 'User has entered room %s' % room, room=request.sid)
 
     # noinspection PyMethodMayBeStatic
     def on_join_broup(self, data):
@@ -87,7 +87,7 @@ class NamespaceSock(Namespace):
         bro_id = data["bro_id"]
         room = "room_%s" % bro_id
         leave_room(room)
-        emit("message_event", 'User has entered room %s' % room, room=room)
+        emit("message_event", 'User has left room %s' % room, room=request.sid)
 
     # noinspection PyMethodMayBeStatic
     def on_message(self, data):
