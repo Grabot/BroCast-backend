@@ -33,7 +33,7 @@ def send_message(data):
     )
 
     if other_bro_chat is not None and not other_bro_chat.is_blocked():
-        send_notification(data)
+        # send_notification(data) // TODO: @Skools fix later
         # The other bro now gets an extra unread message
         other_bro_chat.update_unread_messages()
         other_bro_chat.update_last_activity()

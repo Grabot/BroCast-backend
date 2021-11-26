@@ -69,13 +69,12 @@ def add_broup(data):
 
         broup_colour = '%02X%02X%02X' % (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
         for bro in broup:
-            bro.add_broup(broup_name, broup_id, bro_ids, broup_colour, admins)
+            b = bro.add_broup(broup_name, broup_id, bro_ids, broup_colour, admins)
+            room = "room_%s" % bro.id
+            if b is not None:
+                emit("message_event_added_to_broup", b.serialize, room=room)
 
         db.session.commit()
-
-        for part in participants:
-            room = "room_%s" % part
-            emit("message_event_added_to_broup", "you got added to a broup!", room=room)
 
         emit("message_event_add_broup_success", "broup was added!", room=request.sid)
         return

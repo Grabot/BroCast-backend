@@ -26,12 +26,10 @@ def change_chat_details(data):
             chat2.update_description(description)
             db.session.add(chat2)
             db.session.commit()
-            room = get_a_room_you_two(logged_in_bro.id, bros_bro_id)
-            emit("message_event_change_chat_details_success",
-                 {
-                     "result": True,
-                     "description": description
-                 }, room=room)
+            room_bro_1 = "room_%s" % logged_in_bro.id
+            room_bro_2 = "room_%s" % bros_bro_id
+            emit("message_event_chat_changed", chat1.serialize, room=room_bro_1)
+            emit("message_event_chat_changed", chat2.serialize, room=room_bro_2)
 
 
 def change_chat_alias(data):
@@ -49,7 +47,8 @@ def change_chat_alias(data):
             chat1.update_alias(alias)
             db.session.add(chat1)
             db.session.commit()
-            emit("message_event_change_chat_alias_success", "chat updated successfully", room=request.sid)
+            room_bro = "room_%s" % logged_in_bro.id
+            emit("message_event_chat_changed", chat1.serialize, room=room_bro)
 
 
 def change_chat_colour(data):
@@ -71,12 +70,10 @@ def change_chat_colour(data):
             chat2.update_colour(colour)
             db.session.add(chat2)
             db.session.commit()
-            room = get_a_room_you_two(logged_in_bro.id, bros_bro_id)
-            emit("message_event_change_chat_colour_success",
-                 {
-                     "result": True,
-                     "colour": colour
-                 }, room=room)
+            room_bro_1 = "room_%s" % logged_in_bro.id
+            room_bro_2 = "room_%s" % bros_bro_id
+            emit("message_event_chat_changed", chat1.serialize, room=room_bro_1)
+            emit("message_event_chat_changed", chat2.serialize, room=room_bro_2)
 
 
 def change_broup_details(data):
@@ -177,6 +174,8 @@ def change_bromotion(data):
             for chat in all_chats:
                 chat.chat_name = logged_in_bro.get_full_name()
                 db.session.add(chat)
+                bro_room = "room_%s" % chat.bro_id
+                emit("message_event_chat_changed", chat.serialize, room=bro_room)
 
             # update bromotion in all the broups this bro is a part of.
             all_broups = Broup.query.filter_by(bro_id=logged_in_bro.id).all()

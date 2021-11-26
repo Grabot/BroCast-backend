@@ -124,6 +124,7 @@ class Bro(db.Model):
             removed=False
         )
         db.session.add(b)
+        return b
 
     def get_bros(self):
         return [bro for bro in self.bros if not bro.removed]

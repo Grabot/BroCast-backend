@@ -72,7 +72,7 @@ class NamespaceSock(Namespace):
         bros_bro_id = data["bros_bro_id"]
         room = get_a_room_you_two(bro_id, bros_bro_id)
         leave_room(room)
-        emit("message_event", 'User has left room %s' % room, room=room)
+        emit("message_event", 'User has left room %s' % room, room=request.sid)
 
     # noinspection PyMethodMayBeStatic
     def on_leave_broup(self, data):
