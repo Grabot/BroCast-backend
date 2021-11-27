@@ -114,25 +114,15 @@ def add_bro_to_broup(data):
                 admins = broup.get_admins()
                 broup_colour = broup.get_broup_colour()
                 broup_description = broup.get_broup_description()
+                bro_room = "room_%s" % broup.bro_id
+                emit("message_event_chat_changed", broup.serialize, room=bro_room)
 
-            new_bro_for_broup.add_broup(broup_name, broup_id, bro_ids, broup_colour, admins, broup_description)
+            b = new_bro_for_broup.add_broup(broup_name, broup_id, bro_ids, broup_colour, admins, broup_description)
             new_bro_room = "room_%s" % new_bro_for_broup.id
-            emit("message_event_added_to_broup", "you got added to a broup!", room=new_bro_room)
+            if b is not None:
+                emit("message_event_added_to_broup", b.serialize, room=new_bro_room)
 
             db.session.commit()
-
-            broup_room = "broup_%s" % broup_id
-            emit("message_event_broup_changed", "there was an update to a broup!", room=broup_room)
-
-            chat = Broup.query.filter_by(broup_id=broup_id, bro_id=logged_in_bro.id).first()
-            if not chat:
-                emit("message_event_add_bro_to_broup_failed", "adding bro to broup failed", room=request.sid)
-            else:
-                emit("message_event_add_bro_to_broup_success",
-                     {
-                         "result": True,
-                         "chat": chat.serialize
-                     }, room=request.sid)
 
 
 def remove_last_occur(old_string, bromotion):
@@ -167,6 +157,8 @@ def change_broup_remove_bro(data):
                 broup.set_broup_name(broup_name)
                 broup.remove_bro(bro_id)
                 db.session.add(broup)
+                bro_room = "room_%s" % broup.bro_id
+                emit("message_event_chat_changed", broup.serialize, room=bro_room)
 
             # It's possible, that the user left the broup and that there are no more bros left.
             # In this case we will remove all the messages
@@ -181,9 +173,6 @@ def change_broup_remove_bro(data):
                 # If it was the last bro, we leave an empty broup shell in the database for functional reasons
                 db.session.delete(remove_broup)
             db.session.commit()
-
-            broup_room = "broup_%s" % broup_id
-            emit("message_event_broup_changed", "there was an update to a broup!", room=broup_room)
 
             emit("message_event_change_broup_remove_bro_success",
                  {

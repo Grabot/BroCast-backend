@@ -94,6 +94,7 @@ class ReportBroup(Resource):
 
         return {
                 "result": True,
+                "chat": broup_that_is_reported.serialize
             }
 
 

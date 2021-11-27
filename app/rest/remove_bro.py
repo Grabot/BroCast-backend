@@ -49,6 +49,7 @@ class RemoveBro(Resource):
 
         return {
                 "result": True,
+                "chat": chat.serialize
             }
 
 

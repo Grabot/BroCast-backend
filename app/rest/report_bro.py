@@ -75,6 +75,7 @@ class ReportBro(Resource):
 
         return {
                 "result": True,
+                "chat": chat.serialize
             }
 
 

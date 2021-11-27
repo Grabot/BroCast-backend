@@ -92,13 +92,9 @@ def change_broup_details(data):
             for broup in broup_objects:
                 broup.update_description(description)
                 db.session.add(broup)
+                room_bro = "room_%s" % broup.bro_id
+                emit("message_event_chat_changed", broup.serialize, room=room_bro)
             db.session.commit()
-            broup_room = "broup_%s" % broup_id
-            emit("message_event_change_broup_details_success",
-                 {
-                     "result": True,
-                     "description": description
-                 }, room=broup_room)
 
 
 def change_broup_alias(data):
@@ -117,7 +113,8 @@ def change_broup_alias(data):
             broup.update_alias(alias)
             db.session.add(broup)
             db.session.commit()
-            emit("message_event_change_broup_alias_success", "broup updated successfully", room=request.sid)
+            room_bro = "room_%s" % logged_in_bro.id
+            emit("message_event_chat_changed", broup.serialize, room=room_bro)
 
 
 def change_broup_colour(data):
@@ -136,13 +133,9 @@ def change_broup_colour(data):
             for broup in broup_objects:
                 broup.update_colour(colour)
                 db.session.add(broup)
+                room_bro = "room_%s" % broup.bro_id
+                emit("message_event_chat_changed", broup.serialize, room=room_bro)
             db.session.commit()
-            broup_room = "broup_%s" % broup_id
-            emit("message_event_change_broup_colour_success",
-                 {
-                     "result": True,
-                     "colour": colour
-                 }, room=broup_room)
 
 
 def remove_last_occur(old_string, bromotion):
@@ -187,6 +180,8 @@ def change_bromotion(data):
                     broup_name = broup_name + "" + new_bromotion
                     broup.set_broup_name(broup_name)
                     db.session.add(broup)
+                    bro_room = "room_%s" % broup.bro_id
+                    emit("message_event_chat_changed", broup.serialize, room=bro_room)
 
             db.session.add(logged_in_bro)
             db.session.commit()
@@ -226,12 +221,8 @@ def mute_broup(data):
                 broup_of_bro.set_mute_timestamp(unmute_date)
             db.session.add(broup_of_bro)
             db.session.commit()
-            emit("message_event_change_broup_mute_success",
-                 {
-                     "result": True,
-                     "id": broup_of_bro.broup_id,
-                     "mute": mute
-                 }, room=request.sid)
+            room_bro = "room_%s" % logged_in_bro.id
+            emit("message_event_chat_changed", broup_of_bro.serialize, room=room_bro)
 
 
 def mute_chat(data):
@@ -267,10 +258,6 @@ def mute_chat(data):
                 chat.set_mute_timestamp(unmute_date)
             db.session.add(chat)
             db.session.commit()
-            emit("message_event_change_chat_mute_success",
-                 {
-                     "result": True,
-                     "id": chat.bros_bro_id,
-                     "mute": mute
-                 }, room=request.sid)
+            room_bro = "room_%s" % logged_in_bro.id
+            emit("message_event_chat_changed", chat.serialize, room=room_bro)
 
