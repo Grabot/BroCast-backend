@@ -15,6 +15,7 @@ def add_bro(data):
     bros_bro_id = data["bros_bro_id"]
     logged_in_bro = Bro.verify_auth_token(token)
     if logged_in_bro:
+        logged_in_bro_room = "room_%s" % logged_in_bro.id
         bro_to_be_added = Bro.query.filter_by(id=bros_bro_id).first()
         if bro_to_be_added:
             if bro_to_be_added.id != logged_in_bro.id:
@@ -22,18 +23,18 @@ def add_bro(data):
                 bros_bro = logged_in_bro.add_bro(bro_to_be_added, chat_colour)
                 bros_bro_added_bro = bro_to_be_added.add_bro(logged_in_bro, chat_colour)
                 db.session.commit()
-                bro_room = "room_%s" % bro_to_be_added.id
                 if bros_bro:
-                    emit("message_event_add_bro_success", bros_bro.serialize, room=request.sid)
+                    emit("message_event_add_bro_success", bros_bro.serialize, room=logged_in_bro_room)
                 else:
-                    emit("message_event_add_bro_failed", "Bro was already added", room=request.sid)
+                    emit("message_event_add_bro_failed", "Bro was already added", room=logged_in_bro_room)
 
                 if bros_bro_added_bro:
+                    bro_room = "room_%s" % bro_to_be_added.id
                     emit("message_event_bro_added_you", bros_bro_added_bro.serialize, room=bro_room)
             else:
-                emit("message_event_add_bro_failed", "You tried to add yourself", room=request.sid)
+                emit("message_event_add_bro_failed", "You tried to add yourself", room=logged_in_bro_room)
         else:
-            emit("message_event_add_bro_failed", "failed to add bro", room=request.sid)
+            emit("message_event_add_bro_failed", "failed to add bro", room=logged_in_bro_room)
     else:
         emit("message_event_add_bro_failed", "failed to add bro", room=request.sid)
 
@@ -173,11 +174,4 @@ def change_broup_remove_bro(data):
                 # If it was the last bro, we leave an empty broup shell in the database for functional reasons
                 db.session.delete(remove_broup)
             db.session.commit()
-
-            emit("message_event_change_broup_remove_bro_success",
-                 {
-                     "result": True,
-                     "old_bro": bro_id
-                 },
-                 room=request.sid)
 

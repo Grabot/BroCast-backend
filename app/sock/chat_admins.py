@@ -21,14 +21,9 @@ def change_broup_add_admin(data):
             for broup in broup_objects:
                 broup.add_admin(bro_id)
                 db.session.add(broup)
+                bro_room = "room_%s" % broup.bro_id
+                emit("message_event_chat_changed", broup.serialize, room=bro_room)
             db.session.commit()
-            broup_room = "broup_%s" % broup_id
-            emit("message_event_change_broup_add_admin_success",
-                 {
-                     "result": True,
-                     "new_admin": bro_id
-                 },
-                 room=broup_room)
 
 
 def change_broup_dismiss_admin(data):
@@ -47,12 +42,7 @@ def change_broup_dismiss_admin(data):
             for broup in broup_objects:
                 broup.dismiss_admin(bro_id)
                 db.session.add(broup)
+                bro_room = "room_%s" % broup.bro_id
+                emit("message_event_chat_changed", broup.serialize, room=bro_room)
             db.session.commit()
-            broup_room = "broup_%s" % broup_id
-            emit("message_event_change_broup_dismiss_admin_success",
-                 {
-                     "result": True,
-                     "old_admin": bro_id
-                 },
-                 room=broup_room)
 
