@@ -168,17 +168,16 @@ def change_broup_remove_bro(data):
         else:
             remove_bromotion = remove_bro.get_bromotion()
             for broup in broup_objects:
-                if remove_broup.id != broup.id:
-                    broup_name = remove_last_occur(broup.get_broup_name(), remove_bromotion)
-                    broup.set_broup_name(broup_name)
-                    broup.remove_bro(bro_id)
-                    db.session.add(broup)
+                broup_name = remove_last_occur(broup.get_broup_name(), remove_bromotion)
+                broup.set_broup_name(broup_name)
+                broup.remove_bro(bro_id)
+                db.session.add(broup)
 
             # It's possible that the user who left was the only admin in the broup at the moment.
             # When there are no admins left we randomly assign a user to be admin.
             # TODO: @Skools test this.
             if len(remove_broup.get_admins()) == 0:
-                print("no more admins! :O")
+                # In this special event we will make everyone remaining an admin.
                 for broup in broup_objects:
                     if not broup.has_left() and not broup.is_removed():
                         new_admin_id = broup.bro_id
@@ -198,7 +197,7 @@ def change_broup_remove_bro(data):
             db.session.commit()
 
             update_broups(broup_objects)
-            
+
             bro_room = "room_%s" % remove_broup.bro_id
             emit("message_event_chat_changed", remove_broup.serialize, room=bro_room)
 

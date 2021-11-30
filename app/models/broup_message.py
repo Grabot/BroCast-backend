@@ -13,6 +13,7 @@ class BroupMessage(db.Model):
     body = db.Column(db.Text)
     text_message = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    info = db.Column(db.Boolean, default=False)
 
     def get_timestamp(self):
         return self.timestamp
@@ -26,5 +27,6 @@ class BroupMessage(db.Model):
             'broup_id': self.broup_id,
             'body': self.body,
             'text_message': self.text_message,
+            'info': self.info,
             'timestamp': self.timestamp.strftime('%Y-%m-%dT%H:%M:%S.%f')
         }
