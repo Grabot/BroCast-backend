@@ -6,7 +6,9 @@ from app import db
 from datetime import datetime, timedelta
 from app.models.broup import Broup
 from app.models.broup_message import BroupMessage
+from app.models.message import Message
 from app.sock.update import update_broups
+from app.models.bro import get_a_room_you_two
 
 
 def change_chat_details(data):
@@ -32,6 +34,20 @@ def change_chat_details(data):
             room_bro_2 = "room_%s" % bros_bro_id
             emit("message_event_chat_changed", chat1.serialize, room=room_bro_1)
             emit("message_event_chat_changed", chat2.serialize, room=room_bro_2)
+
+            # We create an info message with the person who is admin as sender (even if they didn't send the update)
+            bro_message = Message(
+                sender_id=logged_in_bro.id,
+                recipient_id=bros_bro_id,
+                body="",
+                text_message="has changed the description",
+                timestamp=datetime.utcnow(),
+                info=True
+            )
+            db.session.add(bro_message)
+            db.session.commit()
+            room = get_a_room_you_two(logged_in_bro.id, bros_bro_id)
+            emit("message_event_send", bro_message.serialize, room=room)
 
 
 def change_chat_alias(data):
@@ -76,6 +92,20 @@ def change_chat_colour(data):
             room_bro_2 = "room_%s" % bros_bro_id
             emit("message_event_chat_changed", chat1.serialize, room=room_bro_1)
             emit("message_event_chat_changed", chat2.serialize, room=room_bro_2)
+
+            # We create an info message with the person who is admin as sender (even if they didn't send the update)
+            bro_message = Message(
+                sender_id=logged_in_bro.id,
+                recipient_id=bros_bro_id,
+                body="",
+                text_message="has changed the chat colour",
+                timestamp=datetime.utcnow(),
+                info=True
+            )
+            db.session.add(bro_message)
+            db.session.commit()
+            room = get_a_room_you_two(logged_in_bro.id, bros_bro_id)
+            emit("message_event_send", bro_message.serialize, room=room)
 
 
 def change_broup_details(data):
@@ -146,8 +176,20 @@ def change_broup_colour(data):
             for broup in broup_objects:
                 broup.update_colour(colour)
                 db.session.add(broup)
-            db.session.commit()
             update_broups(broup_objects)
+            # We create an info message with the person who is admin as sender (even if they didn't send the update)
+            broup_message = BroupMessage(
+                sender_id=logged_in_bro.id,
+                broup_id=broup_id,
+                body="",
+                text_message="has changed the chat colour",
+                timestamp=datetime.utcnow(),
+                info=True
+            )
+            db.session.add(broup_message)
+            db.session.commit()
+            broup_room = "broup_%s" % broup_id
+            emit("message_event_send", broup_message.serialize, room=broup_room)
 
 
 def remove_last_occur(old_string, bromotion):
