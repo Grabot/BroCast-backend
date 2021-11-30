@@ -1,8 +1,10 @@
+from datetime import datetime
 from flask import request
 from flask_socketio import emit
 from app import db
 from app.models.bro import Bro
 from app.models.broup import Broup
+from app.models.broup_message import BroupMessage
 from app.sock.update import update_broups
 
 
@@ -24,7 +26,21 @@ def change_broup_add_admin(data):
                 db.session.add(broup)
             db.session.commit()
 
-        update_broups(broup_objects)
+            # We create an info message with the person who is admin as sender (even if they didn't send the update)
+            broup_message = BroupMessage(
+                sender_id=bro_id,
+                broup_id=broup_id,
+                body="",
+                text_message="has been made admin",
+                timestamp=datetime.utcnow(),
+                info=True
+            )
+            db.session.add(broup_message)
+            db.session.commit()
+            update_broups(broup_objects)
+            # No need for firebase notification
+            broup_room = "broup_%s" % broup_id
+            emit("message_event_send", broup_message.serialize, room=broup_room)
 
 
 def change_broup_dismiss_admin(data):
@@ -43,6 +59,20 @@ def change_broup_dismiss_admin(data):
             for broup in broup_objects:
                 broup.dismiss_admin(bro_id)
                 db.session.add(broup)
+
+            # We create an info message with the person who is admin as sender (even if they didn't send the update)
+            broup_message = BroupMessage(
+                sender_id=bro_id,
+                broup_id=broup_id,
+                body="",
+                text_message="is no longer admin",
+                timestamp=datetime.utcnow(),
+                info=True
+            )
+            db.session.add(broup_message)
             db.session.commit()
-        update_broups(broup_objects)
+            update_broups(broup_objects)
+            # No need for firebase notification
+            broup_room = "broup_%s" % broup_id
+            emit("message_event_send", broup_message.serialize, room=broup_room)
 

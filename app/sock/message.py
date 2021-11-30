@@ -29,7 +29,8 @@ def send_message(data):
         recipient_id=bros_bro_id,
         body=message,
         text_message=text_message,
-        timestamp=datetime.utcnow()
+        timestamp=datetime.utcnow(),
+        info=False
     )
 
     if other_bro_chat is not None and not other_bro_chat.is_blocked():
@@ -69,7 +70,8 @@ def send_message_broup(data):
         broup_id=broup_id,
         body=message,
         text_message=text_message,
-        timestamp=datetime.utcnow()
+        timestamp=datetime.utcnow(),
+        info=False
     )
 
     broup_objects = Broup.query.filter_by(broup_id=broup_id)
@@ -98,3 +100,4 @@ def send_message_broup(data):
     send_notification_broup(bro_ids, message, broup_id, broup_objects, bro_id)
     broup_room = "broup_%s" % broup_id
     emit("message_event_send", broup_message.serialize, room=broup_room)
+
