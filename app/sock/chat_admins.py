@@ -38,7 +38,7 @@ def change_broup_add_admin(data):
             db.session.add(broup_message)
             db.session.commit()
             update_broups(broup_objects)
-            # No need for firebase notification
+
             broup_room = "broup_%s" % broup_id
             emit("message_event_send", broup_message.serialize, room=broup_room)
 
@@ -72,7 +72,7 @@ def change_broup_dismiss_admin(data):
             db.session.add(broup_message)
             db.session.commit()
             update_broups(broup_objects)
-            # No need for firebase notification
+
             broup_room = "broup_%s" % broup_id
             emit("message_event_send", broup_message.serialize, room=broup_room)
 
