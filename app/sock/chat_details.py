@@ -1,10 +1,11 @@
 from flask import request
 from flask_socketio import emit
-from app.models.bro import Bro, get_a_room_you_two
+from app.models.bro import Bro
 from app.models.bro_bros import BroBros
 from app import db
 from datetime import datetime, timedelta
 from app.models.broup import Broup
+from app.sock.update import update_broups
 
 
 def change_chat_details(data):
@@ -92,9 +93,8 @@ def change_broup_details(data):
             for broup in broup_objects:
                 broup.update_description(description)
                 db.session.add(broup)
-                room_bro = "room_%s" % broup.bro_id
-                emit("message_event_chat_changed", broup.serialize, room=room_bro)
             db.session.commit()
+            update_broups(broup_objects)
 
 
 def change_broup_alias(data):
@@ -133,9 +133,8 @@ def change_broup_colour(data):
             for broup in broup_objects:
                 broup.update_colour(colour)
                 db.session.add(broup)
-                room_bro = "room_%s" % broup.bro_id
-                emit("message_event_chat_changed", broup.serialize, room=room_bro)
             db.session.commit()
+            update_broups(broup_objects)
 
 
 def remove_last_occur(old_string, bromotion):
@@ -180,11 +179,10 @@ def change_bromotion(data):
                     broup_name = broup_name + "" + new_bromotion
                     broup.set_broup_name(broup_name)
                     db.session.add(broup)
-                    bro_room = "room_%s" % broup.bro_id
-                    emit("message_event_chat_changed", broup.serialize, room=bro_room)
 
             db.session.add(logged_in_bro)
             db.session.commit()
+            update_broups(all_broups)
             emit("message_event_bromotion_change", "bromotion change successful", room=request.sid)
 
 

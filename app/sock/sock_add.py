@@ -5,9 +5,9 @@ from app.models.bro import Bro
 from json import loads
 from sqlalchemy import func
 import random
-
 from app.models.broup import Broup
 from app.models.broup_message import BroupMessage
+from app.sock.update import update_broups
 
 
 def add_bro(data):
@@ -105,25 +105,39 @@ def add_bro_to_broup(data):
             bro_ids = [bro_id]
             admins = []
             for broup in broup_objects:
-                broup_name = broup.get_broup_name() + "" + new_bro_for_broup.get_bromotion()
-                broup.set_broup_name(broup_name)
-                broup.add_participant(bro_id)
-                db.session.add(broup)
-                # Appending the bro ids from each of the broups
-                bro_ids.append(broup.get_bro_id())
-                # These should be the same in all broup objects
-                admins = broup.get_admins()
-                broup_colour = broup.get_broup_colour()
-                broup_description = broup.get_broup_description()
-                bro_room = "room_%s" % broup.bro_id
-                emit("message_event_chat_changed", broup.serialize, room=bro_room)
+                if not broup.has_left() and not broup.is_removed():
+                    broup_name = broup.get_broup_name() + "" + new_bro_for_broup.get_bromotion()
+                    broup.set_broup_name(broup_name)
+                    broup.add_participant(bro_id)
+                    db.session.add(broup)
+                    # Appending the bro ids from each of the broups
+                    bro_ids.append(broup.get_bro_id())
+                    # These should be the same in all broup objects
+                    admins = broup.get_admins()
+                    broup_colour = broup.get_broup_colour()
+                    broup_description = broup.get_broup_description()
 
-            b = new_bro_for_broup.add_broup(broup_name, broup_id, bro_ids, broup_colour, admins, broup_description)
+            bro_broup = Broup.query.filter_by(broup_id=broup_id, bro_id=bro_id).first()
             new_bro_room = "room_%s" % new_bro_for_broup.id
-            if b is not None:
-                emit("message_event_added_to_broup", b.serialize, room=new_bro_room)
+            if bro_broup:
+                # If a broup object already exists than it has to be because the bro left or removed this broup.
+                # We add the bro again to the broup
+                print("we are rejoining a previously joined broup AGAIN!")
+                bro_broup.set_participants(bro_ids)
+                bro_broup.set_broup_name(broup_name)
+                bro_broup.set_admins(admins)
+                bro_broup.update_description(broup_description)
+                bro_broup.update_colour(broup_colour)
+                bro_broup.rejoin()
+                emit("message_event_added_to_broup", bro_broup.serialize, room=new_bro_room)
+            else:
+                b = new_bro_for_broup.add_broup(broup_name, broup_id, bro_ids, broup_colour, admins, broup_description)
+                if b is not None:
+                    emit("message_event_added_to_broup", b.serialize, room=new_bro_room)
 
             db.session.commit()
+
+            update_broups(broup_objects)
 
 
 def remove_last_occur(old_string, bromotion):
@@ -154,12 +168,23 @@ def change_broup_remove_bro(data):
         else:
             remove_bromotion = remove_bro.get_bromotion()
             for broup in broup_objects:
-                broup_name = remove_last_occur(broup.get_broup_name(), remove_bromotion)
-                broup.set_broup_name(broup_name)
-                broup.remove_bro(bro_id)
-                db.session.add(broup)
-                bro_room = "room_%s" % broup.bro_id
-                emit("message_event_chat_changed", broup.serialize, room=bro_room)
+                if remove_broup.id != broup.id:
+                    broup_name = remove_last_occur(broup.get_broup_name(), remove_bromotion)
+                    broup.set_broup_name(broup_name)
+                    broup.remove_bro(bro_id)
+                    db.session.add(broup)
+
+            # It's possible that the user who left was the only admin in the broup at the moment.
+            # When there are no admins left we randomly assign a user to be admin.
+            # TODO: @Skools test this.
+            if len(remove_broup.get_admins()) == 0:
+                print("no more admins! :O")
+                for broup in broup_objects:
+                    if not broup.has_left() and not broup.is_removed():
+                        new_admin_id = broup.bro_id
+                        for broup2 in broup_objects:
+                            broup2.add_admin(new_admin_id)
+                            db.session.add(broup2)
 
             # It's possible, that the user left the broup and that there are no more bros left.
             # In this case we will remove all the messages
@@ -167,11 +192,13 @@ def change_broup_remove_bro(data):
                 messages = BroupMessage.query.filter_by(broup_id=broup_id)
                 for message in messages:
                     db.session.delete(message)
-                remove_broup.broup_removed()
-                db.session.add(remove_broup)
-            else:
-                # We'll only remove the whole row if there are still bro's left in the broup
-                # If it was the last bro, we leave an empty broup shell in the database for functional reasons
-                db.session.delete(remove_broup)
+
+            remove_broup.leave_broup()
+            db.session.add(remove_broup)
             db.session.commit()
+
+            update_broups(broup_objects)
+            
+            bro_room = "room_%s" % remove_broup.bro_id
+            emit("message_event_chat_changed", remove_broup.serialize, room=bro_room)
 

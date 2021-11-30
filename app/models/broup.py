@@ -24,6 +24,7 @@ class Broup(db.Model):
     mute = db.Column(db.Boolean, default=False)
     mute_timestamp = db.Column(db.DateTime)
     removed = db.Column(db.Boolean, default=False)
+    left = db.Column(db.Boolean, default=False)
 
     def update_last_message_read_time_bro(self, read_time):
         self.last_message_read_time_bro = read_time
@@ -70,6 +71,12 @@ class Broup(db.Model):
 
     def get_participants(self):
         return self.bro_ids
+
+    def set_participants(self, bro_ids):
+        self.bro_ids = bro_ids
+
+    def set_broup_name(self, broup_name):
+        self.broup_name = broup_name
 
     def add_admin(self, bro_id):
         if self.bro_admin_ids is None:
@@ -137,6 +144,16 @@ class Broup(db.Model):
     def is_removed(self):
         return self.removed
 
+    def leave_broup(self):
+        self.left = True
+
+    def has_left(self):
+        return self.left
+
+    def rejoin(self):
+        self.left = False
+        self.removed = False
+
     def get_mute_timestamp(self):
         return self.mute_timestamp
 
@@ -157,5 +174,6 @@ class Broup(db.Model):
             'unread_messages': self.unread_messages,
             'last_time_activity': self.last_time_activity.strftime('%Y-%m-%dT%H:%M:%S.%f'),
             'room_name': self.room_name,
+            'left': self.left,
             'mute': self.mute
         }

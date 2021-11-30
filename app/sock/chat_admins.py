@@ -3,6 +3,7 @@ from flask_socketio import emit
 from app import db
 from app.models.bro import Bro
 from app.models.broup import Broup
+from app.sock.update import update_broups
 
 
 def change_broup_add_admin(data):
@@ -21,9 +22,9 @@ def change_broup_add_admin(data):
             for broup in broup_objects:
                 broup.add_admin(bro_id)
                 db.session.add(broup)
-                bro_room = "room_%s" % broup.bro_id
-                emit("message_event_chat_changed", broup.serialize, room=bro_room)
             db.session.commit()
+
+        update_broups(broup_objects)
 
 
 def change_broup_dismiss_admin(data):
@@ -42,7 +43,6 @@ def change_broup_dismiss_admin(data):
             for broup in broup_objects:
                 broup.dismiss_admin(bro_id)
                 db.session.add(broup)
-                bro_room = "room_%s" % broup.bro_id
-                emit("message_event_chat_changed", broup.serialize, room=bro_room)
             db.session.commit()
+        update_broups(broup_objects)
 
