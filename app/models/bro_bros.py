@@ -91,6 +91,12 @@ class BroBros(db.Model):
     def set_mute_timestamp(self, mute_timestamp):
         self.mute_timestamp = mute_timestamp
 
+    def get_bros_bro_name_or_alias(self):
+        if self.alias:
+            return self.alias
+        else:
+            return self.chat_name
+
     @property
     def serialize(self):
         return {

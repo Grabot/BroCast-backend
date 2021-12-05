@@ -8,6 +8,7 @@ import random
 from app.models.broup import Broup
 from app.models.broup_message import BroupMessage
 from app.sock.update import update_broups
+from datetime import datetime
 
 
 def add_bro(data):
@@ -129,13 +130,26 @@ def add_bro_to_broup(data):
                 bro_broup.update_description(broup_description)
                 bro_broup.update_colour(broup_colour)
                 bro_broup.rejoin()
+                db.session.add(bro_broup)
                 emit("message_event_added_to_broup", bro_broup.serialize, room=new_bro_room)
             else:
                 b = new_bro_for_broup.add_broup(broup_name, broup_id, bro_ids, broup_colour, admins, broup_description)
                 if b is not None:
                     emit("message_event_added_to_broup", b.serialize, room=new_bro_room)
 
+            broup_message = BroupMessage(
+                sender_id=bro_id,
+                broup_id=broup_id,
+                body="%s has been added to the broup!" % new_bro_for_broup.get_full_name(),
+                text_message="",
+                timestamp=datetime.utcnow(),
+                info=True
+            )
+            db.session.add(broup_message)
             db.session.commit()
+
+            broup_room = "broup_%s" % broup_id
+            emit("message_event_send", broup_message.serialize, room=broup_room)
 
             update_broups(broup_objects)
 
@@ -175,7 +189,6 @@ def change_broup_remove_bro(data):
 
             # It's possible that the user who left was the only admin in the broup at the moment.
             # When there are no admins left we randomly assign a user to be admin.
-            # TODO: @Skools test this.
             if len(remove_broup.get_admins()) == 0:
                 # In this special event we will make everyone remaining an admin.
                 for broup in broup_objects:
@@ -194,9 +207,27 @@ def change_broup_remove_bro(data):
 
             remove_broup.leave_broup()
             db.session.add(remove_broup)
+
+            leave_message = "%s has been removed" % remove_bro.get_full_name()
+            if bro_id == logged_in_bro.id:
+                leave_message = "%s has left" % remove_bro.get_full_name()
+
+            broup_message = BroupMessage(
+                sender_id=bro_id,
+                broup_id=broup_id,
+                body=leave_message,
+                text_message="",
+                timestamp=datetime.utcnow(),
+                info=True
+            )
+            db.session.add(broup_message)
+
             db.session.commit()
 
             update_broups(broup_objects)
+
+            broup_room = "broup_%s" % broup_id
+            emit("message_event_send", broup_message.serialize, room=broup_room)
 
             bro_room = "room_%s" % remove_broup.bro_id
             emit("message_event_chat_changed", remove_broup.serialize, room=bro_room)

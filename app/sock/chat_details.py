@@ -35,12 +35,12 @@ def change_chat_details(data):
             emit("message_event_chat_changed", chat1.serialize, room=room_bro_1)
             emit("message_event_chat_changed", chat2.serialize, room=room_bro_2)
 
-            # We create an info message with the person who is admin as sender (even if they didn't send the update)
+            # We create an info message with the person who did the update as sender
             bro_message = Message(
                 sender_id=logged_in_bro.id,
                 recipient_id=bros_bro_id,
-                body="",
-                text_message="has changed the description",
+                body="%s changed the description" % chat2.get_bros_bro_name_or_alias(),
+                text_message="",
                 timestamp=datetime.utcnow(),
                 info=True
             )
@@ -93,12 +93,12 @@ def change_chat_colour(data):
             emit("message_event_chat_changed", chat1.serialize, room=room_bro_1)
             emit("message_event_chat_changed", chat2.serialize, room=room_bro_2)
 
-            # We create an info message with the person who is admin as sender (even if they didn't send the update)
+            # We create an info message with the person who did the update as sender
             bro_message = Message(
                 sender_id=logged_in_bro.id,
                 recipient_id=bros_bro_id,
-                body="",
-                text_message="has changed the chat colour",
+                body="%s changed the chat colour" % chat2.get_bros_bro_name_or_alias(),
+                text_message="",
                 timestamp=datetime.utcnow(),
                 info=True
             )
@@ -125,12 +125,12 @@ def change_broup_details(data):
                 broup.update_description(description)
                 db.session.add(broup)
             update_broups(broup_objects)
-            # We create an info message with the person who is admin as sender (even if they didn't send the update)
+            # We create an info message with the person who did the update as sender
             broup_message = BroupMessage(
                 sender_id=logged_in_bro.id,
                 broup_id=broup_id,
-                body="",
-                text_message="has changed the description",
+                body="%s changed the description" % logged_in_bro.get_full_name(),
+                text_message="",
                 timestamp=datetime.utcnow(),
                 info=True
             )
@@ -177,12 +177,12 @@ def change_broup_colour(data):
                 broup.update_colour(colour)
                 db.session.add(broup)
             update_broups(broup_objects)
-            # We create an info message with the person who is admin as sender (even if they didn't send the update)
+            # We create an info message with the person who did the update as sender
             broup_message = BroupMessage(
                 sender_id=logged_in_bro.id,
                 broup_id=broup_id,
-                body="",
-                text_message="has changed the chat colour",
+                body="%s changed the chat colour" % logged_in_bro.get_full_name(),
+                text_message="",
                 timestamp=datetime.utcnow(),
                 info=True
             )
@@ -234,6 +234,9 @@ def change_bromotion(data):
                     broup_name = broup_name + "" + new_bromotion
                     broup.set_broup_name(broup_name)
                     db.session.add(broup)
+
+                    bro_room = "room_%s" % broup.bro_id
+                    emit("message_event_chat_changed", broup.serialize, room=bro_room)
 
             db.session.add(logged_in_bro)
             db.session.commit()

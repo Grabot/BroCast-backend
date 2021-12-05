@@ -46,7 +46,6 @@ class NamespaceSock(Namespace):
         bros_bro_id = data["bros_bro_id"]
         room = get_a_room_you_two(bro_id, bros_bro_id)
         join_room(room)
-        update_read_time(bro_id, bros_bro_id, room)
         emit("message_event", 'User has entered room %s' % room, room=room)
 
     # noinspection PyMethodMayBeStatic
@@ -63,7 +62,6 @@ class NamespaceSock(Namespace):
         broup_id = data["broup_id"]
         broup_room = "broup_%s" % broup_id
         join_room(broup_room)
-        update_read_time_broup(bro_id, broup_id, broup_room)
         emit("message_event", 'User has entered room %s' % broup_room, room=broup_room)
 
     # noinspection PyMethodMayBeStatic
