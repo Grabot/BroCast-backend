@@ -15,18 +15,21 @@ def update_read_time(bro_id, bros_bro_id, room):
 
 
 def update_last_read_time(bro_id, bros_bro_id):
-    bro_associate = BroBros.query.filter_by(bro_id=bro_id, bros_bro_id=bros_bro_id).first()
+    bro_me = BroBros.query.filter_by(bro_id=bro_id, bros_bro_id=bros_bro_id).first()
+    bro_other = BroBros.query.filter_by(bro_id=bros_bro_id, bros_bro_id=bro_id).first()
 
     # We assume this won't happen
-    if bro_associate is None:
+    if bro_me is None or bro_other is None:
         return None
 
     read_time = datetime.utcnow()
-    bro_associate.last_message_read_time_bro = read_time
-    bro_associate.read_messages()
-    db.session.add(bro_associate)
+    bro_me.update_last_message_read_time_bro()
+    bro_me.read_messages()
+    db.session.add(bro_me)
     db.session.commit()
-    return read_time
+    # We have just update our own read time.
+    # We will send the read time back of the other bro since it will be used to determine if both bros have read it
+    return bro_other.get_last_message_read_time_bro()
 
 
 def get_last_read_time_other_bro(bro_id, bros_bro_id):
@@ -59,7 +62,7 @@ def update_read_time_broup(bro_id, broup_id, broup_room):
         return None
 
     read_time = datetime.utcnow()
-    broup_of_bro.update_last_message_read_time_bro(read_time)
+    broup_of_bro.update_last_message_read_time_bro()
     broup_of_bro.read_messages()
     db.session.add(broup_of_bro)
     db.session.commit()

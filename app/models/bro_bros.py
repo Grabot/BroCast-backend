@@ -36,6 +36,12 @@ class BroBros(db.Model):
     def update_last_activity(self):
         self.last_time_activity = datetime.utcnow()
 
+    def update_last_message_read_time_bro(self):
+        self.last_message_read_time_bro = datetime.utcnow()
+
+    def get_last_message_read_time_bro(self):
+        return self.last_message_read_time_bro
+
     def update_description(self, description):
         self.chat_description = description
 

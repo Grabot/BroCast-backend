@@ -44,21 +44,6 @@ class GetMessagesBroup_v1_3(Resource):
             .order_by(BroupMessage.timestamp.desc())\
             .all()
 
-        print("gotten messages")
-        print(len(messages))
-
-        # TODO: @Skools Add block functionality.
-        # if chat.has_been_blocked():
-        #     blocked_timestamps = chat.get_blocked_timestamps()
-        #     for b in range(0, len(blocked_timestamps), 2):
-        #         block_1 = blocked_timestamps[b]
-        #         block_2 = datetime.utcnow()
-        #         if b < len(blocked_timestamps) - 1:
-        #             block_2 = blocked_timestamps[b+1]
-        #         # We go over the block timestamp pairs.
-        #         # If the user is currently blocked, the last pair will be the block time and now
-        #         messages = [message for message in messages if not block_1 <= message.get_timestamp() <= block_2]
-
         if messages is None:
             return {'result': False}
 

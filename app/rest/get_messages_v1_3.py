@@ -39,8 +39,9 @@ class GetMessages_v1_3(Resource):
                 "message": "Chat not found."
             }
 
-        messages = Message.query.filter_by(sender_id=logged_in_bro.id, recipient_id=bros_bro_id)\
-            .union(Message.query.filter_by(sender_id=bros_bro_id, recipient_id=logged_in_bro.id))\
+        # We should have stored all the message we have send on our own phone already,
+        # so we will only retrieve messages send by the other bro.
+        messages = Message.query.filter_by(sender_id=bros_bro_id, recipient_id=logged_in_bro.id)\
             .filter(Message.timestamp >= chat.last_message_read_time_bro)\
             .order_by(Message.timestamp.desc())\
             .all()

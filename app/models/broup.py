@@ -26,8 +26,8 @@ class Broup(db.Model):
     removed = db.Column(db.Boolean, default=False)
     left = db.Column(db.Boolean, default=False)
 
-    def update_last_message_read_time_bro(self, read_time):
-        self.last_message_read_time_bro = read_time
+    def update_last_message_read_time_bro(self):
+        self.last_message_read_time_bro = datetime.utcnow()
 
     def get_last_message_read_time_bro(self):
         return self.last_message_read_time_bro
