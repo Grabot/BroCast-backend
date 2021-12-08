@@ -123,7 +123,6 @@ def add_bro_to_broup(data):
             if bro_broup:
                 # If a broup object already exists than it has to be because the bro left or removed this broup.
                 # We add the bro again to the broup
-                print("we are rejoining a previously joined broup AGAIN!")
                 bro_broup.set_participants(bro_ids)
                 bro_broup.set_broup_name(broup_name)
                 bro_broup.set_admins(admins)
