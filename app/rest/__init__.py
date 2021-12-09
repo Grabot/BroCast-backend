@@ -25,6 +25,8 @@ from app.rest import get_broup
 from app.rest import report_broup
 from app.rest import get_messages_v1_3
 from app.rest import get_messages_broup_v1_3
+from app.rest import register_v1_3
+from app.rest import login_v1_3
 
 
 @app_api.route("/privacy")

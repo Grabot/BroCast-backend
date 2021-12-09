@@ -13,6 +13,7 @@ from app.sock.update import update_broups
 
 
 def send_message(data):
+    print("sending message")
     bro_id = data["bro_id"]
     bros_bro_id = data["bros_bro_id"]
     message = data["message"]
@@ -35,7 +36,9 @@ def send_message(data):
     )
 
     if other_bro_chat is not None and not other_bro_chat.is_blocked():
-        # send_notification(data) // TODO: @Skools fix later
+        print("we should send notification")
+        print(data)
+        send_notification(data)
         # The other bro now gets an extra unread message
         other_bro_chat.update_unread_messages()
         other_bro_chat.update_last_activity()

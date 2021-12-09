@@ -10,6 +10,7 @@ class Config(object):
     SECRET_KEY = os.environ["SECRET_KEY"]
     NOTIFICATION_KEY = os.environ["NOTIFICATION_KEY"]
     LOG_READ_PASSWORD = os.environ["LOG_READ_PASSWORD"]
+    FIREBASE_URL = "https://fcm.googleapis.com/fcm/send"
     DEBUG = True
 
 
