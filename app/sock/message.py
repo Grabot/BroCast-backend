@@ -37,8 +37,6 @@ def send_message(data):
     )
 
     if other_bro_chat is not None and not other_bro_chat.is_blocked():
-        print("we should send notification")
-        print(data)
         send_notification(data)
         # The other bro now gets an extra unread message
         if not other_bro_chat.is_removed() and not other_bro_chat.is_blocked():
@@ -100,7 +98,7 @@ def send_message_broup(data):
                 broup.update_last_activity()
             else:
                 # The other bro's now gets an extra unread message and their chat is moved to the top of their list.
-                if not broup.has_left and not broup.is_removed():
+                if not broup.has_left() and not broup.is_removed():
                     broup.update_unread_messages()
                     broup.update_last_activity()
                     broup.check_mute()

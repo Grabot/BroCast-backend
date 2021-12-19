@@ -76,6 +76,9 @@ class BroBros(db.Model):
     def is_removed(self):
         return self.removed
 
+    def re_join(self):
+        self.removed = False
+
     def add_blocked_timestamp(self):
         if self.blocked_timestamps is None:
             self.blocked_timestamps = []

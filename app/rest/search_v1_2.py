@@ -37,11 +37,7 @@ class Search_v1_2(Resource):
                 bros = Bro.query.filter(func.lower(Bro.bro_name) == func.lower(bro_name)).filter_by(bromotion=bromotion)
             bro_list = []
             for bro in bros:
-                # Also check that the other bro hasn't blocked or removed this bro.
-                chat = BroBros.query.filter_by(bro_id=bro.id, bros_bro_id=searching_bro.id).first()
-                if chat is None:
-                    # If the object don't exist they weren't friends before
-                    bro_list.append(bro.serialize)
+                bro_list.append(bro.serialize)
 
             return {
                 "result": True,
