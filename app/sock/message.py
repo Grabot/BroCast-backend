@@ -9,7 +9,8 @@ from app.sock.notification import send_notification
 from app.sock.notification import send_notification_broup
 from app.models.bro import get_a_room_you_two
 from flask_socketio import emit
-from app.sock.update import update_broups
+
+from app.util.remove_last_occur import update_broups
 
 
 def send_message(data):
@@ -40,7 +41,8 @@ def send_message(data):
         print(data)
         send_notification(data)
         # The other bro now gets an extra unread message
-        other_bro_chat.update_unread_messages()
+        if not other_bro_chat.is_removed() and not other_bro_chat.is_blocked():
+            other_bro_chat.update_unread_messages()
         other_bro_chat.update_last_activity()
         other_bro_chat.check_mute()
         db.session.add(other_bro_chat)
@@ -95,12 +97,13 @@ def send_message_broup(data):
                 broup.update_last_message_read_time_bro()
 
                 bro_ids = broup.get_participants()
+                broup.update_last_activity()
             else:
                 # The other bro's now gets an extra unread message and their chat is moved to the top of their list.
-                broup.update_unread_messages()
-
-            broup.update_last_activity()
-            broup.check_mute()
+                if not broup.has_left and not broup.is_removed():
+                    broup.update_unread_messages()
+                    broup.update_last_activity()
+                    broup.check_mute()
             db.session.add(broup)
 
     db.session.add(broup_message)

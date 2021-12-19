@@ -7,8 +7,8 @@ from datetime import datetime, timedelta
 from app.models.broup import Broup
 from app.models.broup_message import BroupMessage
 from app.models.message import Message
-from app.sock.update import update_broups
 from app.models.bro import get_a_room_you_two
+from app.util.remove_last_occur import remove_last_occur, update_broups
 
 
 def change_chat_details(data):
@@ -190,17 +190,6 @@ def change_broup_colour(data):
             db.session.commit()
             broup_room = "broup_%s" % broup_id
             emit("message_event_send", broup_message.serialize, room=broup_room)
-
-
-def remove_last_occur(old_string, bromotion):
-    new_string = ''
-    length = len(old_string)
-
-    for i in range(length-1, 0, -1):
-        if old_string[i] == bromotion:
-            new_string = old_string[0:i] + old_string[i + 1:length]
-            break
-    return new_string
 
 
 def change_bromotion(data):

@@ -7,3 +7,13 @@ def update_broups(broup_objects):
             bro_room = "room_%s" % broup.bro_id
             emit("message_event_chat_changed", broup.serialize, room=bro_room)
 
+
+def remove_last_occur(old_string, bromotion):
+    length = len(old_string)
+
+    for i in range(length-1, 0, -1):
+        if old_string[i] == bromotion:
+            new_string = old_string[0:i] + old_string[i + 1:length]
+            return new_string
+    return old_string
+

@@ -7,8 +7,9 @@ from sqlalchemy import func
 import random
 from app.models.broup import Broup
 from app.models.broup_message import BroupMessage
-from app.sock.update import update_broups
 from datetime import datetime
+
+from app.util.remove_last_occur import remove_last_occur, update_broups
 
 
 def add_bro(data):
@@ -151,17 +152,6 @@ def add_bro_to_broup(data):
             emit("message_event_send", broup_message.serialize, room=broup_room)
 
             update_broups(broup_objects)
-
-
-def remove_last_occur(old_string, bromotion):
-    new_string = ''
-    length = len(old_string)
-
-    for i in range(length-1, 0, -1):
-        if old_string[i] == bromotion:
-            new_string = old_string[0:i] + old_string[i + 1:length]
-            break
-    return new_string
 
 
 def change_broup_remove_bro(data):

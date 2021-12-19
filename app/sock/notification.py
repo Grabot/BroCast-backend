@@ -51,7 +51,7 @@ def send_notification_broup(bro_ids, message_body, broup_id, broup_objects, me_i
             if broup[0].check_mute():
                 db.session.add(broup[0])
                 db.session.commit()
-            if not broup[0].is_muted():
+            if not broup[0].is_muted() or not broup[0].has_left() or not broup[0].is_removed():
                 message_title = broup[0].alias
                 if message_title is None or message_title == "":
                     message_title = broup[0].broup_name

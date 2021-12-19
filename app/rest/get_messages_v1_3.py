@@ -1,7 +1,7 @@
 from flask import request
 from flask_restful import Api
 from flask_restful import Resource
-
+from datetime import timedelta
 from app.models.bro import Bro
 from app.models.bro_bros import BroBros
 from app.sock.last_read_time import get_last_read_time_other_bro
@@ -42,7 +42,7 @@ class GetMessages_v1_3(Resource):
         # We will retrieve all messages available on the server after the bro's last read time. Even our own.
         messages = Message.query.filter_by(sender_id=logged_in_bro.id, recipient_id=bros_bro_id) \
             .union(Message.query.filter_by(sender_id=bros_bro_id, recipient_id=logged_in_bro.id)) \
-            .filter(Message.timestamp >= chat.last_message_read_time_bro)\
+            .filter(Message.timestamp >= (chat.last_message_read_time_bro - timedelta(minutes=5)))\
             .order_by(Message.timestamp.desc())\
             .all()
 

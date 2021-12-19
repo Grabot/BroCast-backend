@@ -48,4 +48,4 @@ class Register_v1_1(Resource):
 
 
 api = Api(app_api)
-api.add_resource(Register_v1_1, '/api/v1.1/register', endpoint='registerv1_1')
+api.add_resource(Register_v1_1, '/api/v1.1/register', endpoint='register_v1_1')

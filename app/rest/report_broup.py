@@ -9,17 +9,7 @@ from app.models.broup import Broup
 from app.models.broup_message import BroupMessage
 from app.models.log import Log
 from app.rest import app_api
-
-
-def remove_last_occur(old_string, bromotion):
-    new_string = ''
-    length = len(old_string)
-
-    for i in range(length-1, 0, -1):
-        if old_string[i] == bromotion:
-            new_string = old_string[0:i] + old_string[i + 1:length]
-            break
-    return new_string
+from app.util.remove_last_occur import remove_last_occur
 
 
 class ReportBroup(Resource):
@@ -72,20 +62,35 @@ class ReportBroup(Resource):
 
         db.session.add(log)
 
-        remove_bromotion = remove_bro.get_bromotion()
-        for broup in broup_objects:
-            broup_name = remove_last_occur(broup.get_broup_name(), remove_bromotion)
-            broup.set_broup_name(broup_name)
-            broup.remove_bro(logged_in_bro.id)
-            db.session.add(broup)
+        if not broup_that_is_reported.has_left():
+            remove_bromotion = remove_bro.get_bromotion()
+            print("removing bromotion: %s" % remove_bromotion)
+            for broup in broup_objects:
+                print("broup name: %s" % broup.get_broup_name())
+                broup_name = remove_last_occur(broup.get_broup_name(), remove_bromotion)
+                print("broup name after: %s" % broup.get_broup_name())
+                broup.set_broup_name(broup_name)
+                broup.remove_bro(logged_in_bro.id)
+                db.session.add(broup)
 
-        # It's possible, that the user left the broup and that there are no more bros left.
-        # In this case we will remove all the messages
-        if len(broup_that_is_reported.get_participants()) == 0:
-            messages = BroupMessage.query.filter_by(broup_id=broup_id)
-            for message in messages:
-                db.session.delete(message)
-            db.session.add(broup_that_is_reported)
+            # It's possible that the user who left was the only admin in the broup at the moment.
+            # When there are no admins left we randomly assign a user to be admin.
+            if len(broup_that_is_reported.get_admins()) == 0:
+                # In this special event we will make everyone remaining an admin.
+                for broup in broup_objects:
+                    if not broup.has_left() and not broup.is_removed():
+                        new_admin_id = broup.bro_id
+                        for broup2 in broup_objects:
+                            broup2.add_admin(new_admin_id)
+                            db.session.add(broup2)
+            # It's possible, that the user left the broup and that there are no more bros left.
+            # In this case we will remove all the messages
+            if len(broup_that_is_reported.get_participants()) == 0:
+                messages = BroupMessage.query.filter_by(broup_id=broup_id)
+                for message in messages:
+                    db.session.delete(message)
+            broup_that_is_reported.leave_broup()
+
         broup_that_is_reported.mute_broup(True)
         broup_that_is_reported.broup_removed()
 

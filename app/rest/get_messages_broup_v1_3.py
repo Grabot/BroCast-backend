@@ -1,4 +1,5 @@
 from datetime import datetime
+from datetime import timedelta
 from flask import request
 from flask_restful import Api
 from flask_restful import Resource
@@ -38,9 +39,11 @@ class GetMessagesBroup_v1_3(Resource):
                 "message": "Chat not found."
             }
 
+        # We subtract a little from the last message read time. This is in case the user has the chat open and leaves
+        # Sometimes not all the messages are received, we will receive them the next time
         messages = BroupMessage.query\
             .filter_by(broup_id=broup_id) \
-            .filter(BroupMessage.timestamp >= chat.last_message_read_time_bro)\
+            .filter(BroupMessage.timestamp >= (chat.last_message_read_time_bro - timedelta(minutes=5)))\
             .order_by(BroupMessage.timestamp.desc())\
             .all()
 
