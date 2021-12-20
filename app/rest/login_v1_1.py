@@ -26,7 +26,7 @@ class Login_v1_1(Resource):
         password = json_data["password"]
         token = json_data["token"]
         registration_id = json_data["registration_id"]
-        device_type = json_data["device_type"]
+        # device_type = json_data["device_type"]
 
         bro = None
         if token is not None and not "":
@@ -46,11 +46,6 @@ class Login_v1_1(Resource):
         # update registration key if it's changed
         if bro.get_registration_id() != registration_id and registration_id != "":
             bro.set_registration_id(registration_id)
-            db.session.add(bro)
-            db.session.commit()
-
-        if bro.get_device_type() != device_type and device_type != "":
-            bro.set_device_type(device_type)
             db.session.add(bro)
             db.session.commit()
 
