@@ -1,7 +1,7 @@
 from flask import request
 from flask_restful import Api
 from flask_restful import Resource
-
+from sqlalchemy import func
 from app.models.bro import Bro
 from app.rest import app_api
 from app import db
@@ -20,6 +20,7 @@ class Login_v1_3(Resource):
 
     # noinspection PyMethodMayBeStatic
     def post(self):
+        print("going to login")
         json_data = request.get_json(force=True)
         bro_name = json_data["bro_name"]
         bromotion = json_data["bromotion"]
@@ -27,13 +28,14 @@ class Login_v1_3(Resource):
         token = json_data["token"]
         registration_id = json_data["registration_id"]
 
+        print("bro name: %s" % bro_name)
         bro = None
         if token is not None and not "":
             bro = Bro.verify_auth_token(token)
 
         if not bro:
             # The token was wrong (or was expired) Try to log in with username password and generate a new token
-            bro = Bro.query.filter_by(bro_name=bro_name, bromotion=bromotion).first()
+            bro = Bro.query.filter(func.lower(Bro.bro_name) == func.lower(bro_name)).filter_by(bromotion=bromotion).first()
             if not bro or not bro.verify_password(password):
                 return {
                    'result': False,
