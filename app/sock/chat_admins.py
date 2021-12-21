@@ -5,7 +5,7 @@ from app import db
 from app.models.bro import Bro
 from app.models.broup import Broup
 from app.models.broup_message import BroupMessage
-from app.util.remove_last_occur import update_broups
+from app.util.util import update_broups
 
 
 def change_broup_add_admin(data):

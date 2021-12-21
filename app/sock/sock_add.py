@@ -11,7 +11,7 @@ from app.models.broup import Broup
 from app.models.broup_message import BroupMessage
 from datetime import datetime
 
-from app.util.remove_last_occur import remove_last_occur, update_broups
+from app.util.util import remove_last_occur, update_broups
 
 
 def add_bro(data):

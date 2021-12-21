@@ -8,7 +8,7 @@ from app.models.broup import Broup
 from app.models.broup_message import BroupMessage
 from app.models.message import Message
 from app.models.bro import get_a_room_you_two
-from app.util.remove_last_occur import remove_last_occur, update_broups
+from app.util.util import remove_last_occur, update_broups
 
 
 def change_chat_details(data):

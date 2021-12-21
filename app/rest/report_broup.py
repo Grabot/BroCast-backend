@@ -9,7 +9,7 @@ from app.models.broup import Broup
 from app.models.broup_message import BroupMessage
 from app.models.log import Log
 from app.rest import app_api
-from app.util.remove_last_occur import remove_last_occur
+from app.util.util import remove_last_occur
 
 
 class ReportBroup(Resource):

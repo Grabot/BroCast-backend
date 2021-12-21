@@ -10,7 +10,7 @@ from app.sock.notification import send_notification_broup
 from app.models.bro import get_a_room_you_two
 from flask_socketio import emit
 
-from app.util.remove_last_occur import update_broups
+from app.util.util import update_broups
 
 
 def send_message(data):

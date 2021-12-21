@@ -24,7 +24,7 @@ class Broup(db.Model):
     mute = db.Column(db.Boolean, default=False)
     mute_timestamp = db.Column(db.DateTime)
     removed = db.Column(db.Boolean, default=False)
-    left = db.Column(db.Boolean, default=False)
+    is_left = db.Column(db.Boolean, default=False)
 
     def update_last_message_read_time_bro(self):
         self.last_message_read_time_bro = datetime.utcnow()
@@ -145,13 +145,13 @@ class Broup(db.Model):
         return self.removed
 
     def leave_broup(self):
-        self.left = True
+        self.is_left = True
 
     def has_left(self):
-        return self.left
+        return self.is_left
 
     def rejoin(self):
-        self.left = False
+        self.is_left = False
         self.removed = False
 
     def get_mute_timestamp(self):
@@ -174,6 +174,6 @@ class Broup(db.Model):
             'unread_messages': self.unread_messages,
             'last_time_activity': self.last_time_activity.strftime('%Y-%m-%dT%H:%M:%S.%f'),
             'room_name': self.room_name,
-            'left': self.left,
+            'left': self.is_left,
             'mute': self.mute
         }
