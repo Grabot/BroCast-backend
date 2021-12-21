@@ -20,7 +20,6 @@ class Login_v1_3(Resource):
 
     # noinspection PyMethodMayBeStatic
     def post(self):
-        print("going to login")
         json_data = request.get_json(force=True)
         bro_name = json_data["bro_name"]
         bromotion = json_data["bromotion"]
@@ -28,7 +27,6 @@ class Login_v1_3(Resource):
         token = json_data["token"]
         registration_id = json_data["registration_id"]
 
-        print("bro name: %s" % bro_name)
         bro = None
         if token is not None and not "":
             bro = Bro.verify_auth_token(token)
