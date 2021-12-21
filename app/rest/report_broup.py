@@ -64,11 +64,8 @@ class ReportBroup(Resource):
 
         if not broup_that_is_reported.has_left():
             remove_bromotion = remove_bro.get_bromotion()
-            print("removing bromotion: %s" % remove_bromotion)
             for broup in broup_objects:
-                print("broup name: %s" % broup.get_broup_name())
                 broup_name = remove_last_occur(broup.get_broup_name(), remove_bromotion)
-                print("broup name after: %s" % broup.get_broup_name())
                 broup.set_broup_name(broup_name)
                 broup.remove_bro(logged_in_bro.id)
                 db.session.add(broup)
