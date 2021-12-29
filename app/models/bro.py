@@ -114,7 +114,7 @@ class Bro(db.Model):
             unread_messages=0,
             last_time_activity=datetime.utcnow(),
             mute=False,
-            left=False,
+            is_left=False,
             removed=False
         )
         db.session.add(b)
