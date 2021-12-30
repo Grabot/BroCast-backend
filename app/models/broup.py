@@ -146,6 +146,7 @@ class Broup(db.Model):
 
     def leave_broup(self):
         self.is_left = True
+        self.unread_messages = 0
 
     def has_left(self):
         return self.is_left
