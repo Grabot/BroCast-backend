@@ -73,6 +73,7 @@ def notify(message_body, message_title, registration_id, chat_id, broup):
         'notification': {
             'body': message_body,
             'title': message_title,
+            "tag": "1",  # This will override any previous notification so it will always only show 1.
             'android_channel_id': 'custom_sound',
             'sound': 'res_brodio.aiff',
             'icon': 'res_bro_icon'
