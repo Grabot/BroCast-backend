@@ -14,6 +14,7 @@ from app.util.util import update_broups
 
 
 def send_message(data):
+    print("going to send a message")
     bro_id = data["bro_id"]
     bros_bro_id = data["bros_bro_id"]
     message = data["message"]
