@@ -19,6 +19,8 @@ def send_message(data):
     message = data["message"]
     text_message = data["text_message"]
 
+    print("sending message: %s: %s" % (message, text_message))
+
     own_chat = BroBros.query.filter_by(bro_id=bro_id, bros_bro_id=bros_bro_id).first()
     other_bro_chat = BroBros.query.filter_by(bro_id=bros_bro_id, bros_bro_id=bro_id).first()
 

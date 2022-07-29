@@ -134,3 +134,4 @@ venv.bak/
 hostInfo.txt
 
 kubernetes/flask_secret_production.yaml
+kubernetes/bro_cast.yaml
