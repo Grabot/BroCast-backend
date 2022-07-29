@@ -132,3 +132,5 @@ venv.bak/
 !.elasticbeanstalk/*.global.yml
 
 hostInfo.txt
+
+kubernetes/flask_secret_production.yaml

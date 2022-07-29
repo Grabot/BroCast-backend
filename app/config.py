@@ -27,5 +27,7 @@ class DevelopmentConfig(Config):
     DB_URL = 'postgresql+psycopg2://{user}:{pw}@{url}:{port}/{db}'.format(
         user=POSTGRES_USER, pw=POSTGRES_PASSWORD, url=POSTGRES_URL, port=POSTGRES_PORT, db=POSTGRES_DB)
 
+    REDIS_URL = "redis://{url}:{port}".format(url=REDIS_URL, port=REDIS_PORT)
+
     SQLALCHEMY_DATABASE_URI = DB_URL
 

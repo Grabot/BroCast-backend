@@ -1,3 +1,14 @@
+# local secret
+apiVersion: v1
+kind: Secret
+metadata:
+  name: flask-secret
+type: Opaque
+data:
+  POSTGRES_USER: cG9zdGdyZXM= # postgres
+  POSTGRES_PASSWORD: cGFzc3dvcmQ= # password
+  POSTGRES_DB: ZGF0YWJhc2U= # database
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -6,7 +17,7 @@ metadata:
   labels:
     app: flaskapi
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: flaskapi
@@ -18,26 +29,23 @@ spec:
     spec:
       containers:
         - name: flaskapi
-          image: bro_cast:0.74
+          image: grabot/bro_cast:1.74
           imagePullPolicy: Never
           ports:
             - containerPort: 5000
           resources:
             requests:
-              cpu: "50m"
-              memory: "128Mi"
+              cpu: "250m"
+              memory: "500Mi"
             limits:
               cpu: "500m"
-              memory: "128Mi"
+              memory: "1Gi"
+          envFrom:
+            - secretRef:
+                name: flask-secret
           env:
             - name: POSTGRES_URL
               value: service-postgres.cast-of-bro.svc.cluster.local
-            - name: POSTGRES_USER
-              value: postgres
-            - name: POSTGRES_PASSWORD
-              value: password
-            - name: POSTGRES_DB
-              value: database
             - name: REDIS_URL
               value: redis-service.cast-of-bro.svc.cluster.local
             - name: REDIS_PORT
