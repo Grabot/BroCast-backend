@@ -16,6 +16,7 @@ class Message(db.Model):
     text_message = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     info = db.Column(db.Boolean, default=False)
+    data = db.Column(db.Text)
 
     def get_timestamp(self):
         return self.timestamp
@@ -30,5 +31,6 @@ class Message(db.Model):
             'body': self.body,
             'text_message': self.text_message,
             'info': self.info,
-            'timestamp': self.timestamp.strftime('%Y-%m-%dT%H:%M:%S.%f')
+            'timestamp': self.timestamp.strftime('%Y-%m-%dT%H:%M:%S.%f'),
+            'data': self.data
         }

@@ -14,12 +14,17 @@ from app.util.util import update_broups
 
 
 def send_message(data):
+    print("sending an image: %s" % data)
     bro_id = data["bro_id"]
     bros_bro_id = data["bros_bro_id"]
     message = data["message"]
     text_message = data["text_message"]
 
-    print("sending message: %s: %s" % (message, text_message))
+    message_data = None
+    if "message_data" in data:
+        message_data = data["message_data"]
+        print("let's check some stuff about it")
+        print(type(message_data))
 
     own_chat = BroBros.query.filter_by(bro_id=bro_id, bros_bro_id=bros_bro_id).first()
     other_bro_chat = BroBros.query.filter_by(bro_id=bros_bro_id, bros_bro_id=bro_id).first()
@@ -34,7 +39,8 @@ def send_message(data):
         body=message,
         text_message=text_message,
         timestamp=datetime.utcnow(),
-        info=False
+        info=False,
+        data=message_data
     )
 
     if other_bro_chat is not None and not other_bro_chat.is_blocked():
