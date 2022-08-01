@@ -1,3 +1,5 @@
+from app.models.bro_bros import BroBros
+from app.models.broup import Broup
 from app.rest import app_api
 from flask_restful import Api
 from flask_restful import Resource
@@ -9,10 +11,14 @@ class All(Resource):
 
     # noinspection PyMethodMayBeStatic
     def get(self):
-        bros = Bro.query.all()
+        amount_of_bros = len(Bro.query.all())
+        amount_of_bro_chats = len(BroBros.query.all())
+        amount_of_broup_chats = len(Broup.query.all())
         return {
             "result": True,
-            "bro_list": [bro.serialize for bro in bros]
+            "amount_of_bros": amount_of_bros,
+            "amount_of_bro_chats": amount_of_bro_chats,
+            "amount_of_broup_chats": amount_of_broup_chats,
         }
 
     def put(self):

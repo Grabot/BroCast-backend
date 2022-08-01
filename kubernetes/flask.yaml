@@ -18,8 +18,8 @@ spec:
     spec:
       containers:
         - name: flaskapi
-          image: bro_cast:1.74
-          imagePullPolicy: Never
+          image: grabot/bro_cast:1.76
+          imagePullPolicy: Always
           ports:
             - containerPort: 5000
           resources:
