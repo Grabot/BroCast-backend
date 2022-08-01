@@ -91,9 +91,6 @@ class NamespaceSock(Namespace):
     def on_message(self, data):
         send_message(data)
 
-    def on_message_image(self, data):
-        send_message(data)
-
     # noinspection PyMethodMayBeStatic
     def on_message_broup(self, data):
         send_message_broup(data)

@@ -14,7 +14,7 @@ from app.util.util import update_broups
 
 
 def send_message(data):
-    print("sending an image: %s" % data)
+
     bro_id = data["bro_id"]
     bros_bro_id = data["bros_bro_id"]
     message = data["message"]
@@ -23,8 +23,6 @@ def send_message(data):
     message_data = None
     if "message_data" in data:
         message_data = data["message_data"]
-        print("let's check some stuff about it")
-        print(type(message_data))
 
     own_chat = BroBros.query.filter_by(bro_id=bro_id, bros_bro_id=bros_bro_id).first()
     other_bro_chat = BroBros.query.filter_by(bro_id=bros_bro_id, bros_bro_id=bro_id).first()
@@ -82,13 +80,18 @@ def send_message_broup(data):
     message = data["message"]
     text_message = data["text_message"]
 
+    message_data = None
+    if "message_data" in data:
+        message_data = data["message_data"]
+
     broup_message = BroupMessage(
         sender_id=bro_id,
         broup_id=broup_id,
         body=message,
         text_message=text_message,
         timestamp=datetime.utcnow(),
-        info=False
+        info=False,
+        data=message_data
     )
 
     broup_objects = Broup.query.filter_by(broup_id=broup_id)
