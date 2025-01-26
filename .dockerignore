@@ -1,0 +1,5 @@
+*
+!app/
+!pyproject.toml
+!.pre-commit-config.yaml
+!.flake8

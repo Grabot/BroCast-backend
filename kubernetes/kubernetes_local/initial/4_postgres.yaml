@@ -1,0 +1,70 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: postgres-db-claim
+  namespace: bro
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 150Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: bro
+  name: deployment-postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: database
+  template:
+    metadata:
+      namespace: bro
+      labels:
+        app: database
+    spec:
+      terminationGracePeriodSeconds: 180
+      containers:
+        - name: postgres
+          image: postgres:latest
+          ports:
+            - name: tcp-5432
+              containerPort: 5432
+          envFrom:
+            - secretRef:
+                name: fastapi-secret
+          env:
+            - name: POSTGRES_PORT
+              value: "5432"
+          args:
+          - -c
+          - max_connections=4000
+          - -c
+          - max_parallel_workers=32
+          - -c
+          - max_parallel_workers_per_gather=8
+          - -c
+          - shared_buffers=10240MB
+          volumeMounts:
+            - name: data-storage-volume
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: data-storage-volume
+          persistentVolumeClaim:
+            claimName: postgres-db-claim
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-postgres
+  namespace: bro
+  labels:
+    name: postgres
+spec:
+  ports:
+    - port: 5432
+  selector:
+    app: database

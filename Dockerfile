@@ -1,11 +1,21 @@
-FROM python:3.8
+FROM python:3.12.3-slim-bullseye
 
-COPY . /app
 WORKDIR /app
-RUN pip install -r requirements.txt
 
-COPY boot.sh ./
-RUN chmod u+x boot.sh
+# install static dependencies
+RUN apt-get update &&\
+    apt install -y git &&\
+    pip3 install --no-cache-dir --upgrade pip && \
+    pip3 install --no-cache-dir poetry && \
+    pip3 install --no-cache-dir pre-commit && \
+    poetry config virtualenvs.create false
 
-EXPOSE 5000
-ENTRYPOINT ["/bin/sh", "boot.sh"]
+# add dependency file
+COPY pyproject.toml /app/pyproject.toml
+
+# install project dependencies
+RUN poetry install --no-root --only main
+
+# add other project files
+COPY app /app/.
+RUN mkdir -p static/uploads

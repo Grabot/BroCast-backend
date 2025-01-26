@@ -1,0 +1,112 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fastapi-deployment
+  namespace: bro
+  labels:
+    app: fastapi
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fastapi
+  template:
+    metadata:
+      namespace: bro
+      labels:
+        app: fastapi
+    spec:
+      containers:
+        - name: fastapi
+          image: grabot/brocast:1.00
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5000
+          volumeMounts:
+            - mountPath: /app/static/uploads
+              name: hostvol
+          envFrom:
+            - secretRef:
+                name: fastapi-secret
+          env:
+            - name: POSTGRES_URL
+              value: service-postgres.golden-age.svc.cluster.local
+            - name: POSTGRES_PORT
+              value: "5432"
+            - name: REDIS_URL
+              value: redis-service.golden-age.svc.cluster.local
+            - name: REDIS_PORT
+              value: "6379"
+            - name: GOOGLE_CLIENT_ID
+              value: "<google-client-id>"
+            - name: GOOGLE_CLIENT_SECRET
+              value: "<google-client-secret>"
+            - name: GITHUB_CLIENT_ID
+              value: "<github-client-id>"
+            - name: GITHUB_CLIENT_SECRET
+              value: "<github-client-secret>"
+            - name: REDDIT_CLIENT_ID
+              value: "<reddit-client-id>"
+            - name: REDDIT_CLIENT_SECRET
+              value: "<reddit-client-secret>"
+            - name: JWT_ALG
+              value: "<jwt-alg>"
+            - name: JWT_CRV
+              value: "<jwt-crv>"
+            - name: JWT_D
+              value: "<jwt-d>"
+            - name: JWT_KTY
+              value: "<jwt-kty>"
+            - name: JWT_X
+              value: "<jwt-x>"
+            - name: JWT_Y
+              value: "<jwt-y>"
+            - name: JWT_USE
+              value: "<jwt-use>"
+            - name: JWT_KID
+              value: "<jwt-kid>"
+            - name: JWT_TYP
+              value: "<jwt-typ>"
+            - name: JWT_SUB
+              value: "<jwt-sub>"
+            - name: JWT_ISS
+              value: "<jwt-iss>"
+            - name: JWT_AUD
+              value: "<jwt-aud>"
+            - name: MAIL_SERVER
+              value: "smtp.gmail.com"
+            - name: MAIL_PORT
+              value: "465"
+            - name: MAIL_USE_TLS
+              value: "1"
+            - name: MAIL_PASSWORD
+              value: "<mail-password>"
+            - name: MAIL_USERNAME
+              value: "<mail-username>"
+            - name: MAIL_SENDERNAME
+              value: "<mail-sendername>"
+            - name: BASE_URL
+              value: "<base-url>"
+            - name: DB_EXCLUDE_TABLES
+              value: "[]"
+          args:
+            - /bin/sh
+            - boot.sh
+      volumes:
+        - name: hostvol
+          hostPath:
+            path: /data/avatars
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: bro
+  name: fastapi-service
+spec:
+  ports:
+  - port: 5000
+    protocol: TCP
+    targetPort: 5000
+  selector:
+    app: fastapi
+  type: LoadBalancer
