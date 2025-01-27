@@ -18,10 +18,10 @@ import hashlib
 
 
 class RegisterRequest(BaseModel):
-    email: Optional[str] = None
-    bro_name: Optional[str] = None
+    email: str
+    bro_name: str
+    bromotion: str
     password: str
-    is_web: bool
 
 
 @api_router_v1.post("/register", status_code=200)
@@ -32,37 +32,41 @@ async def register_bro(
 ) -> dict:
     email = register_request.email
     bro_name = register_request.bro_name
+    bromotion = register_request.bromotion
     password = register_request.password
-    is_web = register_request.is_web
 
-    if email is None or password is None or bro_name is None:
+    if email is None or password is None or bro_name is None or bromotion is None:
         return get_failed_response("Invalid request", response)
 
-    # Not loading the bros and followers here. Just checking if the broname is taken.
-    statement = select(Bro).where(func.lower(Bro.broname) == bro_name.lower())
-    results = await db.execute(statement)
-    result = results.first()
-
-    if result is not None:
-        return get_failed_response(
-            "Bro is already taken, please choose a different one.", response
-        )
-
-    # Also not loading the bros and followers here, just checking if the email is taken.
+    # Not loading the bros and followers here, just checking if the email is taken.
     email_hash = hashlib.sha512(email.lower().encode("utf-8")).hexdigest()
-    statement = select(Bro).where(Bro.origin == 0).where(Bro.email_hash == email_hash)
+    statement = select(Bro).where(
+        Bro.origin == 0,
+        Bro.email_hash == email_hash
+    )
     results = await db.execute(statement)
     result = results.first()
 
     if result is not None:
         return get_failed_response(
-            "This email has already been used to create an account", response
+            "This email has already been used to create an account, please log in instead", response
         )
-    if is_web:
-        platform = 1
-    else:
-        platform = 2
-    bro = Bro(bro_name=bro_name, email_hash=email_hash, origin=0, platform=platform)
+    # Also not loading the bros and followers here. 
+    # Just checking if the broname and bromotion combination is taken.
+    # Multiple statements in the where clause defaults to AND.
+    statement = select(Bro).where(
+        func.lower(Bro.bro_name) == bro_name.lower(),
+        Bro.bromotion == bromotion,
+    )
+    results = await db.execute(statement)
+    result = results.first()
+
+    if result is not None:
+        return get_failed_response(
+            "Broname and bromotion combination is already taken, please choose a different one.", response
+        )
+
+    bro = Bro(bro_name=bro_name, bromotion=bromotion, email_hash=email_hash, origin=0)
     bro.hash_password(password)
     db.add(bro)
     # Refresh bro so we can get the id.

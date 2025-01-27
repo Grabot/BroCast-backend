@@ -42,7 +42,7 @@ async def refresh_bro_token(db: AsyncSession, access_token, refresh_token):
     bro_result = bro_results.first()
     if bro_result is None:
         return await delete_bro_token_and_return(db, bro_token, None)
-    bro = bro_result.Bro
+    bro: Bro = bro_result.Bro
 
     if bro_token.token_expiration > int(time.time()):
         return await delete_bro_token_and_return(db, bro_token, bro)
@@ -60,7 +60,7 @@ async def refresh_bro_token(db: AsyncSession, access_token, refresh_token):
         return await delete_bro_token_and_return(db, bro_token, None)
 
     # It all needs to match before you accept the login
-    if bro.id == access["id"] and bro.broname == refresh["bro_name"]:
+    if bro.id == access["id"] and bro.bro_name == refresh["bro_name"]:
         return await delete_bro_token_and_return(db, bro_token, bro)
     else:
         return await delete_bro_token_and_return(db, bro_token, None)

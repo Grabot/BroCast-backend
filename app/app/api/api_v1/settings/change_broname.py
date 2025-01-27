@@ -34,7 +34,7 @@ async def change_broname(
         return get_failed_response("An error occurred", response)
 
     new_broname = change_broname_request.broname
-    bro_statement = select(Bro).where(func.lower(Bro.broname) == new_broname.lower())
+    bro_statement = select(Bro).where(func.lower(Bro.bro_name) == new_broname.lower())
     results = await db.execute(bro_statement)
     result = results.first()
     if result is not None:

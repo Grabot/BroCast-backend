@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional, List
-from sqlmodel import Field, SQLModel, ForeignKey, Relationship, Column, ARRAY, Integer
+from sqlmodel import Field, SQLModel, Relationship, Column, ARRAY, Integer
 import pytz
 
 
@@ -11,7 +11,7 @@ class Broup(SQLModel, table=True):
     __tablename__ = 'Broup'
     id: int = Field(default=None, primary_key=True)
     broup_id: int = Field(unique=False)
-    bro_id: int = Field(ForeignKey('Bro.id'))
+    bro_id: int = Field(foreign_key="Bro.id")
     bro_ids: List[int] = Field(default=[], sa_column=Column(ARRAY(Integer())))
     bro_admin_ids: List[int] = Field(default=[], sa_column=Column(ARRAY(Integer())))
     broup_name: str

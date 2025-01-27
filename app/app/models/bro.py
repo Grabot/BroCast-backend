@@ -27,10 +27,10 @@ class Bro(SQLModel, table=True):
     origin: int
     default_avatar: bool = Field(default=True)
 
-    tokens: List["BroToken"] = Relationship(back_populates="user")
+    tokens: List["BroToken"] = Relationship(back_populates="bro")
 
-    bros: Optional["Broup"] = Relationship(
-        back_populates="bro_member",
+    bros: List["Broup"] = Relationship(
+        back_populates="broup_member",
         sa_relationship_kwargs={
             "uselist": False,
             "primaryjoin": "and_(Bro.id==Broup.bro_id, Broup.accepted==True)",
@@ -67,7 +67,7 @@ class Bro(SQLModel, table=True):
         self.password_hash = pwd_context.hash(password + salt)
     
     def verify_password(self, password):
-        # If the user has any other origin than regular it should not get here
+        # If the bro has any other origin than regular it should not get here
         # because the verification is does elsewhere. So if it does, we return False
         if self.origin != 0:
             return False
@@ -92,7 +92,7 @@ class Bro(SQLModel, table=True):
     def is_default(self):
         return self.default_avatar
 
-    def get_user_avatar(self, full=False):
+    def get_bro_avatar(self, full=False):
         if self.default_avatar:
             file_name = self.avatar_filename_default()
         else:
@@ -113,13 +113,13 @@ class Bro(SQLModel, table=True):
 
     @property
     def serialize(self):
-        # get user details without personal information
+        # get bro details without personal information
         return {
             "id": self.id,
             "bro_name": self.bro_name,
             "bromotion": self.bromotion,
             "origin": self.origin == 0,
-            "avatar": self.get_user_avatar(True),
+            "avatar": self.get_bro_avatar(True),
         }
 
     @property

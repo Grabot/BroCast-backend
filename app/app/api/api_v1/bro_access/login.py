@@ -51,7 +51,7 @@ async def login_bro(
         statement = (
             select(Bro)
             .where(Bro.origin == 0)
-            .where(func.lower(Bro.broname) == bro_name.lower())
+            .where(func.lower(Bro.bro_name) == bro_name.lower())
             .options(selectinload(Bro.bros))
         )
         results = await db.execute(statement)
