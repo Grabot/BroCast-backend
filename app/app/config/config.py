@@ -4,7 +4,7 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    API_V1_STR: str = "/api/v1.0"
+    API_V1_STR: str = "/api/v1.4"
     API_LOGIN_STR: str = "/login"
 
     POSTGRES_URL: str = os.environ["POSTGRES_URL"]
@@ -85,7 +85,7 @@ class Settings(BaseSettings):
     JWT_SUB: str = os.environ.get("JWT_SUB", "")
     JWT_ISS: str = os.environ.get("JWT_ISS", "")
     JWT_AUD: str = os.environ.get("JWT_AUD", "")
-    API_SOCK_NAMESPACE: str = "/api/v1.0/sock"
+    API_SOCK_NAMESPACE: str = "/api/v1.4/sock"
 
     MAIL_SERVER: str = os.environ.get("MAIL_SERVER")
     MAIL_PORT: str = int(os.environ.get("MAIL_PORT") or 25)

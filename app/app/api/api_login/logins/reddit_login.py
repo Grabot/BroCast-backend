@@ -1,5 +1,4 @@
 from base64 import b64encode
-from typing import Optional
 from urllib.parse import urlencode
 
 import requests
@@ -8,12 +7,12 @@ from fastapi.responses import RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.api_login import api_router_login
-from app.api.api_login.logins.login_user_origin import login_user_origin
+from app.app.api.api_login.logins.login_bro_origin import login_bro_origin
 from app.celery_worker.tasks import task_generate_avatar
 from app.config.config import settings
 from app.database import get_db
-from app.models import User
-from app.util.util import get_user_tokens
+from app.models import Bro
+from app.util.util import get_bro_tokens
 
 
 @api_router_login.get("/reddit", status_code=200)
@@ -77,29 +76,29 @@ async def reddit_callback(
 
     authorization_response = requests.get(authorization_url, headers=headers_authorization)
 
-    reddit_user = authorization_response.json()
+    reddit_bro = authorization_response.json()
 
-    users_name = reddit_user["name"]
-    users_email = "%s@reddit.com" % users_name  # Reddit gives no email
+    bro_name = reddit_bro["name"]
+    bro_email = "%s@reddit.com" % bro_name  # Reddit gives no email
 
-    [user, user_created] = await login_user_origin(users_name, users_email, 3, db)
+    [bro, bro_created] = await login_bro_origin(bro_name, bro_email, 3, db)
 
-    if user:
-        user_token = get_user_tokens(user, 30, 60)
-        db.add(user_token)
+    if bro:
+        bro_token = get_bro_tokens(bro, 30, 60)
+        db.add(bro_token)
         await db.commit()
-        access_token = user_token.access_token
-        refresh_token = user_token.refresh_token
+        access_token = bro_token.access_token
+        refresh_token = bro_token.refresh_token
 
-        db.add(user)
+        db.add(bro)
         await db.commit()
-        await db.refresh(user)
+        await db.refresh(bro)
 
-        if user_created:
-            db.add(user)
-            await db.refresh(user)
+        if bro_created:
+            db.add(bro)
+            await db.refresh(bro)
             await db.commit()
-            _ = task_generate_avatar.delay(user.avatar_filename(), user.id)
+            _ = task_generate_avatar.delay(bro.avatar_filename(), bro.id)
         else:
             await db.commit()
 
@@ -108,10 +107,10 @@ async def reddit_callback(
         params["refresh_token"] = refresh_token
         url_params = urlencode(params)
 
-        # Send user to the world
+        # Send bro to the world
         request_base_url = str(request.base_url)
         request_base_url = request_base_url.replace("http://", "https://", 1)
-        world_url = request_base_url + "butterflyaccess"
+        world_url = request_base_url + "broaccess"
         world_url_params = world_url + "?" + url_params
         return RedirectResponse(world_url_params)
     else:

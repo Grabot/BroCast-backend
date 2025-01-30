@@ -18,10 +18,9 @@ import hashlib
 
 class LoginRequest(BaseModel):
     email: Optional[str] = None
-    # TODO: add bromotion?
     bro_name: Optional[str] = None
-    password: str
-    is_web: bool
+    bromotion: Optional[str] = None
+    password: str    
 
 
 @api_router_v1.post("/login", status_code=200)
@@ -32,11 +31,14 @@ async def login_bro(
 ) -> dict:
     email = login_request.email
     bro_name = login_request.bro_name
+    bromotion = login_request.bromotion
     password = login_request.password
-    is_web = login_request.is_web
-    if password is None or (email is None and bro_name is None):
+    
+    if password is None:
         return get_failed_response("Invalid request", response)
-    if bro_name is None:
+    if bro_name is None and bromotion is None:
+        if email is None:
+            return get_failed_response("Invalid request", response)
         # login with email
         email_hash = hashlib.sha512(email.lower().encode("utf-8")).hexdigest()
         statement = (
@@ -48,10 +50,16 @@ async def login_bro(
         results = await db.execute(statement)
         result_bro = results.first()
     elif email is None:
+        if bro_name is None or bromotion is None:
+            return get_failed_response("Invalid request", response)
+        # login with bro_name and bromotion
         statement = (
             select(Bro)
             .where(Bro.origin == 0)
-            .where(func.lower(Bro.bro_name) == bro_name.lower())
+            .where(
+                func.lower(Bro.bro_name) == bro_name.lower(),
+                Bro.bromotion == bromotion
+            )
             .options(selectinload(Bro.bros))
         )
         results = await db.execute(statement)
@@ -63,27 +71,10 @@ async def login_bro(
         return get_failed_response("bro name or email not found", response)
 
     bro: Bro = result_bro.Bro
-    return_bro = copy(bro.serialize)
 
     if not bro.verify_password(password):
         return get_failed_response("password not correct", response)
 
-    # If the platform is 3 we don't need to check anything anymore.
-    platform_achievement = False
-
-    if bro.platform != 3:
-        if is_web:
-            platform_value = bro.logged_in_web()
-            if platform_value > 0:
-                db.add(bro)
-            if platform_value == 2:
-                platform_achievement = True
-        elif not is_web:
-            platform_value = bro.logged_in_mobile()
-            if platform_value > 0:
-                db.add(bro)
-            if platform_value == 2:
-                platform_achievement = True
     # Valid login, we refresh the token for this bro.
     bro_token = get_bro_tokens(bro)
     db.add(bro_token)
@@ -95,8 +86,7 @@ async def login_bro(
         "message": "Bro logged in successfully.",
         "access_token": bro_token.access_token,
         "refresh_token": bro_token.refresh_token,
-        "bro": return_bro,
-        "platform_achievement": platform_achievement
+        "bro": bro.serialize
     }
 
     return login_response

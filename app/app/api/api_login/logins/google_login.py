@@ -11,13 +11,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.api_login import api_router_login
 from app.api.api_v1 import api_router_v1
-from app.api.api_login.logins.login_user_origin import login_user_origin
+from app.app.api.api_login.logins.login_bro_origin import login_bro_origin
 from app.celery_worker.tasks import task_generate_avatar
 from app.config.config import settings
 from app.database import get_db
-from app.models import User
+from app.models import Bro
 from app.util.rest_util import get_failed_response
-from app.util.util import get_user_tokens
+from app.util.util import get_bro_tokens
 
 google_client = WebApplicationClient(settings.GOOGLE_CLIENT_ID)
 
@@ -36,7 +36,7 @@ async def login_google(
     authorization_endpoint = google_provider_cfg["authorization_endpoint"]
 
     # Use library to construct the request for Google login and provide
-    # scopes that let you retrieve user's profile from Google
+    # scopes that let you retrieve bro's profile from Google
     final_redirect_url = str(request.url)
     final_redirect_url = final_redirect_url.replace("http://", "https://", 1)
     request_uri = google_client.prepare_request_uri(
@@ -47,31 +47,31 @@ async def login_google(
     return RedirectResponse(request_uri)
 
 
-async def log_user_in(
-        userinfo_response,
+async def log_bro_in(
+        broinfo_response,
         db: AsyncSession = Depends(get_db),
 ):
-    users_email = userinfo_response.json()["email"]
-    users_name = userinfo_response.json()["given_name"]
+    bro_email = broinfo_response.json()["email"]
+    bro_name = broinfo_response.json()["given_name"]
 
-    [user, user_created] = await login_user_origin(users_name, users_email, 1, db)
+    [bro, bro_created] = await login_bro_origin(bro_name, bro_email, 1, db)
 
-    if user:
-        user_token = get_user_tokens(user, 30, 60)
-        db.add(user_token)
+    if bro:
+        bro_token = get_bro_tokens(bro, 30, 60)
+        db.add(bro_token)
         await db.commit()
-        access_token = user_token.access_token
-        refresh_token = user_token.refresh_token
+        access_token = bro_token.access_token
+        refresh_token = bro_token.refresh_token
 
-        if user_created:
-            db.add(user)
-            await db.refresh(user)
+        if bro_created:
+            db.add(bro)
+            await db.refresh(bro)
             await db.commit()
-            _ = task_generate_avatar.delay(user.avatar_filename(), user.id)
+            _ = task_generate_avatar.delay(bro.avatar_filename(), bro.id)
         else:
             await db.commit()
 
-        return [True, [access_token, refresh_token, user, user_created]]
+        return [True, [access_token, refresh_token, bro, bro_created]]
     else:
         return [False, [None, None, None, None]]
 
@@ -85,7 +85,7 @@ async def google_callback(
 ):
     # Get authorization code Google sent back to you
     # Find out what URL to hit to get tokens that allow you to ask for
-    # things on behalf of a user
+    # things on behalf of a bro
     google_provider_cfg = get_google_provider_cfg()
     token_endpoint = google_provider_cfg["token_endpoint"]
 
@@ -118,18 +118,18 @@ async def google_callback(
     google_client.parse_request_body_response(json.dumps(token_response.json()))
 
     # Now that you have tokens (yay) let's find and hit the URL
-    # from Google that gives you the user's profile information,
+    # from Google that gives you the bro's profile information,
     # including their Google profile image and email
-    userinfo_endpoint = google_provider_cfg["userinfo_endpoint"]
-    uri, headers, body = google_client.add_token(userinfo_endpoint)
+    broinfo_endpoint = google_provider_cfg["userinfo_endpoint"]
+    uri, headers, body = google_client.add_token(broinfo_endpoint)
 
-    userinfo_response = requests.get(uri, headers=headers, data=body)
+    broinfo_response = requests.get(uri, headers=headers, data=body)
     request_base_url = str(request.base_url)
 
-    if not userinfo_response.json().get("email_verified"):
-        return get_failed_response("User email not available or not verified by Google.", response)
+    if not broinfo_response.json().get("email_verified"):
+        return get_failed_response("Bro email not available or not verified by Google.", response)
 
-    [success, [access_token, refresh_token, _]] = await log_user_in(userinfo_response, db)
+    [success, [access_token, refresh_token, _]] = await log_bro_in(broinfo_response, db)
 
     if success:
         params = dict()
@@ -138,9 +138,9 @@ async def google_callback(
 
         url_params = urlencode(params)
 
-        # Send user to the world
+        # Send bro to the world
         request_base_url = request_base_url.replace("http://", "https://", 1)
-        world_url = request_base_url + "butterflyaccess"
+        world_url = request_base_url + "broaccess"
         world_url_params = world_url + "?" + url_params
         return RedirectResponse(world_url_params)
     else:
@@ -154,7 +154,7 @@ class GoogleTokenRequest(BaseModel):
     is_web: bool
 
 
-# User the v1 router, so it will have `api/v1.0/` before the path
+# Bro the v1 router, so it will have `api/v1.4/` before the path
 @api_router_v1.post("/login/google/token", status_code=200)
 async def login_google_token(
         google_token_request: GoogleTokenRequest,
@@ -164,58 +164,42 @@ async def login_google_token(
 
     google_access_token = google_token_request.access_token
     is_web = google_token_request.is_web
-    userinfo_response = requests.get(
+    broinfo_response = requests.get(
         f"{settings.GOOGLE_ACCESS_TOKEN_URL}?access_token={google_access_token}",
     )
 
-    if userinfo_response.json().get("error", None):
+    if broinfo_response.json().get("error", None):
         return get_failed_response("An error occurred", response)
 
     # You want to make sure their email is verified.
-    # The user authenticated with Google, authorized your
+    # The bro authenticated with Google, authorized your
     # app, and now you've verified their email through Google!
-    if not userinfo_response.json().get("email_verified"):
-        return get_failed_response("User email not available or not verified by Google.", response)
+    if not broinfo_response.json().get("email_verified"):
+        return get_failed_response("Bro email not available or not verified by Google.", response)
 
     # We don't use the tokens send with this,
     # because they are only valid for a short period, and we will refresh them later on
-    [success, [_, _, user, user_created]] = await log_user_in(userinfo_response, db)
+    [success, [_, _, bro, bro_created]] = await log_bro_in(broinfo_response, db)
 
     if success:
-
-        # Log the user in and return all the data we need.
-        # This is the same code from `login.py` just copied for simplicity for now.
-        # If the platform is 3 we don't need to check anything anymore.
-        platform_achievement = False
-        platform_achievement_action = user.check_platform_achieved(is_web)
-        if platform_achievement_action == 1:
-            db.add(user)
-        elif platform_achievement_action == 2:
-            db.add(user)
-            platform_achievement = True
-
-        # Valid login, we refresh the token for this user.
-        user_token = get_user_tokens(user)
-        db.add(user_token)
+        # Valid login, we refresh the token for this bro.
+        bro_token = get_bro_tokens(bro)
+        db.add(bro_token)
         await db.commit()
 
-        if user_created:
-            user = user.serialize_no_detail
+        if bro_created:
+            bro_details = bro.serialize_no_detail
         else:
-            user = user.serialize
+            bro_details = bro.serialize
 
-        # We don't refresh the user object because we know all we want to know
+        # We don't refresh the bro object because we know all we want to know
         login_response = {
             "result": True,
-            "message": "user logged in successfully.",
-            "access_token": user_token.access_token,
-            "refresh_token": user_token.refresh_token,
-            "user": user,
-            "platform_achievement": False
+            "message": "Bro logged in successfully.",
+            "access_token": bro_token.access_token,
+            "refresh_token": bro_token.refresh_token,
+            "bro": bro_details,
         }
-
-        if platform_achievement:
-            login_response["platform_achievement"] = True
 
         return login_response
     else:

@@ -1,13 +1,13 @@
 from urllib.parse import urlencode
 
 import requests
-from app.api.api_login.logins.login_user_origin import login_user_origin
+from app.app.api.api_login.logins.login_bro_origin import login_bro_origin
 from app.celery_worker.tasks import task_generate_avatar
 from app.config.config import settings
 from app.database import get_db
 from app.api.api_login import api_router_login
 from app.util.rest_util import get_failed_response
-from app.util.util import get_user_tokens
+from app.util.util import get_bro_tokens
 from fastapi import Depends, Request, status, Response
 from fastapi.responses import RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -22,33 +22,33 @@ def decode_apple_token(token):
     return jwt.decode(token, audience=settings.APPLE_CLIENT_ID ,options={"verify_signature": False})
 
 
-async def log_user_in(
-        userinfo_response,
+async def log_bro_in(
+        broinfo_response,
         db: AsyncSession = Depends(get_db),
 ):
-    id_token = userinfo_response.json()["id_token"]
+    id_token = broinfo_response.json()["id_token"]
     apple_token = decode_apple_token(id_token)
-    users_email = apple_token["email"]
-    users_name = apple_token["email"].split("@")[0]
+    bro_email = apple_token["email"]
+    bro_name = apple_token["email"].split("@")[0]
 
-    [user, user_created] = await login_user_origin(users_name, users_email, 4, db)
+    [bro, bro_created] = await login_bro_origin(bro_name, bro_email, 4, db)
 
-    if user:
-        user_token = get_user_tokens(user, 30, 60)
-        db.add(user_token)
+    if bro:
+        bro_token = get_bro_tokens(bro, 30, 60)
+        db.add(bro_token)
         await db.commit()
-        access_token = user_token.access_token
-        refresh_token = user_token.refresh_token
+        access_token = bro_token.access_token
+        refresh_token = bro_token.refresh_token
 
-        if user_created:
-            db.add(user)
-            await db.refresh(user)
+        if bro_created:
+            db.add(bro)
+            await db.refresh(bro)
             await db.commit()
-            _ = task_generate_avatar.delay(user.avatar_filename(), user.id)
+            _ = task_generate_avatar.delay(bro.avatar_filename(), bro.id)
         else:
             await db.commit()
 
-        return [True, [access_token, refresh_token, user, user_created]]
+        return [True, [access_token, refresh_token, bro, bro_created]]
     else:
         return [False, [None, None, None, None]]
 
@@ -78,13 +78,13 @@ async def apple_get_redirect(
     refresh_token: str,
     request: Request
 ):
-    # Send user to the world
+    # Send bro to the world
     params = dict()
     params["access_token"] = access_token
     params["refresh_token"] = refresh_token
     url_params = urlencode(params)
 
-    world_url = f"{settings.BASE_URL}/butterflyaccess"
+    world_url = f"{settings.BASE_URL}/broaccess"
     world_url_params = world_url + "?" + url_params
     return RedirectResponse(world_url_params)
 
@@ -97,7 +97,7 @@ async def apple_callback(
     db: AsyncSession = Depends(get_db),
 ):
     apple_key_url = settings.APPLE_AUTHORIZE
-    userinfo_response = requests.post(
+    broinfo_response = requests.post(
         apple_key_url, headers={"Content-Type": "application/x-www-form-urlencoded"},
         data={
             "client_id": settings.APPLE_CLIENT_ID,
@@ -108,24 +108,19 @@ async def apple_callback(
         }
     )
 
-    if not userinfo_response.json().get("access_token") or not userinfo_response.json().get("refresh_token") or not userinfo_response.json().get("id_token"): 
-        return get_failed_response("User email not available or not verified by Apple.", response)
+    if not broinfo_response.json().get("access_token") or not broinfo_response.json().get("refresh_token") or not broinfo_response.json().get("id_token"): 
+        return get_failed_response("Bro email not available or not verified by Apple.", response)
 
-    [success, [_, _, user, user_created]] = await log_user_in(userinfo_response, db)
+    [success, [_, _, bro, bro_created]] = await log_bro_in(broinfo_response, db)
     if success:
-        # Valid login, we refresh the token for this user.
-        user_token = get_user_tokens(user)
-        db.add(user_token)
+        # Valid login, we refresh the token for this bro.
+        bro_token = get_bro_tokens(bro)
+        db.add(bro_token)
         await db.commit()
 
-        if user_created:
-            user = user.serialize_no_detail
-        else:
-            user = user.serialize
-
         params = dict()
-        params["access_token"] = user_token.access_token
-        params["refresh_token"] = user_token.refresh_token
+        params["access_token"] = bro_token.access_token
+        params["refresh_token"] = bro_token.refresh_token
         params["code"] = code
 
         url_params = urlencode(params)
@@ -146,7 +141,7 @@ async def apple_verify(
 ):
     apple_key_url = settings.APPLE_AUTHORIZE
 
-    userinfo_response = requests.post(
+    broinfo_response = requests.post(
         apple_key_url, headers={"Content-Type": "application/x-www-form-urlencoded"},
         data={
             "client_id": settings.APPLE_CLIENT_ID,
@@ -157,29 +152,29 @@ async def apple_verify(
         }
     )
 
-    if not userinfo_response.json().get("access_token") or not userinfo_response.json().get("refresh_token") or not userinfo_response.json().get("id_token"): 
-        return get_failed_response("User email not available or not verified by Apple.", response)
+    if not broinfo_response.json().get("access_token") or not broinfo_response.json().get("refresh_token") or not broinfo_response.json().get("id_token"): 
+        return get_failed_response("Bro email not available or not verified by Apple.", response)
 
-    [success, [_, _, user, user_created]] = await log_user_in(userinfo_response, db)
+    [success, [_, _, bro, bro_created]] = await log_bro_in(broinfo_response, db)
 
     if success:
-        # Valid login, we refresh the token for this user.
-        user_token = get_user_tokens(user)
-        db.add(user_token)
+        # Valid login, we refresh the token for this bro.
+        bro_token = get_bro_tokens(bro)
+        db.add(bro_token)
         await db.commit()
 
-        if user_created:
-            user = user.serialize_no_detail
+        if bro_created:
+            bro_detail = bro.serialize_no_detail
         else:
-            user = user.serialize
+            bro_detail = bro.serialize
 
-        # We don't refresh the user object because we know all we want to know
+        # We don't refresh the bro object because we know all we want to know
         login_response = {
             "result": True,
-            "message": "user logged in successfully.",
-            "access_token": user_token.access_token,
-            "refresh_token": user_token.refresh_token,
-            "user": user,
+            "message": "bro logged in successfully.",
+            "access_token": bro_token.access_token,
+            "refresh_token": bro_token.refresh_token,
+            "bro": bro_detail,
         }
 
         return login_response
