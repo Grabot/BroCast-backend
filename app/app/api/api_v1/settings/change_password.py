@@ -27,7 +27,7 @@ async def change_password(
     if auth_token == "":
         return get_failed_response("An error occurred", response)
 
-    bro: Optional[Bro] = await check_token(db, auth_token)
+    bro: Optional[Bro] = await check_token(db, auth_token, False)
     if not bro:
         return get_failed_response("An error occurred", response)
 

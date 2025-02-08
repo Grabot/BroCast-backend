@@ -17,7 +17,7 @@ class BroToken(SQLModel, table=True):
     refresh_token: str
     refresh_token_expiration: int
 
-    bro: "Bro" = Relationship(back_populates="tokens")
+    bro_token: "Bro" = Relationship(back_populates="tokens")
 
     def refresh_is_expired(self) -> bool:
         return self.refresh_token_expiration < int(time.time())

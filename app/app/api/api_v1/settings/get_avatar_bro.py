@@ -24,7 +24,7 @@ async def get_avatar_bro(
     if auth_token == "":
         return get_failed_response("An error occurred", response)
 
-    bro_avatar: Optional[Bro] = await check_token(db, auth_token)
+    bro_avatar: Optional[Bro] = await check_token(db, auth_token, False)
     if not bro_avatar:
         return get_failed_response("An error occurred", response)
 

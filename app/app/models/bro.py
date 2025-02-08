@@ -27,13 +27,11 @@ class Bro(SQLModel, table=True):
     origin: int
     default_avatar: bool = Field(default=True)
 
-    tokens: List["BroToken"] = Relationship(back_populates="bro")
+    tokens: List["BroToken"] = Relationship(back_populates="bro_token")
 
-    bros: List["Broup"] = Relationship(
-        back_populates="broup_member",
+    broups: List["Broup"] = Relationship(
         sa_relationship_kwargs={
-            "uselist": False,
-            "primaryjoin": "and_(Bro.id==Broup.bro_id, Broup.accepted==True)",
+            "primaryjoin": "and_(Bro.id==Broup.bro_id, Broup.removed==False)",
         },
     )
 
@@ -50,9 +48,9 @@ class Bro(SQLModel, table=True):
         return jwt.encode(settings.header, payload, settings.jwk)
 
     def generate_refresh_token(self, expires_in=345600):
-        # TODO: add bromotion?
         payload = {
             "bro_name": self.bro_name,
+            "bromotion": self.bromotion,
             "iss": settings.JWT_ISS,
             "aud": settings.JWT_AUD,
             "sub": settings.JWT_SUB,
@@ -110,20 +108,31 @@ class Bro(SQLModel, table=True):
                 image_as_base64 = base64.encodebytes(fd.read()).decode()
             return image_as_base64
 
-
     @property
     def serialize(self):
-        # get bro details without personal information
         return {
             "id": self.id,
             "bro_name": self.bro_name,
             "bromotion": self.bromotion,
             "origin": self.origin == 0,
             "avatar": self.get_bro_avatar(True),
+            "broups": [broup.serialize for broup in self.broups],
+        }
+
+    @property
+    def serialize_small(self):
+        # get bro details but make it small
+        return {
+            "id": self.id,
+            "bro_name": self.bro_name,
+            "bromotion": self.bromotion,
+            "origin": self.origin == 0,
+            "avatar": self.get_bro_avatar(False),
         }
 
     @property
     def serialize_no_detail(self):
+        # get bro details without personal information
         return {
             "id": self.id,
             "bro_name": self.bro_name,

@@ -10,7 +10,7 @@ from app.api.api_v1 import api_router_v1
 from app.celery_worker.tasks import task_send_email
 from app.config.config import settings
 from app.database import get_db
-from app.models import Bro, BroToken
+from app.models import Bro, Broup, BroToken
 from app.util.email.delete_account_email import delete_account_email
 from app.util.rest_util import get_failed_response
 from app.util.util import refresh_bro_token
@@ -61,7 +61,7 @@ async def remove_account(
     statement = (
         select(Bro)
         .where(Bro.email_hash == email_hash)
-        .options(selectinload(Bro.bros))
+        .options(selectinload(Bro.broups).selectinload(Broup.chat))
         .options(selectinload(Bro.tokens))
     )
     results = await db.execute(statement)
@@ -97,7 +97,7 @@ async def remove_account_token(
     if auth_token == "":
         return get_failed_response("An error occurred", response)
 
-    bro: Optional[Bro] = await check_token(db, auth_token)
+    bro: Optional[Bro] = await check_token(db, auth_token, False)
     if not bro:
         return get_failed_response("An error occurred", response)
 

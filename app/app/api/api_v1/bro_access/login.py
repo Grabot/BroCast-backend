@@ -10,7 +10,7 @@ from sqlmodel import select
 
 from app.api.api_v1 import api_router_v1
 from app.database import get_db
-from app.models import Bro
+from app.models import Bro, Broup
 from app.util.rest_util import get_failed_response
 from app.util.util import get_bro_tokens
 import hashlib
@@ -45,7 +45,7 @@ async def login_bro(
             select(Bro)
             .where(Bro.origin == 0)
             .where(Bro.email_hash == email_hash)
-            .options(selectinload(Bro.bros))
+            .options(selectinload(Bro.broups).selectinload(Broup.chat))
         )
         results = await db.execute(statement)
         result_bro = results.first()
@@ -60,7 +60,7 @@ async def login_bro(
                 func.lower(Bro.bro_name) == bro_name.lower(),
                 Bro.bromotion == bromotion
             )
-            .options(selectinload(Bro.bros))
+            .options(selectinload(Bro.broups).selectinload(Broup.chat))
         )
         results = await db.execute(statement)
         result_bro = results.first()
@@ -79,7 +79,7 @@ async def login_bro(
     bro_token = get_bro_tokens(bro)
     db.add(bro_token)
     await db.commit()
-
+    
     # We don't refresh the bro object because we know all we want to know
     login_response = {
         "result": True,

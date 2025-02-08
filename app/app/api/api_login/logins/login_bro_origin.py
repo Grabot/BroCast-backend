@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
 from app.database import get_db
-from app.models import Bro
+from app.models import Bro, Broup
 from sqlalchemy.orm import selectinload
 import hashlib
 
@@ -32,7 +32,7 @@ async def login_bro_origin(
         select(Bro)
         .where(Bro.origin == origin)
         .where(Bro.email_hash == hashed_email)
-        .options(selectinload(Bro.bros))
+        .options(selectinload(Bro.broups).selectinload(Broup.chat))
     )
     results_origin = await db.execute(statement_origin)
     result_bro_origin = results_origin.first()

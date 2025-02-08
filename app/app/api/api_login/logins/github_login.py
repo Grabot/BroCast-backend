@@ -74,14 +74,8 @@ async def github_callback(
         access_token = bro_token.access_token
         refresh_token = bro_token.refresh_token
 
-        db.add(bro)
-        await db.commit()
-        await db.refresh(bro)
-
         if bro_created:
-            db.add(bro)
             await db.refresh(bro)
-            await db.commit()
             _ = task_generate_avatar.delay(bro.avatar_filename(), bro.id)
         else:
             await db.commit()

@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.api_login import api_router_login
 from app.api.api_v1 import api_router_v1
-from app.app.api.api_login.logins.login_bro_origin import login_bro_origin
+from app.api.api_login.logins.login_bro_origin import login_bro_origin
 from app.celery_worker.tasks import task_generate_avatar
 from app.config.config import settings
 from app.database import get_db
@@ -64,9 +64,7 @@ async def log_bro_in(
         refresh_token = bro_token.refresh_token
 
         if bro_created:
-            db.add(bro)
             await db.refresh(bro)
-            await db.commit()
             _ = task_generate_avatar.delay(bro.avatar_filename(), bro.id)
         else:
             await db.commit()
