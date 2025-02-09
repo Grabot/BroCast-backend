@@ -24,8 +24,6 @@ class Chat(SQLModel, table=True):
     current_message_id: int
     last_message_read_time_bro: datetime = Field(default=datetime.now(pytz.utc).replace(tzinfo=None))
     last_message_received_time_bro: datetime = Field(default=datetime.now(pytz.utc).replace(tzinfo=None))
-    # We don't need to send these details all the time. Only when needed.
-    broup_updated: bool = Field(default=True)  # TODO: implement this?
     # Don't send the avatar every time. Only send it if changes have been made.
     new_avatar: bool = Field(default=True)  # TODO: implement this?
 
@@ -51,6 +49,9 @@ class Chat(SQLModel, table=True):
 
     def set_participants(self, bro_ids):
         self.bro_ids = bro_ids
+    
+    def set_broup_colour(self, new_broup_colour):
+        self.broup_colour = new_broup_colour
 
     # def set_admins(self, bro_admin_ids):
     #     self.bro_admin_ids = bro_admin_ids
@@ -96,14 +97,11 @@ class Chat(SQLModel, table=True):
     #             new_bros.append(old)
     #     self.bro_ids = new_bros
 
-    def update_description(self, description):
+    def update_broup_description(self, description):
         self.broup_description = description
 
     def get_broup_description(self):
         return self.broup_description
-
-    def update_colour(self, colour):
-        self.broup_colour = colour
 
     def avatar_filename(self):
         # We need something that is unique for each broup but doesn't change
@@ -138,7 +136,6 @@ class Chat(SQLModel, table=True):
     @property
     def serialize(self):
         return {
-            'broup_id': self.id,
             'bro_ids': self.bro_ids,
             'admin_ids': self.bro_admin_ids,
             'private': self.private,

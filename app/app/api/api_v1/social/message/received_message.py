@@ -37,6 +37,7 @@ async def message_received(
     if not me:
         return get_failed_response("An error occurred", response)
 
+    print(f"receiving indication of bro {me.id}: {me.bro_name} {me.bromotion}")
     broup_id = receieved_message_request.broup_id
     message_id = receieved_message_request.message_id
 
@@ -55,34 +56,32 @@ async def message_received(
         }
     
     chat: Chat = result_broups[0].Broup.chat
-    print(f"chat: {chat}")
-    print(f"chat: {chat.id}")
-    print(f"current message id: {chat.current_message_id}")
-    print(f"message id: {message_id}")
     if chat.current_message_id != message_id+1:
-        print("this should only happen right after a message is send and immediatly received by another bro. So if these id's do not match up we just ignore it.")
+         # The `message_received` function only happens right after a message is send
+         # and immediatly received by another bro. This should not happen but check anyway.
+         # If these id's do not match up we just ignore it.
         return {
             "result": False,
         }
     last_message_received_time = datetime.now(pytz.utc).replace(tzinfo=None)
     for broup_object in result_broups:
         broup: Broup = broup_object.Broup
-        print(f"found broup {broup.broup_id}")
         if broup.bro_id == me.id:
             # The bro who received the message
             broup.update_last_message_received()
+            print(f"bro {me.id} received message. Last read time: {broup.last_message_read_time}")
             db.add(broup)
         else:
             if broup.last_message_received_time < last_message_received_time:
                 print(f"last_message_received_time: {last_message_received_time}")
                 last_message_received_time = broup.last_message_received_time
+            print(f"Last read time other bro: {broup.last_message_read_time}")
     
     if chat.last_message_received_time_bro < last_message_received_time:
         # update the chat last message read time
-        print(f"current chat timestamp: {chat.last_message_received_time_bro}")
         chat.last_message_received_time_bro = last_message_received_time
         db.add(chat)
-        print(f"chat updated: {chat.last_message_received_time_bro}")
+        print(f"current last read time after receiving {chat.last_message_read_time_bro}")
         # Now check if there are messages that can be removed based on the timestamp
         messages_statement = select(Message).where(
             Message.broup_id == broup_id,
@@ -90,10 +89,7 @@ async def message_received(
         )
         results_messages = await db.execute(messages_statement)
         result_messages = results_messages.all()
-        if not result_messages:
-            print("Nothing to remove")
-        else:
-            print("Removing messages")
+        if result_messages:
             for result_message in result_messages:
                 print(f"message id: {message_id} ")
                 message: Message = result_message.Message

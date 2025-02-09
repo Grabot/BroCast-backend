@@ -115,8 +115,7 @@ class Bro(SQLModel, table=True):
             "bro_name": self.bro_name,
             "bromotion": self.bromotion,
             "origin": self.origin == 0,
-            "avatar": self.get_bro_avatar(True),
-            "broups": [broup.serialize for broup in self.broups],
+            "broups": [broup.serialize_minimal for broup in self.broups],
         }
 
     @property

@@ -32,7 +32,7 @@ async def login_bro_origin(
         select(Bro)
         .where(Bro.origin == origin)
         .where(Bro.email_hash == hashed_email)
-        .options(selectinload(Bro.broups).selectinload(Broup.chat))
+        .options(selectinload(Bro.broups))
     )
     results_origin = await db.execute(statement_origin)
     result_bro_origin = results_origin.first()

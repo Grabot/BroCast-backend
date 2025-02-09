@@ -61,7 +61,7 @@ async def remove_account(
     statement = (
         select(Bro)
         .where(Bro.email_hash == email_hash)
-        .options(selectinload(Bro.broups).selectinload(Broup.chat))
+        .options(selectinload(Bro.broups))
         .options(selectinload(Bro.tokens))
     )
     results = await db.execute(statement)

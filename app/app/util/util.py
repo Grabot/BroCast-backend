@@ -35,7 +35,7 @@ async def refresh_bro_token(db: AsyncSession, access_token, refresh_token):
     bro_statement = (
         select(Bro)
         .filter_by(id=bro_token.bro_id)
-        .options(selectinload(Bro.broups).selectinload(Broup.chat))
+        .options(selectinload(Bro.broups))
         .options(selectinload(Bro.tokens))
     )
     bro_results = await db.execute(bro_statement)
@@ -77,11 +77,10 @@ async def check_token(db: AsyncSession, token, retrieve_full=False) -> Optional[
     if bro_token.token_expiration < int(time.time()):
         return None
     if retrieve_full:
-        # TODO: limit retrieval (no chat only when needed?)
         bro_statement = (
             select(Bro)
             .filter_by(id=bro_token.bro_id)
-            .options(selectinload(Bro.broups).selectinload(Broup.chat))
+            .options(selectinload(Bro.broups))
         )
     else:
         bro_statement = select(Bro).filter_by(id=bro_token.bro_id)

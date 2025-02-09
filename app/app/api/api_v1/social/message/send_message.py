@@ -39,6 +39,7 @@ async def send_message(
     if not me:
         return get_failed_response("An error occurred", response)
 
+    print(f"message send by bro {me.id}: {me.bro_name} {me.bromotion}")
     broup_id = send_message_request.broup_id
     message = send_message_request.message
     text_message = send_message_request.text_message
@@ -51,6 +52,7 @@ async def send_message(
     broup_objects = results_broup.all()
     # The broup object and the message will have the same timestamp so we can check if it's equal
     current_timestamp = datetime.now(pytz.utc).replace(tzinfo=None)
+    print(f"send time indicator {current_timestamp}")
     if broup_objects is None:
         return {
             "result": False,
@@ -59,16 +61,17 @@ async def send_message(
     else:
         for broup_object in broup_objects:
             broup: Broup = broup_object.Broup
-            print(f"found broup {broup.broup_id}")
             if broup.bro_id == me.id:
                 # The bro that send the message obviously also read and received it.
                 broup.last_message_received_time = current_timestamp
                 broup.last_message_read_time = current_timestamp
+                print(f"bro {me.id} sent message. Last read time: {broup.last_message_read_time}")
             else:
                 # The other bro's now gets an extra unread message and their chat is moved to the top of their list.
                 if not broup.has_left() and not broup.is_removed():
                     broup.update_unread_messages()
                     broup.check_mute()
+                print(f"current last read time other bro: {broup.last_message_read_time}")
             db.add(broup)
             await db.commit()
 

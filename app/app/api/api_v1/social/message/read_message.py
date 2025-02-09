@@ -37,6 +37,7 @@ async def message_read(
     if not me:
         return get_failed_response("An error occurred", response)
 
+    print(f"reading message bro {me.id}: {me.bro_name} {me.bromotion}")
     broup_id = read_message_request.broup_id
 
     broups_statement = select(Broup).where(
@@ -54,30 +55,33 @@ async def message_read(
         }
     
     chat: Chat = result_broups[0].Broup.chat
-    print(f"chat: {chat}")
-    print(f"chat: {chat.id}")
-    print(f"current message id: {chat.current_message_id}")
 
     last_message_read_time = datetime.now(pytz.utc).replace(tzinfo=None)
+    print(f"time indicator: {last_message_read_time}")
     for broup_object in result_broups:
         broup: Broup = broup_object.Broup
-        print(f"found broup {broup.broup_id}")
         if broup.bro_id == me.id:
             # The bro who read the message
-            broup.read_messages()
+            broup.read_messages(last_message_read_time)
+            print(f"bro {me.id} read message. Last read time: {broup.last_message_read_time}")
             db.add(broup)
         else:
             if broup.last_message_read_time < last_message_read_time:
                 print(f"last_message_read_time: {last_message_read_time}")
                 last_message_read_time = broup.last_message_read_time
+            print(f"Last read time (should be lower): {broup.last_message_read_time}")
+            print(f"last_message_read_time now: {last_message_read_time}")
     
-    if chat.last_message_read_time_bro < last_message_read_time:
+    print(f"chat last message read time before: {chat.last_message_read_time_bro}")
+    if chat.last_message_read_time_bro <= last_message_read_time:
         print("updating chat last message read time")
         # update the chat last message read time
         chat.last_message_read_time_bro = last_message_read_time
+        print(f"chat last message read time after: {chat.last_message_read_time_bro}")
         db.add(chat)
         # emit to the broup the latests read time of the chat
         broup_room = f"broup_{broup_id}"
+        print(f"emitting timestamp {last_message_read_time}")
         await sio.emit(
             "message_read",
             {

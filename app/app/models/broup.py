@@ -26,8 +26,10 @@ class Broup(SQLModel, table=True):
     # This is different from the unread messages. 
     # The bro can have received the message, but not read it.
     # In this case this variable will remain False. If the bro later receives more messages without
-    # his phone being active this variable will indicate that he has to retrieve the newmessages.
-    new_messages: bool = Field(default=True)  # TODO: implement this?
+    # his phone being active this variable will indicate that he has to retrieve the new messages.
+    new_messages: bool = Field(default=False)  # TODO: implement this?
+    # We don't need to send these details all the time. Only when needed.
+    broup_updated: bool = Field(default=False)  # TODO: implement this?
 
     chat: "Chat" = Relationship(
         back_populates="chat_broups",
@@ -49,14 +51,17 @@ class Broup(SQLModel, table=True):
         self.unread_messages += 1
         self.new_messages = True
 
-    def read_messages(self):
+    def read_messages(self, last_message_read_time):
         self.unread_messages = 0
         self.new_messages = False
-        self.last_message_read_time = datetime.now(pytz.utc).replace(tzinfo=None)
+        self.last_message_read_time = last_message_read_time
     
     def received_message(self):
         # The bro has received a new message
         self.new_messages = False
+
+    def set_updated(self, update_value=True):
+        self.broup_updated = update_value
 
     def get_alias(self):
         return self.alias
@@ -79,8 +84,8 @@ class Broup(SQLModel, table=True):
     def update_last_message_received(self):
         self.last_message_received_time = datetime.now(pytz.utc).replace(tzinfo=None)
 
-    def update_alias(self, alias):
-        self.alias = alias
+    def update_broup_alias(self, new_broup_alias):
+        self.alias = new_broup_alias
 
     def mute_broup(self, mute):
         self.mute = mute
@@ -121,22 +126,38 @@ class Broup(SQLModel, table=True):
     @property
     def serialize(self):
         return {
+            'broup_id': self.broup_id,
             'bro_id': self.bro_id,
             'alias': self.alias,
             'broup_name': self.broup_name,
             'unread_messages': self.unread_messages,
             'left': self.is_left,
             'mute': self.mute,
+            "broup_updated": self.broup_updated,
+            "new_messages": self.new_messages,
             "chat": self.chat.serialize,
         }
-
+    
+    @property
+    def serialize_minimal(self):
+        return {
+            'broup_id': self.broup_id,
+            'bro_id': self.bro_id,
+            'unread_messages': self.unread_messages,
+            "broup_updated": self.broup_updated,
+            "new_messages": self.new_messages,
+        }
+    
     @property
     def serialize_no_chat(self):
         return {
+            'broup_id': self.broup_id,
             'bro_id': self.bro_id,
             'alias': self.alias,
             'broup_name': self.broup_name,
             'unread_messages': self.unread_messages,
             'left': self.is_left,
             'mute': self.mute,
+            "broup_updated": self.broup_updated,
+            "new_messages": self.new_messages,
         }

@@ -13,8 +13,6 @@ from app.models import Bro, Broup, Chat
 from app.util.rest_util import get_failed_response
 from app.util.util import check_token, get_auth_token
 from app.sockets.sockets import sio
-from datetime import datetime
-import pytz
 
 
 
@@ -48,7 +46,6 @@ async def create_broup_chat(db: AsyncSession, me: Bro, bro_add: Bro,  private_br
     db.add(chat)
     await db.commit()
     await db.refresh(chat)
-    print(f"created chat: {chat.serialize}")
 
     broup_id = chat.id
 
@@ -62,24 +59,28 @@ async def create_broup_chat(db: AsyncSession, me: Bro, bro_add: Bro,  private_br
     db.add(new_broup_me)
     db.add(new_broup_bro)
     await db.commit()
+
+    chat_serialize = chat.serialize
+    new_broup_dict_me = new_broup_me.serialize_no_chat
+    new_broup_dict_me["chat"] = chat_serialize
+    new_broup_dict_bro = new_broup_bro.serialize_no_chat
+    new_broup_dict_bro["chat"] = chat_serialize
+
     # Send message to personal bro room that the bro has been added to a chat
-    bro_add_room = "room_%s" % bro_add.id
+    bro_add_room = f"room_{bro_add.id}"
     # We only send the broup details, the channel indicates that a broup is added
     socket_response = {
-        "broup": new_broup_bro.serialize
+        "broup": new_broup_dict_bro
     }
-
     await sio.emit(
         "chat_added",
         socket_response,
         room=bro_add_room,
     )
 
-    new_broup_dict = new_broup_me.serialize_no_chat
-    new_broup_dict["chat"] = chat.serialize
     return {
         "result": True,
-        "broup": new_broup_dict,
+        "broup": new_broup_dict_me,
     }
 
 

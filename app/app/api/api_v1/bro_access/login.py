@@ -45,7 +45,7 @@ async def login_bro(
             select(Bro)
             .where(Bro.origin == 0)
             .where(Bro.email_hash == email_hash)
-            .options(selectinload(Bro.broups).selectinload(Broup.chat))
+            .options(selectinload(Bro.broups))
         )
         results = await db.execute(statement)
         result_bro = results.first()
@@ -60,7 +60,7 @@ async def login_bro(
                 func.lower(Bro.bro_name) == bro_name.lower(),
                 Bro.bromotion == bromotion
             )
-            .options(selectinload(Bro.broups).selectinload(Broup.chat))
+            .options(selectinload(Bro.broups))
         )
         results = await db.execute(statement)
         result_bro = results.first()
