@@ -74,6 +74,9 @@ class Bro(SQLModel, table=True):
 
     def set_new_broname(self, new_broname):
         self.bro_name = new_broname
+    
+    def set_new_bromotion(self, new_bromotion):
+        self.bromotion = new_bromotion
 
     def avatar_filename(self):
         return md5(self.email_hash.encode("utf-8")).hexdigest()

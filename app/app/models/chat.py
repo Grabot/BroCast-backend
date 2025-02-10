@@ -27,7 +27,7 @@ class Chat(SQLModel, table=True):
     # Don't send the avatar every time. Only send it if changes have been made.
     new_avatar: bool = Field(default=True)  # TODO: implement this?
 
-    chat_broups: "Broup" = Relationship(
+    chat_broups: List["Broup"] = Relationship(
         back_populates="chat",
         sa_relationship_kwargs={
             "uselist": True,

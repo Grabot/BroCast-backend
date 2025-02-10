@@ -12,7 +12,8 @@ from app.util.util import check_token, get_auth_token
 
 
 class ChangePasswordRequest(BaseModel):
-    password: str
+    old_password: str
+    new_password: str
 
 
 @api_router_v1.post("/change/password", status_code=200)
@@ -31,9 +32,16 @@ async def change_password(
     if not bro:
         return get_failed_response("An error occurred", response)
 
-    new_password = change_password_request.password
-    bro.hash_password(new_password)
+    old_password = change_password_request.old_password
+    new_password = change_password_request.new_password
 
+    if not bro.verify_password(old_password):
+        return {
+            "result": False,
+            "message": "password not correct",
+        }
+
+    bro.hash_password(new_password)
     db.add(bro)
     await db.commit()
 

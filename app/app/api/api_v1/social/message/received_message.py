@@ -68,9 +68,13 @@ async def message_received(
         broup: Broup = broup_object.Broup
         if broup.bro_id == me.id:
             # The bro who received the message
-            broup.update_last_message_received()
-            print(f"bro {me.id} received message. Last read time: {broup.last_message_read_time}")
-            db.add(broup)
+            # If the bro has new messages we can't update the received time yet
+            # The bro first needs to retrieve all messages 
+            # before the last received time can be updated
+            if broup.new_messages == 0:
+                broup.update_last_message_received()
+                print(f"bro {me.id} received message. Last read time: {broup.last_message_read_time}")
+                db.add(broup)
         else:
             if broup.last_message_received_time < last_message_received_time:
                 print(f"last_message_received_time: {last_message_received_time}")

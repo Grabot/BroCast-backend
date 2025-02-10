@@ -58,22 +58,22 @@ async def send_message(
             "result": False,
             "error": "Broup does not exist",
         }
-    else:
-        for broup_object in broup_objects:
-            broup: Broup = broup_object.Broup
-            if broup.bro_id == me.id:
-                # The bro that send the message obviously also read and received it.
-                broup.last_message_received_time = current_timestamp
-                broup.last_message_read_time = current_timestamp
-                print(f"bro {me.id} sent message. Last read time: {broup.last_message_read_time}")
-            else:
-                # The other bro's now gets an extra unread message and their chat is moved to the top of their list.
-                if not broup.has_left() and not broup.is_removed():
-                    broup.update_unread_messages()
-                    broup.check_mute()
-                print(f"current last read time other bro: {broup.last_message_read_time}")
-            db.add(broup)
-            await db.commit()
+    
+    for broup_object in broup_objects:
+        broup: Broup = broup_object.Broup
+        if broup.bro_id == me.id:
+            # The bro that send the message obviously also read and received it.
+            broup.received_message(current_timestamp)
+            broup.read_messages(current_timestamp)
+            print(f"bro {me.id} sent message. Last read time: {broup.last_message_read_time}")
+        else:
+            # The other bro's now gets an extra unread message
+            if not broup.has_left() and not broup.is_removed():
+                broup.update_unread_messages()
+                broup.check_mute()
+            print(f"current last read time other bro: {broup.last_message_read_time}")
+        db.add(broup)
+        await db.commit()
 
     # We retrieve and quickly update the chat object allong with the message
     # This is to avoid concurrency issues on the message id

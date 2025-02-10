@@ -56,8 +56,9 @@ class Broup(SQLModel, table=True):
         self.new_messages = False
         self.last_message_read_time = last_message_read_time
     
-    def received_message(self):
+    def received_message(self, last_message_received_time):
         # The bro has received a new message
+        self.last_message_received_time = last_message_received_time
         self.new_messages = False
 
     def set_updated(self, update_value=True):
@@ -71,15 +72,10 @@ class Broup(SQLModel, table=True):
 
     def set_broup_name(self, broup_name):
         self.broup_name = broup_name
+        self.broup_updated = True
 
     def get_broup_name(self):
         return self.broup_name
-
-    def set_broup_name(self, broup_name):
-        self.broup_name = broup_name
-
-    def set_broup_name(self, broup_name):
-        self.broup_name = broup_name
 
     def update_last_message_received(self):
         self.last_message_received_time = datetime.now(pytz.utc).replace(tzinfo=None)
