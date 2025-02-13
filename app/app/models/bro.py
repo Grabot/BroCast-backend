@@ -128,16 +128,25 @@ class Bro(SQLModel, table=True):
             "id": self.id,
             "bro_name": self.bro_name,
             "bromotion": self.bromotion,
-            "origin": self.origin == 0,
             "avatar": self.get_bro_avatar(False),
         }
-
+    
     @property
-    def serialize_no_detail(self):
-        # get bro details without personal information
+    def serialize_big(self):
+        # get bro details but make it small
         return {
             "id": self.id,
             "bro_name": self.bro_name,
             "bromotion": self.bromotion,
-            "origin": self.origin == 0,
+            "avatar": self.get_bro_avatar(True),
+        }
+
+    @property
+    def serialize_no_detail(self):
+        # Usually we want to get the bro details without the avatar.
+        # If we want the avatar we can get it seperate.
+        return {
+            "id": self.id,
+            "bro_name": self.bro_name,
+            "bromotion": self.bromotion,
         }

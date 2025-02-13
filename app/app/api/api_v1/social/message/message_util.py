@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 from app.sockets.sockets import sio
 from sqlalchemy.orm import selectinload
-from app.models import Broup, Chat, Bro
+from app.models import Broup, Chat, Bro, Message
 from app.util.rest_util import get_failed_response
 
 
@@ -33,6 +33,7 @@ async def reading_messages(
     chat: Chat = result_broups[0].Broup.chat
 
     last_message_read_time = datetime.now(pytz.utc).replace(tzinfo=None)
+    last_message_received_time = datetime.now(pytz.utc).replace(tzinfo=None)
     print(f"time indicator: {last_message_read_time}")
     for broup_object in result_broups:
         broup: Broup = broup_object.Broup
@@ -45,8 +46,8 @@ async def reading_messages(
             if broup.last_message_read_time < last_message_read_time:
                 print(f"last_message_read_time: {last_message_read_time}")
                 last_message_read_time = broup.last_message_read_time
-            print(f"Last read time (should be lower): {broup.last_message_read_time}")
-            print(f"last_message_read_time now: {last_message_read_time}")
+            if broup.last_message_received_time < last_message_received_time:
+                last_message_received_time = broup.last_message_received_time
     
     print(f"chat last message read time before: {chat.last_message_read_time_bro}")
     if chat.last_message_read_time_bro <= last_message_read_time:
@@ -66,4 +67,21 @@ async def reading_messages(
             },
             room=broup_room,
         )
+    if chat.last_message_received_time_bro < last_message_received_time:
+        # update the chat last message read time
+        chat.last_message_received_time_bro = last_message_received_time
+        db.add(chat)
+        print(f"current last read time after receiving {chat.last_message_read_time_bro}")
+        # Now check if there are messages that can be removed based on the timestamp
+        messages_statement = select(Message).where(
+            Message.broup_id == broup_id,
+            Message.timestamp <= last_message_received_time
+        )
+        results_messages = await db.execute(messages_statement)
+        result_messages = results_messages.all()
+        if result_messages:
+            for result_message in result_messages:
+                message: Message = result_message.Message
+                print(f"remove message: {message.body}")
+                await db.delete(message)
     await db.commit()

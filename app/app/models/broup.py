@@ -27,9 +27,10 @@ class Broup(SQLModel, table=True):
     # The bro can have received the message, but not read it.
     # In this case this variable will remain False. If the bro later receives more messages without
     # his phone being active this variable will indicate that he has to retrieve the new messages.
-    new_messages: bool = Field(default=False)  # TODO: implement this?
+    new_messages: bool = Field(default=False)
+    new_members: bool = Field(default=True)
     # We don't need to send these details all the time. Only when needed.
-    broup_updated: bool = Field(default=False)  # TODO: implement this?
+    broup_updated: bool = Field(default=True)
 
     chat: "Chat" = Relationship(
         back_populates="chat_broups",
@@ -55,6 +56,8 @@ class Broup(SQLModel, table=True):
         self.unread_messages = 0
         self.new_messages = False
         self.last_message_read_time = last_message_read_time
+        # If you've read the message you've received it as well.
+        self.last_message_received_time = last_message_read_time
     
     def received_message(self, last_message_received_time):
         # The bro has received a new message

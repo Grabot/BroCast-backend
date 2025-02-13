@@ -75,6 +75,8 @@ async def register_bro(
     bro_token = get_bro_tokens(bro)
     db.add(bro_token)
     await db.commit()
+    bro_return = bro.serialize_no_detail
+    bro_return["origin"] = True
 
     _ = task_generate_avatar.delay(bro.avatar_filename(), bro.id)
 
@@ -85,7 +87,7 @@ async def register_bro(
         "message": "Bro created successfully.",
         "access_token": bro_token.access_token,
         "refresh_token": bro_token.refresh_token,
-        "bro": bro.serialize_no_detail,
+        "bro": bro_return,
     }
 
 

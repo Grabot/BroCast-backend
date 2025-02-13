@@ -16,7 +16,7 @@ from app.sockets.sockets import sio
 
 
 
-def add_broup(bro_id: int, broup_id: int, broup_name: str) -> Broup:
+def add_bros_object(bro_id: int, broup_id: int, broup_name: str, broup_update: bool, member_update: bool) -> Broup:
     
     broup = Broup(
         bro_id=bro_id,
@@ -26,11 +26,13 @@ def add_broup(bro_id: int, broup_id: int, broup_name: str) -> Broup:
         unread_messages=0,
         mute=False,
         is_left=False,
-        removed=False
+        removed=False,
+        broup_updated=broup_update,
+        new_members=member_update,
     )
     return broup
 
-async def create_broup_chat(db: AsyncSession, me: Bro, bro_add: Bro,  private_broup_ids: list) -> dict: 
+async def create_bro_chat(db: AsyncSession, me: Bro, bro_add: Bro,  private_broup_ids: list) -> dict: 
     # The broup objectc does not exist. Create it.
     admins = private_broup_ids
     broup_colour = '%02X%02X%02X' % (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
@@ -53,8 +55,10 @@ async def create_broup_chat(db: AsyncSession, me: Bro, bro_add: Bro,  private_br
     broup_name_bro = me.bro_name + " " + me.bromotion
 
     # Create the broups. make sure the ids are in order for the array column
-    new_broup_me = add_broup(me.id, broup_id, broup_name_me)
-    new_broup_bro = add_broup(bro_add.id, broup_id, broup_name_bro)
+    # The person creating the broup will get the other bro details via the post call
+    # But the other broup should indicate that there are new members in the broup.
+    new_broup_me = add_bros_object(me.id, broup_id, broup_name_me, False, False)
+    new_broup_bro = add_bros_object(bro_add.id, broup_id, broup_name_bro, True, True)
 
     db.add(new_broup_me)
     db.add(new_broup_bro)
@@ -81,6 +85,7 @@ async def create_broup_chat(db: AsyncSession, me: Bro, bro_add: Bro,  private_br
     return {
         "result": True,
         "broup": new_broup_dict_me,
+        "bro": bro_add.serialize_no_detail,
     }
 
 
@@ -138,7 +143,7 @@ async def add_bro(
             "result": False,
         }
     else:
-        return await create_broup_chat(db, me, bro_add, private_broup_ids)
+        return await create_bro_chat(db, me, bro_add, private_broup_ids)
         # We return the broup without the avatar because it is being created
 
 
