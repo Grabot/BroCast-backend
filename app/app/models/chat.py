@@ -68,23 +68,24 @@ class Chat(SQLModel, table=True):
         new_bros.sort()
         self.bro_ids = new_bros
 
-    # def add_admin(self, bro_id):
-    #     old_admins = self.bro_admin_ids
-    #     new_admins = []
-    #     for old in old_admins:
-    #         new_admins.append(old)
-    #     new_admins.append(bro_id)
-    #     self.bro_admin_ids = new_admins
+    def add_admin(self, bro_id):
+        old_admins = self.bro_admin_ids
+        new_admins = []
+        for old in old_admins:
+            new_admins.append(old)
+        new_admins.append(bro_id)
+        new_admins.sort()
+        self.bro_admin_ids = new_admins
 
-    # def dismiss_admin(self, bro_id):
-    #     if self.bro_admin_ids is None:
-    #         self.bro_admin_ids = []
-    #     old_admins = self.bro_admin_ids
-    #     new_admins = []
-    #     for old in old_admins:
-    #         if old != bro_id:
-    #             new_admins.append(old)
-    #     self.bro_admin_ids = new_admins
+    def dismiss_admin(self, bro_id):
+        if self.bro_admin_ids is None:
+            self.bro_admin_ids = []
+        old_admins = self.bro_admin_ids
+        new_admins = []
+        for old in old_admins:
+            if old != bro_id:
+                new_admins.append(old)
+        self.bro_admin_ids = new_admins
 
     def update_broup_description(self, description):
         self.broup_description = description

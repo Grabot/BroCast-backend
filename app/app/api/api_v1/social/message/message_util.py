@@ -43,6 +43,7 @@ async def reading_messages(
             if broup.last_message_received_time < last_message_received_time:
                 last_message_received_time = broup.last_message_received_time
 
+    await db.commit()
     # We retrieve and quickly update the chat object
     # This is to avoid concurrency issues
     chat_statement = select(Chat).where(
