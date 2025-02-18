@@ -32,7 +32,7 @@ def add_broup_object(bro_id: int, broup_id: int, broup_name: str, broup_update: 
     )
     return broup
 
-async def create_broup_chat(db: AsyncSession, me: Bro, broup_name: str, private_broup_ids: list) -> dict:
+async def create_broup_chat(db: AsyncSession, me: Bro, broup_name: str, bros: list, private_broup_ids: list) -> dict:
     admins = [me.id]
     broup_colour = '%02X%02X%02X' % (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
 
@@ -52,7 +52,12 @@ async def create_broup_chat(db: AsyncSession, me: Bro, broup_name: str, private_
     
     chat_serialize = chat.serialize
     broup_add_me = None
-    for bro_id in private_broup_ids:
+    broup_name = f"{broup_name} "
+    for bro in bros:
+        bromotion = bro.bromotion
+        broup_name = f"{broup_name}{bromotion}"
+    for bro in bros:
+        bro_id = bro.id
         print(f"test: {bro_id}")
         broup_add = add_broup_object(bro_id, broup_id, broup_name, True, True)
 
@@ -115,7 +120,18 @@ async def add_broup(
     private_broup_ids.sort()
     print(f"after sort private_broup_ids {private_broup_ids}")
 
-    return await create_broup_chat(db, me, broup_name, private_broup_ids)
+    bros_statement = select(Bro).where(Bro.id.in_(private_broup_ids))
+    results_bros = await db.execute(bros_statement)
+    result_bro = results_bros.all()
+
+    bros = []
+    for bro in result_bro:
+        bros.append(bro.Bro)
+    
+    if len(bros) != len(private_broup_ids):
+        return get_failed_response("An error occurred", response)
+
+    return await create_broup_chat(db, me, broup_name, bros, private_broup_ids)
     # We return the broup without the avatar because it is being created
 
 

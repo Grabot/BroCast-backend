@@ -53,19 +53,20 @@ class Chat(SQLModel, table=True):
     def set_broup_colour(self, new_broup_colour):
         self.broup_colour = new_broup_colour
 
-    # def set_admins(self, bro_admin_ids):
-    #     self.bro_admin_ids = bro_admin_ids
+    def set_admins(self, bro_admin_ids):
+        self.bro_admin_ids = bro_admin_ids
 
-    # def get_admins(self):
-    #     return self.bro_admin_ids
+    def get_admins(self):
+        return self.bro_admin_ids
 
-    # def add_participant(self, bro_id):
-    #     old_bros = self.bro_ids
-    #     new_bros = []
-    #     for old in old_bros:
-    #         new_bros.append(old)
-    #     new_bros.append(bro_id)
-    #     self.bro_ids = new_bros
+    def add_participant(self, bro_id):
+        old_bros = self.bro_ids
+        new_bros = []
+        for old in old_bros:
+            new_bros.append(old)
+        new_bros.append(bro_id)
+        new_bros.sort()
+        self.bro_ids = new_bros
 
     # def add_admin(self, bro_id):
     #     old_admins = self.bro_admin_ids
@@ -84,18 +85,6 @@ class Chat(SQLModel, table=True):
     #         if old != bro_id:
     #             new_admins.append(old)
     #     self.bro_admin_ids = new_admins
-
-    # def remove_bro(self, bro_id):
-    #     if bro_id in self.bro_admin_ids:
-    #         self.dismiss_admin(bro_id)
-    #     if self.bro_ids is None:
-    #         self.bro_ids = []
-    #     old_bros = self.bro_ids
-    #     new_bros = []
-    #     for old in old_bros:
-    #         if old != bro_id:
-    #             new_bros.append(old)
-    #     self.bro_ids = new_bros
 
     def update_broup_description(self, description):
         self.broup_description = description

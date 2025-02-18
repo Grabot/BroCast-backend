@@ -32,9 +32,8 @@ def add_bros_object(bro_id: int, broup_id: int, broup_name: str, broup_update: b
     )
     return broup
 
-async def create_bro_chat(db: AsyncSession, me: Bro, bro_add: Bro,  private_broup_ids: list) -> dict: 
-    # The broup objectc does not exist. Create it.
-    admins = private_broup_ids
+async def create_bro_chat(db: AsyncSession, me: Bro, bro_add: Bro,  private_broup_ids: list) -> dict:
+    admins = []
     broup_colour = '%02X%02X%02X' % (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
 
     chat = Chat(

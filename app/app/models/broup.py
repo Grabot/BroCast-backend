@@ -76,6 +76,10 @@ class Broup(SQLModel, table=True):
     def set_broup_name(self, broup_name):
         self.broup_name = broup_name
         self.broup_updated = True
+    
+    def broup_new_member(self):
+        self.new_members = True
+        self.broup_updated = True
 
     def get_broup_name(self):
         return self.broup_name
