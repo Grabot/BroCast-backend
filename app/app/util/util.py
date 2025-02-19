@@ -19,9 +19,7 @@ async def delete_bro_token_and_return(db: AsyncSession, bro_token, return_value:
 
 async def refresh_bro_token(db: AsyncSession, access_token, refresh_token):
     token_statement = (
-        select(BroToken)
-        .filter_by(access_token=access_token)
-        .filter_by(refresh_token=refresh_token)
+        select(BroToken).filter_by(access_token=access_token).filter_by(refresh_token=refresh_token)
     )
     results_token = await db.execute(token_statement)
     result_token = results_token.first()
@@ -77,11 +75,7 @@ async def check_token(db: AsyncSession, token, retrieve_full=False) -> Optional[
     if bro_token.token_expiration < int(time.time()):
         return None
     if retrieve_full:
-        bro_statement = (
-            select(Bro)
-            .filter_by(id=bro_token.bro_id)
-            .options(selectinload(Bro.broups))
-        )
+        bro_statement = select(Bro).filter_by(id=bro_token.bro_id).options(selectinload(Bro.broups))
     else:
         bro_statement = select(Bro).filter_by(id=bro_token.bro_id)
     results = await db.execute(bro_statement)

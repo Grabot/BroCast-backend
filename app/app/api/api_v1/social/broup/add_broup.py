@@ -2,9 +2,8 @@ from typing import Optional, List
 
 from fastapi import Depends, Request, Response
 from pydantic import BaseModel
-from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlmodel import select, update
+from sqlmodel import select
 import random
 
 from app.api.api_v1 import api_router_v1
@@ -15,9 +14,10 @@ from app.util.util import check_token, get_auth_token
 from app.sockets.sockets import sio
 
 
+def add_broup_object(
+    bro_id: int, broup_id: int, broup_name: str, broup_update: bool, member_update: bool
+) -> Broup:
 
-def add_broup_object(bro_id: int, broup_id: int, broup_name: str, broup_update: bool, member_update: bool) -> Broup:
-    
     broup = Broup(
         bro_id=bro_id,
         broup_id=broup_id,
@@ -32,9 +32,16 @@ def add_broup_object(bro_id: int, broup_id: int, broup_name: str, broup_update: 
     )
     return broup
 
-async def create_broup_chat(db: AsyncSession, me: Bro, broup_name: str, bros: list, private_broup_ids: list) -> dict:
+
+async def create_broup_chat(
+    db: AsyncSession, me: Bro, broup_name: str, bros: list, private_broup_ids: list
+) -> dict:
     admins = [me.id]
-    broup_colour = '%02X%02X%02X' % (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+    broup_colour = "%02X%02X%02X" % (
+        random.randint(0, 255),
+        random.randint(0, 255),
+        random.randint(0, 255),
+    )
 
     chat = Chat(
         private=False,
@@ -49,7 +56,7 @@ async def create_broup_chat(db: AsyncSession, me: Bro, broup_name: str, bros: li
     await db.refresh(chat)
 
     broup_id = chat.id
-    
+
     chat_serialize = chat.serialize
     broup_add_me = None
     broup_name = f"{broup_name} "
@@ -67,9 +74,7 @@ async def create_broup_chat(db: AsyncSession, me: Bro, broup_name: str, bros: li
         new_broup_dict = broup_add.serialize_no_chat
         new_broup_dict["chat"] = chat_serialize
         # We only send the broup details, the channel indicates that a broup is added
-        socket_response = {
-            "broup": new_broup_dict
-        }
+        socket_response = {"broup": new_broup_dict}
 
         if bro_id == me.id:
             broup_add_me = new_broup_dict
@@ -80,7 +85,7 @@ async def create_broup_chat(db: AsyncSession, me: Bro, broup_name: str, bros: li
                 socket_response,
                 room=bro_add_room,
             )
-        
+
     await db.commit()
 
     return {
@@ -113,7 +118,7 @@ async def add_broup(
     bro_ids = add_broup_request.bro_ids
     broup_name = add_broup_request.broup_name
     print(f"add_broup_request {bro_ids}")
-    
+
     # The private chat will be a broup object where private is true and the bro ids are the two bros")
     private_broup_ids = [me.id] + bro_ids
     print(f"before sort private_broup_ids {private_broup_ids}")
@@ -127,13 +132,9 @@ async def add_broup(
     bros = []
     for bro in result_bro:
         bros.append(bro.Bro)
-    
+
     if len(bros) != len(private_broup_ids):
         return get_failed_response("An error occurred", response)
 
     return await create_broup_chat(db, me, broup_name, bros, private_broup_ids)
     # We return the broup without the avatar because it is being created
-
-
-
-

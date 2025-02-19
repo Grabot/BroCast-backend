@@ -63,7 +63,7 @@ class Bro(SQLModel, table=True):
         salt = secrets.token_hex(8)
         self.salt = salt
         self.password_hash = pwd_context.hash(password + salt)
-    
+
     def verify_password(self, password):
         # If the bro has any other origin than regular it should not get here
         # because the verification is does elsewhere. So if it does, we return False
@@ -74,10 +74,10 @@ class Bro(SQLModel, table=True):
 
     def set_new_broname(self, new_broname):
         self.bro_name = new_broname
-    
+
     def set_new_bromotion(self, new_bromotion):
         self.bromotion = new_bromotion
-    
+
     def get_bromotion(self):
         return self.bromotion
 
@@ -89,7 +89,7 @@ class Bro(SQLModel, table=True):
 
     def avatar_filename_default(self):
         return self.avatar_filename() + "_default"
-    
+
     def set_default_avatar(self, value):
         self.default_avatar = value
 
@@ -133,7 +133,7 @@ class Bro(SQLModel, table=True):
             "bromotion": self.bromotion,
             "avatar": self.get_bro_avatar(False),
         }
-    
+
     @property
     def serialize_big(self):
         # get bro details but make it small

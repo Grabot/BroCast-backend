@@ -37,22 +37,25 @@ async def change_bromotion(
 
     new_bromotion = change_bromotion_request.bromotion
     bro_statement = select(Bro).where(
-        func.lower(Bro.bro_name) == me.bro_name.lower(),
-        Bro.bromotion == new_bromotion
+        func.lower(Bro.bro_name) == me.bro_name.lower(), Bro.bromotion == new_bromotion
     )
     results = await db.execute(bro_statement)
     result = results.first()
     if result is not None:
         return {
             "result": False,
-            "message": "Broname bromotion combination is already taken, please choose a different bromotion."
+            "message": "Broname bromotion combination is already taken, please choose a different bromotion.",
         }
 
     me.set_new_bromotion(new_bromotion)
 
-    broups_statement = select(Broup).where(
-        Broup.bro_id == me.id,
-    ).options(selectinload(Broup.chat).options(selectinload(Chat.chat_broups)))
+    broups_statement = (
+        select(Broup)
+        .where(
+            Broup.bro_id == me.id,
+        )
+        .options(selectinload(Broup.chat).options(selectinload(Chat.chat_broups)))
+    )
     print(f"bromotion_statement {broups_statement}")
     results_broups = await db.execute(broups_statement)
     print(f"results_bromotions {results_broups}")
@@ -79,10 +82,7 @@ async def change_bromotion(
                     db.add(broup)
                     # We send it specifically to the other bro, who's broup name we changed.
                     bro_room = f"room_{broup.bro_id}"
-                    socket_response = {
-                        "broup_id": broup.broup_id,
-                        "new_broup_name": new_broup_name
-                    }
+                    socket_response = {"broup_id": broup.broup_id, "new_broup_name": new_broup_name}
                     await sio.emit(
                         "chat_changed",
                         socket_response,

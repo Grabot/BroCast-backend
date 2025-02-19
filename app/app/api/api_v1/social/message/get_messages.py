@@ -42,10 +42,14 @@ async def get_messages(
     broup_id = get_messages_request.broup_id
     last_message_id = get_messages_request.last_message_id
 
-    select_statement = select(Message).where(
-        Message.broup_id == broup_id,
-        Message.message_id > last_message_id,
-    ).order_by(Message.message_id)
+    select_statement = (
+        select(Message)
+        .where(
+            Message.broup_id == broup_id,
+            Message.message_id > last_message_id,
+        )
+        .order_by(Message.message_id)
+    )
     results_messages = await db.execute(select_statement)
     result_messages = results_messages.all()
     if result_messages is None:
@@ -61,7 +65,4 @@ async def get_messages(
         message: Message = result_message.Message
         message_list.append(message.serialize)
 
-    return {
-        "result": True,
-        "messages": message_list
-    }
+    return {"result": True, "messages": message_list}

@@ -2,9 +2,8 @@ from typing import Optional, List
 
 from fastapi import Depends, Request, Response
 from pydantic import BaseModel
-from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlmodel import select, update
+from sqlmodel import select
 
 from app.api.api_v1 import api_router_v1
 from app.database import get_db
@@ -36,10 +35,11 @@ async def get_broup(
         return get_failed_response("An error occurred", response)
 
     broup_ids = get_broups_request.broup_ids
-    broups_statement = select(Broup).where(
-        Broup.bro_id == me.id,
-        Broup.broup_id.in_(broup_ids)
-    ).options(selectinload(Broup.chat))
+    broups_statement = (
+        select(Broup)
+        .where(Broup.bro_id == me.id, Broup.broup_id.in_(broup_ids))
+        .options(selectinload(Broup.chat))
+    )
     print(f"broups_statement {broups_statement}")
     results_broups = await db.execute(broups_statement)
     print(f"results_broups {results_broups}")
@@ -61,7 +61,4 @@ async def get_broup(
         broup_list.append(broup.serialize)
     await db.commit()
 
-    return {
-        "result": True,
-        "broups": broup_list
-    }
+    return {"result": True, "broups": broup_list}

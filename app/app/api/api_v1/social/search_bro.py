@@ -40,7 +40,7 @@ async def search_bro(
         bro_statement = select(Bro).where(func.lower(Bro.bro_name) == bro_name.lower())
         results = await db.execute(bro_statement)
         bros = results.all()
-        
+
     else:
         bro_statement = select(Bro).where(
             func.lower(Bro.bro_name) == bro_name.lower(),
@@ -48,7 +48,7 @@ async def search_bro(
         )
         results = await db.execute(bro_statement)
         bros = results.all()
-    
+
     if bros is None or bros == []:
         return {
             "result": True,

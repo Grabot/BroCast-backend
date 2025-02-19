@@ -29,7 +29,10 @@ async def send_delete_email(bro: Bro, email: str, origin: int):
 
     subject = "BroCast - Delete your account"
     body = delete_account_email.format(
-        base_url=settings.BASE_URL, token=delete_token, refresh_token=refresh_delete_token, origin=origin
+        base_url=settings.BASE_URL,
+        token=delete_token,
+        refresh_token=refresh_delete_token,
+        origin=origin,
     )
     # TODO: add bromotion?
     _ = task_send_email.delay(bro.bro_name, email, subject, body)
@@ -67,9 +70,7 @@ async def remove_account(
     results = await db.execute(statement)
     result = results.all()
     if result is None or result == []:
-        return get_failed_response(
-            "no account found with that email", response
-        )
+        return get_failed_response("no account found with that email", response)
 
     bro = result[0].Bro
     # origin 9 means all the accounts with the email will be deleted
@@ -155,16 +156,12 @@ async def remove_account_verify(
         hashed_email = bro.email_hash
         # Get all the accounts with the same email by checking the hash in the db
         statement = (
-            select(Bro)
-            .where(Bro.email_hash == hashed_email)
-            .options(selectinload(Bro.tokens))
+            select(Bro).where(Bro.email_hash == hashed_email).options(selectinload(Bro.tokens))
         )
         results = await db.execute(statement)
         bros = results.all()
         if bros is None or bros == []:
-            return get_failed_response(
-                "no account found with that email", response
-            )
+            return get_failed_response("no account found with that email", response)
 
         # First delete tokens, otherwise we can't delete the bro
         for bro in bros:

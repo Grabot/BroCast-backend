@@ -6,6 +6,7 @@ from app.config.config import settings
 import base64
 import os
 from hashlib import md5
+
 # from models import Broup
 
 
@@ -13,7 +14,8 @@ class Chat(SQLModel, table=True):
     """
     A Chat
     """
-    __tablename__ = 'Chat'
+
+    __tablename__ = "Chat"
     id: int = Field(default=None, primary_key=True)
     bro_ids: List[int] = Field(default=[], sa_column=Column(ARRAY(Integer())))
     bro_admin_ids: List[int] = Field(default=[], sa_column=Column(ARRAY(Integer())))
@@ -22,8 +24,12 @@ class Chat(SQLModel, table=True):
     broup_colour: str
     default_avatar: bool = Field(default=True)
     current_message_id: int
-    last_message_read_time_bro: datetime = Field(default=datetime.now(pytz.utc).replace(tzinfo=None))
-    last_message_received_time_bro: datetime = Field(default=datetime.now(pytz.utc).replace(tzinfo=None))
+    last_message_read_time_bro: datetime = Field(
+        default=datetime.now(pytz.utc).replace(tzinfo=None)
+    )
+    last_message_received_time_bro: datetime = Field(
+        default=datetime.now(pytz.utc).replace(tzinfo=None)
+    )
     # Don't send the avatar every time. Only send it if changes have been made.
     new_avatar: bool = Field(default=True)  # TODO: implement this?
 
@@ -49,7 +55,7 @@ class Chat(SQLModel, table=True):
 
     def set_participants(self, bro_ids):
         self.bro_ids = bro_ids
-    
+
     def set_broup_colour(self, new_broup_colour):
         self.broup_colour = new_broup_colour
 
@@ -126,10 +132,9 @@ class Chat(SQLModel, table=True):
     @property
     def serialize(self):
         return {
-            'bro_ids': self.bro_ids,
-            'admin_ids': self.bro_admin_ids,
-            'private': self.private,
-            'broup_description': self.broup_description,
-            'broup_colour': self.broup_colour,
+            "bro_ids": self.bro_ids,
+            "admin_ids": self.bro_admin_ids,
+            "private": self.private,
+            "broup_description": self.broup_description,
+            "broup_colour": self.broup_colour,
         }
-    

@@ -48,8 +48,8 @@ async def login_google(
 
 
 async def log_bro_in(
-        broinfo_response,
-        db: AsyncSession = Depends(get_db),
+    broinfo_response,
+    db: AsyncSession = Depends(get_db),
 ):
     bro_email = broinfo_response.json()["email"]
     bro_name = broinfo_response.json()["given_name"]
@@ -76,10 +76,10 @@ async def log_bro_in(
 
 @api_router_login.get("/google/callback")
 async def google_callback(
-        code: str,
-        request: Request,
-        response: Response,
-        db: AsyncSession = Depends(get_db),
+    code: str,
+    request: Request,
+    response: Response,
+    db: AsyncSession = Depends(get_db),
 ):
     # Get authorization code Google sent back to you
     # Find out what URL to hit to get tokens that allow you to ask for
@@ -155,9 +155,9 @@ class GoogleTokenRequest(BaseModel):
 # Bro the v1 router, so it will have `api/v1.4/` before the path
 @api_router_v1.post("/login/google/token", status_code=200)
 async def login_google_token(
-        google_token_request: GoogleTokenRequest,
-        response: Response,
-        db: AsyncSession = Depends(get_db),
+    google_token_request: GoogleTokenRequest,
+    response: Response,
+    db: AsyncSession = Depends(get_db),
 ) -> dict:
 
     google_access_token = google_token_request.access_token
@@ -202,5 +202,3 @@ async def login_google_token(
         return login_response
     else:
         return get_failed_response("An error occurred", response)
-
-

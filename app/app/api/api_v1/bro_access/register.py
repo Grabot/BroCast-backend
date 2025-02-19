@@ -40,10 +40,7 @@ async def register_bro(
 
     # Not loading the bros and followers here, just checking if the email is taken.
     email_hash = hashlib.sha512(email.lower().encode("utf-8")).hexdigest()
-    statement = select(Bro).where(
-        Bro.origin == 0,
-        Bro.email_hash == email_hash
-    )
+    statement = select(Bro).where(Bro.origin == 0, Bro.email_hash == email_hash)
     results = await db.execute(statement)
     result = results.first()
 
@@ -51,7 +48,7 @@ async def register_bro(
         return get_failed_response(
             "This email has already been used to create an account, please log in instead", response
         )
-    # Also not loading the bros and followers here. 
+    # Also not loading the bros and followers here.
     # Just checking if the broname and bromotion combination is taken.
     # Multiple statements in the where clause defaults to AND.
     statement = select(Bro).where(
@@ -63,7 +60,8 @@ async def register_bro(
 
     if result is not None:
         return get_failed_response(
-            "Broname and bromotion combination is already taken, please choose a different one.", response
+            "Broname and bromotion combination is already taken, please choose a different one.",
+            response,
         )
 
     bro = Bro(bro_name=bro_name, bromotion=bromotion, email_hash=email_hash, origin=0)

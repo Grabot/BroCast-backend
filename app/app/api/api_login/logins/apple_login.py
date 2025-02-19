@@ -19,12 +19,12 @@ from fastapi import Form
 
 
 def decode_apple_token(token):
-    return jwt.decode(token, audience=settings.APPLE_CLIENT_ID ,options={"verify_signature": False})
+    return jwt.decode(token, audience=settings.APPLE_CLIENT_ID, options={"verify_signature": False})
 
 
 async def log_bro_in(
-        broinfo_response,
-        db: AsyncSession = Depends(get_db),
+    broinfo_response,
+    db: AsyncSession = Depends(get_db),
 ):
     id_token = broinfo_response.json()["id_token"]
     apple_token = decode_apple_token(id_token)
@@ -60,22 +60,20 @@ def generate_token():
     timestamp_now = int(time())
     timestamp_exp = timestamp_now + (60 * validity_minutes)
     data = {
-            "iss": team_id,
-            "iat": timestamp_now,
-            "exp": timestamp_exp,
-            "aud": settings.APPLE_AUD_URL,
-            "sub": client_id
-        }
-    token = jwt.encode(payload=data, key=private_key.encode("utf-8"), algorithm="ES256", headers={"kid": key_id})
+        "iss": team_id,
+        "iat": timestamp_now,
+        "exp": timestamp_exp,
+        "aud": settings.APPLE_AUD_URL,
+        "sub": client_id,
+    }
+    token = jwt.encode(
+        payload=data, key=private_key.encode("utf-8"), algorithm="ES256", headers={"kid": key_id}
+    )
     return token
 
 
-@api_router_login.get('/apple/redirect')
-async def apple_get_redirect(
-    access_token: str,
-    refresh_token: str,
-    request: Request
-):
+@api_router_login.get("/apple/redirect")
+async def apple_get_redirect(access_token: str, refresh_token: str, request: Request):
     # Send bro to the world
     params = dict()
     params["access_token"] = access_token
@@ -96,17 +94,22 @@ async def apple_callback(
 ):
     apple_key_url = settings.APPLE_AUTHORIZE
     broinfo_response = requests.post(
-        apple_key_url, headers={"Content-Type": "application/x-www-form-urlencoded"},
+        apple_key_url,
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
         data={
             "client_id": settings.APPLE_CLIENT_ID,
             "client_secret": generate_token(),
             "code": code,
             "grant_type": settings.APPLE_GRANT_TYPE,
             "redirect_uri": settings.APPLE_REDIRECT_URL,
-        }
+        },
     )
 
-    if not broinfo_response.json().get("access_token") or not broinfo_response.json().get("refresh_token") or not broinfo_response.json().get("id_token"): 
+    if (
+        not broinfo_response.json().get("access_token")
+        or not broinfo_response.json().get("refresh_token")
+        or not broinfo_response.json().get("id_token")
+    ):
         return get_failed_response("Bro email not available or not verified by Apple.", response)
 
     [success, [_, _, bro, bro_created]] = await log_bro_in(broinfo_response, db)
@@ -128,7 +131,6 @@ async def apple_callback(
         return RedirectResponse(full_url, status_code=status.HTTP_302_FOUND)
     else:
         return get_failed_response("An error occurred", response)
-    
 
 
 @api_router_login.get("/apple/verify")
@@ -140,17 +142,22 @@ async def apple_verify(
     apple_key_url = settings.APPLE_AUTHORIZE
 
     broinfo_response = requests.post(
-        apple_key_url, headers={"Content-Type": "application/x-www-form-urlencoded"},
+        apple_key_url,
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
         data={
             "client_id": settings.APPLE_CLIENT_ID,
             "client_secret": generate_token(),
             "code": code,
             "grant_type": settings.APPLE_GRANT_TYPE,
             "redirect_uri": settings.APPLE_REDIRECT_URL,
-        }
+        },
     )
 
-    if not broinfo_response.json().get("access_token") or not broinfo_response.json().get("refresh_token") or not broinfo_response.json().get("id_token"): 
+    if (
+        not broinfo_response.json().get("access_token")
+        or not broinfo_response.json().get("refresh_token")
+        or not broinfo_response.json().get("id_token")
+    ):
         return get_failed_response("Bro email not available or not verified by Apple.", response)
 
     [success, [_, _, bro, bro_created]] = await log_bro_in(broinfo_response, db)
@@ -178,4 +185,3 @@ async def apple_verify(
         return login_response
     else:
         return get_failed_response("An error occurred", response)
-

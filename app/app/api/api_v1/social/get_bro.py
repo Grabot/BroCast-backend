@@ -34,9 +34,7 @@ async def get_bro(
         return get_failed_response("An error occurred", response)
 
     bro_ids = get_bros_request.bro_ids
-    bros_statement = select(Bro).where(
-        Bro.id.in_(bro_ids)
-    )
+    bros_statement = select(Bro).where(Bro.id.in_(bro_ids))
     results_bros = await db.execute(bros_statement)
     result_bros = results_bros.all()
 
@@ -52,7 +50,4 @@ async def get_bro(
         bro_list.append(bro.serialize_big)
     await db.commit()
 
-    return {
-        "result": True,
-        "bros": bro_list
-    }
+    return {"result": True, "bros": bro_list}

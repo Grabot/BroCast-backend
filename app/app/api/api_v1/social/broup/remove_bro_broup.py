@@ -41,12 +41,8 @@ async def remove_bro_broup(
     bro_id = remove_bro_broup_request.bro_id
     print(f"remove_bro_broup_request {bro_id}  {broup_id}")
 
-
     broup_room = f"broup_{broup_id}"
-    socket_response = {
-        "broup_id": broup_id,
-        "remove_bro_id": bro_id
-    }
+    socket_response = {"broup_id": broup_id, "remove_bro_id": bro_id}
     await sio.emit(
         "chat_changed",
         socket_response,

@@ -38,10 +38,14 @@ async def broup_change_description(
 
     broup_id = broup_change_description_request.broup_id
     new_broup_description = broup_change_description_request.new_broup_description
-    
-    broups_statement = select(Broup).where(
-        Broup.broup_id == broup_id,
-    ).options(selectinload(Broup.chat))
+
+    broups_statement = (
+        select(Broup)
+        .where(
+            Broup.broup_id == broup_id,
+        )
+        .options(selectinload(Broup.chat))
+    )
     print(f"broups_statement {broups_statement}")
     results_broups = await db.execute(broups_statement)
     print(f"results_broups {results_broups}")
@@ -57,18 +61,15 @@ async def broup_change_description(
         broup.set_updated()
         db.add(broup)
         print(f"adding borup {broup.serialize}")
-    
+
     broup_room = f"broup_{broup_id}"
-    socket_response = {
-        "broup_id": broup_id,
-        "new_broup_description": new_broup_description
-    }
+    socket_response = {"broup_id": broup_id, "new_broup_description": new_broup_description}
     await sio.emit(
         "chat_changed",
         socket_response,
         room=broup_room,
     )
-    
+
     chat: Chat = result_broups[0].Broup.chat
     chat.update_broup_description(new_broup_description)
     db.add(chat)

@@ -17,9 +17,7 @@ async def reading_messages(
     me: Bro,
     broup_id: int,
 ):
-    broups_statement = select(Broup).where(
-        Broup.broup_id == broup_id
-    )
+    broups_statement = select(Broup).where(Broup.broup_id == broup_id)
     results_broups = await db.execute(broups_statement)
     result_broups = results_broups.all()
     if not result_broups:
@@ -75,7 +73,7 @@ async def reading_messages(
             "message_read",
             {
                 "broup_id": broup_id,
-                "timestamp": last_message_read_time.strftime('%Y-%m-%dT%H:%M:%S.%f'),
+                "timestamp": last_message_read_time.strftime("%Y-%m-%dT%H:%M:%S.%f"),
             },
             room=broup_room,
         )
@@ -86,8 +84,7 @@ async def reading_messages(
         print(f"current last read time after receiving {chat.last_message_read_time_bro}")
         # Now check if there are messages that can be removed based on the timestamp
         messages_statement = select(Message).where(
-            Message.broup_id == broup_id,
-            Message.timestamp <= last_message_received_time
+            Message.broup_id == broup_id, Message.timestamp <= last_message_received_time
         )
         results_messages = await db.execute(messages_statement)
         result_messages = results_messages.all()

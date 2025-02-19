@@ -31,6 +31,7 @@ async def handle_join_solo(sid, *args, **kwargs):
     room = f"room_{bro_id}"
     await sio.enter_room(sid, room)
 
+
 @sio.on("join_broup")
 async def handle_join_broup(sid, *args, **kwargs):
     data = args[0]
@@ -38,12 +39,14 @@ async def handle_join_broup(sid, *args, **kwargs):
     room = f"broup_{broup_id}"
     await sio.enter_room(sid, room)
 
+
 @sio.on("leave_solo")
 async def handle_leave(sid, *args, **kwargs):
     data = args[0]
     bro_id = data["bro_id"]
     room = f"room_{bro_id}"
     await sio.leave_room(sid, room)
+
 
 @sio.on("leave_broup")
 async def handle_leave_broup(sid, *args, **kwargs):

@@ -1,19 +1,16 @@
-from typing import Optional, List
+from typing import Optional
 
 from fastapi import Depends, Request, Response
 from pydantic import BaseModel
-from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlmodel import select, update
-import random
+from sqlmodel import select
 
 from app.api.api_v1 import api_router_v1
 from app.database import get_db
-from app.models import Bro, Broup, Chat
+from app.models import Bro, Chat
 from app.util.rest_util import get_failed_response
 from app.util.util import check_token, get_auth_token
 from app.sockets.sockets import sio
-from sqlalchemy.orm import selectinload
 
 
 class MakeAdminBroupRequest(BaseModel):
@@ -69,15 +66,12 @@ async def make_admin_broup(
         }
     print(f"admins then {chat.bro_admin_ids}")
     chat.add_admin(bro_id)
-    
+
     await db.commit()
     print(f"admins now {chat.bro_admin_ids}")
 
     broup_room = f"broup_{broup_id}"
-    socket_response = {
-        "broup_id": broup_id,
-        "new_admin_id": bro_id
-    }
+    socket_response = {"broup_id": broup_id, "new_admin_id": bro_id}
     await sio.emit(
         "chat_changed",
         socket_response,

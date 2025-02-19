@@ -24,12 +24,12 @@ class Message(SQLModel, table=True):
     @property
     def serialize(self):
         return {
-            'sender_id': self.sender_id,
-            'broup_id': self.broup_id,
-            'message_id': self.message_id,
-            'body': self.body,
-            'text_message': self.text_message,
-            'timestamp': self.timestamp.strftime('%Y-%m-%dT%H:%M:%S.%f'),
-            'info': self.info,
-            'data': self.data,
+            "sender_id": self.sender_id,
+            "broup_id": self.broup_id,
+            "message_id": self.message_id,
+            "body": self.body,
+            "text_message": self.text_message,
+            "timestamp": self.timestamp.strftime("%Y-%m-%dT%H:%M:%S.%f"),
+            "info": self.info,
+            "data": self.data,
         }

@@ -58,7 +58,7 @@ async def send_message(
             "result": False,
             "error": "Broup does not exist",
         }
-    
+
     for broup_object in broup_objects:
         broup: Broup = broup_object.Broup
         if broup.bro_id == me.id:
@@ -96,7 +96,7 @@ async def send_message(
         text_message=text_message,
         timestamp=current_timestamp,
         info=False,
-        data=message_data
+        data=message_data,
     )
     chat.current_message_id += 1
     db.add(chat)

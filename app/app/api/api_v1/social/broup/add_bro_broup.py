@@ -42,8 +42,7 @@ async def add_bro_broup(
     print(f"add_bro_broup_request {bro_id}  {broup_id}")
 
     new_bro_broup_statement = select(Broup).where(
-        Broup.broup_id == broup_id,
-        Broup.bro_id == bro_id
+        Broup.broup_id == broup_id, Broup.bro_id == bro_id
     )
     results_bro_broup = await db.execute(new_bro_broup_statement)
     result_bro_broup = results_bro_broup.first()
@@ -51,9 +50,7 @@ async def add_bro_broup(
         print("broup object exists, the bro has been here before!")
         # TODO: Add the bro to the broup again?
 
-    new_bro_statement = select(Bro).where(
-        Bro.id == bro_id
-    )
+    new_bro_statement = select(Bro).where(Bro.id == bro_id)
     results_bro = await db.execute(new_bro_statement)
     result_bro = results_bro.first()
     print("query all new bro")
@@ -61,9 +58,9 @@ async def add_bro_broup(
         return get_failed_response("Bro not found", response)
     new_bro_for_broup: Bro = result_bro.Bro
 
-    broups_statement = select(Broup).where(
-        Broup.broup_id == broup_id
-    ).options(selectinload(Broup.chat))
+    broups_statement = (
+        select(Broup).where(Broup.broup_id == broup_id).options(selectinload(Broup.chat))
+    )
     results_broups = await db.execute(broups_statement)
     result_broups = results_broups.all()
     print("query all new broups")
@@ -108,9 +105,7 @@ async def add_bro_broup(
     new_broup_dict_bro["chat"]["current_message_id"] = test_chat.current_message_id
 
     bro_add_room = f"room_{bro_id}"
-    socket_response = {
-        "broup": new_broup_dict_bro
-    }
+    socket_response = {"broup": new_broup_dict_bro}
     print(f"sending details to new bro {socket_response}")
     await sio.emit(
         "chat_added",
@@ -122,7 +117,7 @@ async def add_bro_broup(
     socket_response = {
         "broup_id": broup_id,
         "new_broup_name": new_broup_name,
-        "new_member_id": bro_id
+        "new_member_id": bro_id,
     }
     await sio.emit(
         "chat_changed",

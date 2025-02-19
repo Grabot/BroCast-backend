@@ -4,5 +4,5 @@ from . import (
     change_password,
     get_avatar_bro,
     reset_avatar,
-    change_bromotion
+    change_bromotion,
 )

@@ -20,7 +20,7 @@ class LoginRequest(BaseModel):
     email: Optional[str] = None
     bro_name: Optional[str] = None
     bromotion: Optional[str] = None
-    password: str    
+    password: str
 
 
 @api_router_v1.post("/login", status_code=200)
@@ -33,7 +33,7 @@ async def login_bro(
     bro_name = login_request.bro_name
     bromotion = login_request.bromotion
     password = login_request.password
-    
+
     if password is None:
         return get_failed_response("Invalid request", response)
     if bro_name is None and bromotion is None:
@@ -56,10 +56,7 @@ async def login_bro(
         statement = (
             select(Bro)
             .where(Bro.origin == 0)
-            .where(
-                func.lower(Bro.bro_name) == bro_name.lower(),
-                Bro.bromotion == bromotion
-            )
+            .where(func.lower(Bro.bro_name) == bro_name.lower(), Bro.bromotion == bromotion)
             .options(selectinload(Bro.broups))
         )
         results = await db.execute(statement)
@@ -79,14 +76,14 @@ async def login_bro(
     bro_token = get_bro_tokens(bro)
     db.add(bro_token)
     await db.commit()
-    
+
     # We don't refresh the bro object because we know all we want to know
     login_response = {
         "result": True,
         "message": "Bro logged in successfully.",
         "access_token": bro_token.access_token,
         "refresh_token": bro_token.refresh_token,
-        "bro": bro.serialize
+        "bro": bro.serialize,
     }
 
     return login_response

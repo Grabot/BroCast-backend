@@ -2,9 +2,8 @@ from typing import Optional
 
 from fastapi import Depends, Request, Response
 from pydantic import BaseModel
-from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlmodel import select, update
+from sqlmodel import select
 import random
 
 from app.api.api_v1 import api_router_v1
@@ -15,9 +14,10 @@ from app.util.util import check_token, get_auth_token
 from app.sockets.sockets import sio
 
 
+def add_bros_object(
+    bro_id: int, broup_id: int, broup_name: str, broup_update: bool, member_update: bool
+) -> Broup:
 
-def add_bros_object(bro_id: int, broup_id: int, broup_name: str, broup_update: bool, member_update: bool) -> Broup:
-    
     broup = Broup(
         bro_id=bro_id,
         broup_id=broup_id,
@@ -32,9 +32,14 @@ def add_bros_object(bro_id: int, broup_id: int, broup_name: str, broup_update: b
     )
     return broup
 
-async def create_bro_chat(db: AsyncSession, me: Bro, bro_add: Bro,  private_broup_ids: list) -> dict:
+
+async def create_bro_chat(db: AsyncSession, me: Bro, bro_add: Bro, private_broup_ids: list) -> dict:
     admins = []
-    broup_colour = '%02X%02X%02X' % (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+    broup_colour = "%02X%02X%02X" % (
+        random.randint(0, 255),
+        random.randint(0, 255),
+        random.randint(0, 255),
+    )
 
     chat = Chat(
         private=True,
@@ -72,9 +77,7 @@ async def create_bro_chat(db: AsyncSession, me: Bro, bro_add: Bro,  private_brou
     # Send message to personal bro room that the bro has been added to a chat
     bro_add_room = f"room_{bro_add.id}"
     # We only send the broup details, the channel indicates that a broup is added
-    socket_response = {
-        "broup": new_broup_dict_bro
-    }
+    socket_response = {"broup": new_broup_dict_bro}
     await sio.emit(
         "chat_added",
         socket_response,
@@ -123,18 +126,23 @@ async def add_bro(
 
     # The private chat will be a broup object where private is true and the bro ids are the two bros
     private_broup_ids = [me.id, bro_add.id] if me.id < bro_add.id else [bro_add.id, me.id]
-    broup_statement = select(Broup).where(
-        Broup.bro_id == bro_id,
-    ).join(Chat, Chat.id == Broup.broup_id).filter(
-        Chat.private == True,
-        Chat.bro_ids == private_broup_ids,
+    broup_statement = (
+        select(Broup)
+        .where(
+            Broup.bro_id == bro_id,
+        )
+        .join(Chat, Chat.id == Broup.broup_id)
+        .filter(
+            Chat.private == True,
+            Chat.bro_ids == private_broup_ids,
+        )
     )
     results_broup = await db.execute(broup_statement)
     result_broup = results_broup.first()
 
     if result_broup:
-        # The broup object already exists. 
-        # This is possible if they are bros, or if the were bros before, 
+        # The broup object already exists.
+        # This is possible if they are bros, or if the were bros before,
         # but one of them unbroed the other.
         # TODO: add functionality for re-broing?
         # Already exists, indictated with `False`
@@ -144,7 +152,3 @@ async def add_bro(
     else:
         return await create_bro_chat(db, me, bro_add, private_broup_ids)
         # We return the broup without the avatar because it is being created
-
-
-
-

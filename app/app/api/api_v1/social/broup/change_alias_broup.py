@@ -38,7 +38,7 @@ async def broup_change_alias(
 
     broup_id = broup_change_alias_request.broup_id
     new_broup_alias = broup_change_alias_request.new_broup_alias
-    
+
     broups_statement = select(Broup).where(
         Broup.broup_id == broup_id,
         Broup.bro_id == me.id,
