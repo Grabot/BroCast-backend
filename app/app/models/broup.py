@@ -15,7 +15,6 @@ class Broup(SQLModel, table=True):
     id: int = Field(default=None, primary_key=True)
     bro_id: int = Field(foreign_key="Bro.id")
     broup_id: int = Field(foreign_key="Chat.id")
-    broup_name: str
     alias: str
     last_message_read_time: datetime = Field(default=datetime.now(pytz.utc).replace(tzinfo=None))
     last_message_received_time: datetime = Field(
@@ -25,7 +24,7 @@ class Broup(SQLModel, table=True):
     mute: bool = Field(default=False)
     mute_timestamp: datetime = Field(default=datetime.now(pytz.utc).replace(tzinfo=None))
     removed: bool = Field(default=False)
-    is_left: bool = Field(default=False)
+    deleted: bool = Field(default=False)
     # This is different from the unread messages.
     # The bro can have received the message, but not read it.
     # In this case this variable will remain False. If the bro later receives more messages without
@@ -34,6 +33,7 @@ class Broup(SQLModel, table=True):
     new_members: bool = Field(default=True)
     # We don't need to send these details all the time. Only when needed.
     broup_updated: bool = Field(default=True)
+    update_bros: List[int] = Field(default=[], sa_column=Column(ARRAY(Integer())))
 
     chat: "Chat" = Relationship(
         back_populates="chat_broups",
@@ -67,25 +67,23 @@ class Broup(SQLModel, table=True):
         self.last_message_received_time = last_message_received_time
         self.new_messages = False
 
-    def set_updated(self, update_value=True):
-        self.broup_updated = update_value
-
     def get_alias(self):
         return self.alias
 
     def get_bro_id(self):
         return self.bro_id
 
-    def set_broup_name(self, broup_name):
-        self.broup_name = broup_name
-        self.broup_updated = True
-
-    def broup_new_member(self):
-        self.new_members = True
-        self.broup_updated = True
-
-    def get_broup_name(self):
-        return self.broup_name
+    def add_bro_to_update(self, bro_id):
+        old_update_bros = self.update_bros
+        new_update_bros = []
+        for old in old_update_bros:
+            new_update_bros.append(old)
+        if bro_id not in new_update_bros:
+            new_update_bros.append(bro_id)
+        self.update_bros = new_update_bros
+    
+    def bros_retrieved(self):
+        self.update_bros = []
 
     def update_last_message_received(self):
         self.last_message_received_time = datetime.now(pytz.utc).replace(tzinfo=None)
@@ -105,22 +103,8 @@ class Broup(SQLModel, table=True):
             return True
         return False
 
-    def broup_removed(self):
-        self.removed = True
-
     def is_removed(self):
         return self.removed
-
-    def leave_broup(self):
-        self.is_left = True
-        self.unread_messages = 0
-
-    def has_left(self):
-        return self.is_left
-
-    def rejoin(self):
-        self.is_left = False
-        self.removed = False
 
     def get_mute_timestamp(self):
         return self.mute_timestamp
@@ -134,12 +118,12 @@ class Broup(SQLModel, table=True):
             "broup_id": self.broup_id,
             "bro_id": self.bro_id,
             "alias": self.alias,
-            "broup_name": self.broup_name,
             "unread_messages": self.unread_messages,
-            "left": self.is_left,
+            "removed": self.removed,
             "mute": self.mute,
             "broup_updated": self.broup_updated,
             "new_messages": self.new_messages,
+            "update_bros": self.update_bros,
             "chat": self.chat.serialize,
         }
 
@@ -159,9 +143,8 @@ class Broup(SQLModel, table=True):
             "broup_id": self.broup_id,
             "bro_id": self.bro_id,
             "alias": self.alias,
-            "broup_name": self.broup_name,
             "unread_messages": self.unread_messages,
-            "left": self.is_left,
+            "removed": self.removed,
             "mute": self.mute,
             "broup_updated": self.broup_updated,
             "new_messages": self.new_messages,

@@ -35,11 +35,12 @@ async def reading_messages(
             print(f"bro {me.id} read message. Last read time: {broup.last_message_read_time}")
             db.add(broup)
         else:
-            if broup.last_message_read_time < last_message_read_time:
-                print(f"last_message_read_time: {last_message_read_time}")
-                last_message_read_time = broup.last_message_read_time
-            if broup.last_message_received_time < last_message_received_time:
-                last_message_received_time = broup.last_message_received_time
+            if not broup.is_removed():
+                if broup.last_message_read_time < last_message_read_time:
+                    print(f"last_message_read_time: {last_message_read_time}")
+                    last_message_read_time = broup.last_message_read_time
+                if broup.last_message_received_time < last_message_received_time:
+                    last_message_received_time = broup.last_message_received_time
 
     await db.commit()
     # We retrieve and quickly update the chat object

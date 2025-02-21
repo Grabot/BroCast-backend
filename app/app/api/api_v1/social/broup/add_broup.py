@@ -14,18 +14,15 @@ from app.util.util import check_token, get_auth_token
 from app.sockets.sockets import sio
 
 
-def add_broup_object(
-    bro_id: int, broup_id: int, broup_name: str, broup_update: bool, member_update: bool
-) -> Broup:
+def add_broup_object(bro_id: int, broup_id: int, broup_update: bool, member_update: bool) -> Broup:
 
     broup = Broup(
         bro_id=bro_id,
         broup_id=broup_id,
-        broup_name=broup_name,
         alias="",
         unread_messages=0,
         mute=False,
-        is_left=False,
+        deleted=False,
         removed=False,
         broup_updated=broup_update,
         new_members=member_update,
@@ -43,8 +40,15 @@ async def create_broup_chat(
         random.randint(0, 255),
     )
 
+    broup_add_me = None
+    broup_name = f"{broup_name} "
+    for bro in bros:
+        bromotion = bro.bromotion
+        broup_name = f"{broup_name}{bromotion}"
+
     chat = Chat(
         private=False,
+        broup_name=broup_name,
         bro_ids=private_broup_ids,
         bro_admin_ids=admins,
         broup_description="",
@@ -58,15 +62,10 @@ async def create_broup_chat(
     broup_id = chat.id
 
     chat_serialize = chat.serialize
-    broup_add_me = None
-    broup_name = f"{broup_name} "
-    for bro in bros:
-        bromotion = bro.bromotion
-        broup_name = f"{broup_name}{bromotion}"
     for bro in bros:
         bro_id = bro.id
         print(f"test: {bro_id}")
-        broup_add = add_broup_object(bro_id, broup_id, broup_name, True, True)
+        broup_add = add_broup_object(bro_id, broup_id, True, True)
 
         db.add(broup_add)
         bro_add_room = f"room_{bro_id}"

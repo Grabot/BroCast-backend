@@ -58,7 +58,7 @@ async def broup_change_colour(
 
     for result_broup in result_broups:
         broup: Broup = result_broup.Broup
-        broup.set_updated()
+        broup.broup_updated = True
         db.add(broup)
         print(f"adding borup {broup.serialize}")
 

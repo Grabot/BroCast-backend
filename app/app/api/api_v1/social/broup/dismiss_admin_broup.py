@@ -38,15 +38,6 @@ async def dismiss_admin_broup(
     bro_id = dimsiss_admin_broup_request.bro_id
     print(f"dimsiss_admin_broup_request {bro_id}  {broup_id}")
 
-    # new_bro_statement = select(Bro).where(
-    #     Bro.id == bro_id
-    # )
-    # results_bro = await db.execute(new_bro_statement)
-    # result_bro = results_bro.first()
-    # print("query all new bro")
-    # if not result_bro:
-    #     return get_failed_response("Bro not found", response)
-
     print("getting chat")
     chat_statement = select(Chat).where(
         Chat.id == broup_id,
@@ -66,6 +57,7 @@ async def dismiss_admin_broup(
         }
     print(f"admins then {chat.bro_admin_ids}")
     chat.dismiss_admin(bro_id)
+    db.add(chat)
 
     await db.commit()
     print(f"admins now {chat.bro_admin_ids}")
@@ -77,6 +69,8 @@ async def dismiss_admin_broup(
         socket_response,
         room=broup_room,
     )
+
+    # TODO: Add information message?
 
     return {
         "result": True,

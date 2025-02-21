@@ -62,13 +62,11 @@ async def send_message(
     for broup_object in broup_objects:
         broup: Broup = broup_object.Broup
         if broup.bro_id == me.id:
-            # The bro that send the message obviously also read and received it.
             broup.received_message(current_timestamp)
             broup.read_messages(current_timestamp)
             print(f"bro {me.id} sent message. Last read time: {broup.last_message_read_time}")
         else:
-            # The other bro's now gets an extra unread message
-            if not broup.has_left() and not broup.is_removed():
+            if not broup.is_removed():
                 broup.update_unread_messages()
                 broup.check_mute()
             print(f"current last read time other bro: {broup.last_message_read_time}")

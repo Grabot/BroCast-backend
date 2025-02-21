@@ -78,10 +78,11 @@ async def message_received(
                 )
                 db.add(broup)
         else:
-            if broup.last_message_received_time < last_message_received_time:
-                print(f"last_message_received_time: {last_message_received_time}")
-                last_message_received_time = broup.last_message_received_time
-            print(f"Last read time other bro: {broup.last_message_read_time}")
+            if not broup.is_removed():
+                if broup.last_message_received_time < last_message_received_time:
+                    print(f"last_message_received_time: {last_message_received_time}")
+                    last_message_received_time = broup.last_message_received_time
+                print(f"Last read time other bro: {broup.last_message_read_time}")
 
     if chat.last_message_received_time_bro < last_message_received_time:
         # update the chat last message read time

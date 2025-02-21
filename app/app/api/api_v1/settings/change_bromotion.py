@@ -31,7 +31,7 @@ async def change_bromotion(
     if auth_token == "":
         return get_failed_response("An error occurred", response)
 
-    me: Optional[Bro] = await check_token(db, auth_token, False)
+    me: Optional[Bro] = await check_token(db, auth_token, True)
     if not me:
         return get_failed_response("An error occurred", response)
 
@@ -47,50 +47,61 @@ async def change_bromotion(
             "message": "Broname bromotion combination is already taken, please choose a different bromotion.",
         }
 
+    old_bromotion = me.bromotion
     me.set_new_bromotion(new_bromotion)
+    db.add(me)
 
-    broups_statement = (
-        select(Broup)
-        .where(
-            Broup.bro_id == me.id,
-        )
-        .options(selectinload(Broup.chat).options(selectinload(Chat.chat_broups)))
-    )
-    print(f"bromotion_statement {broups_statement}")
-    results_broups = await db.execute(broups_statement)
-    print(f"results_bromotions {results_broups}")
-    result_broups = results_broups.all()
-    print(f"result_bromotion {result_broups}")
+    broups: List[Broup] = me.broups
+    for broup in broups:
+        print(f"broup {broup.serialize_no_chat}")
+        chat: Chat = broup.chat
+        if not chat.private:
+            # For broup chats the bromotion is shown in the broup name, we want to update it
+            broup_name_now = chat.broup_name
+            print(f"broup_name_now {broup_name_now}")
+            # Remove the first occurence from the end of the broup name
+            new_broup_name = broup_name_now[::-1].replace(old_bromotion, new_bromotion, 1)
+            # Reverse the string again
+            new_broup_name = new_broup_name[::-1]
+            chat.set_broup_name(new_broup_name)
+            db.add(chat)
 
-    if result_broups is None or result_broups == []:
-        return {
-            "result": False,
-        }
-
-    for result_broup in result_broups:
-        me_broup: Broup = result_broup.Broup
-        chat: Chat = me_broup.chat
-        broups: List[Broup] = chat.chat_broups
-        if chat.private:
-            # the broup name is my name with my new bromotion
-            new_broup_name = me.bro_name + " " + new_bromotion
-            # In private chats the broup name is the name of the other bro.
-            # Change the broup name to include the new bromotion.
-            for broup in broups:
-                if broup.bro_id != me.id:
-                    broup.set_broup_name(new_broup_name)
-                    db.add(broup)
+        chat_broups: List[Broup] = chat.chat_broups
+        for chat_broup in chat_broups:
+            if chat_broup.bro_id != me.id:
+                chat_broup.broup_updated = True
+                chat_broup.add_bro_to_update(me.id)
+                db.add(chat_broup)
+                if chat.private:
                     # We send it specifically to the other bro, who's broup name we changed.
-                    bro_room = f"room_{broup.bro_id}"
-                    socket_response = {"broup_id": broup.broup_id, "new_broup_name": new_broup_name}
+                    bro_room = f"room_{chat_broup.bro_id}"
+                    socket_response = {
+                        "bro_id": me.id,
+                        "bromotion": new_bromotion
+                    }
                     await sio.emit(
-                        "chat_changed",
+                        "bro_update",
                         socket_response,
                         room=bro_room,
                     )
+            
+        broup_room = f"broup_{chat.id}"
+        if not chat.private:
+            socket_response = {
+                "broup_id": chat.id,
+                "new_broup_name": new_broup_name,
+                "broup_updated": True
+            }
         else:
-            print("test2")
-            # TODO: for a broup the name has all the bromotions appended to it. Change it for everybody
+            socket_response = {
+                "broup_id": chat.id,
+                "broup_updated": True
+            }
+        await sio.emit(
+            "chat_changed",
+            socket_response,
+            room=broup_room,
+        )
 
     await db.commit()
 

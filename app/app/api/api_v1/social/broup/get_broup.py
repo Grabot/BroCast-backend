@@ -55,8 +55,9 @@ async def get_broup(
     broup_list = []
     for broup_object in result_broups:
         broup: Broup = broup_object.Broup
+        print(f"retrieving broup: {broup.serialize}")
         # Retrieved full data, so no longer set to updated
-        broup.set_updated(False)
+        broup.broup_updated = False
         db.add(broup)
         broup_list.append(broup.serialize)
     await db.commit()

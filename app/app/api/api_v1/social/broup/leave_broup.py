@@ -16,14 +16,13 @@ from app.sockets.sockets import sio
 from sqlalchemy.orm import selectinload
 
 
-class RemoveBroBroupRequest(BaseModel):
+class LeaveBroupRequest(BaseModel):
     broup_id: int
-    bro_id: int
 
 
-@api_router_v1.post("/broup/remove_bro", status_code=200)
+@api_router_v1.post("/broup/leave", status_code=200)
 async def remove_bro_broup(
-    remove_bro_broup_request: RemoveBroBroupRequest,
+    leave_broup_request: LeaveBroupRequest,
     request: Request,
     response: Response,
     db: AsyncSession = Depends(get_db),
@@ -37,21 +36,8 @@ async def remove_bro_broup(
     if not me:
         return get_failed_response("An error occurred", response)
 
-    broup_id = remove_bro_broup_request.broup_id
-    bro_id = remove_bro_broup_request.bro_id
+    broup_id = leave_broup_request.broup_id
 
-    bro_statement = select(Bro).where(
-        Bro.id == bro_id
-    )
-    results = await db.execute(bro_statement)
-    result = results.first()
-    if result is None:
-        return {
-            "result": False,
-            "message": "Bro does not exists",
-        }
-    remove_bro: Bro = result.Bro
-    print(f"remove_bro_broup_request {bro_id}  {broup_id}")
     broups_statement = (
         select(Broup)
         .where(
@@ -72,16 +58,28 @@ async def remove_bro_broup(
         }
     chat: Chat = result_broups[0].Broup.chat
 
-    if bro_id not in chat.bro_ids:
+    if me.id not in chat.bro_ids:
         return {
             "result": False,
             "error": "Bro was not in the Broup",
         }
     print("chat gotten")
-    chat.remove_participant(bro_id)
-    print(f"bro Id {bro_id} admins {chat.bro_admin_ids}")
+    chat.remove_participant(me.id)
 
-    remove_bromotion = remove_bro.bromotion
+    if me.id in chat.bro_admin_ids:
+        chat.dismiss_admin(me.id)
+        if chat.bro_admin_ids == []:
+            new_admin_id = chat.bro_ids[0]
+            chat.add_admin(new_admin_id)
+            broup_room = f"broup_{broup_id}"
+            socket_response = {"broup_id": broup_id, "new_admin_id": new_admin_id}
+            await sio.emit(
+                "chat_changed",
+                socket_response,
+                room=broup_room,
+            )
+
+    remove_bromotion = me.bromotion
     # In a broup the broup name is the same for all broup members
     # First find out what the new name should be.
     broup_name_now = chat.broup_name
@@ -90,12 +88,12 @@ async def remove_bro_broup(
     new_broup_name = broup_name_now[::-1].replace(remove_bromotion, "", 1)
     # Reverse the string again
     new_broup_name = new_broup_name[::-1]
+    print(f"broup_name_new {new_broup_name}")
     chat.set_broup_name(new_broup_name)
     db.add(chat)
-    print(f"broup_name_new {new_broup_name}")
     for result_broup in result_broups:
         broup: Broup = result_broup.Broup
-        if broup.bro_id == bro_id:
+        if broup.bro_id == me.id:
             broup.removed = True
         broup.broup_updated = True
         db.add(broup)
@@ -105,7 +103,7 @@ async def remove_bro_broup(
     broup_room = f"broup_{broup_id}"
     socket_response = {
         "broup_id": broup_id,
-        "remove_bro_id": bro_id,
+        "remove_bro_id": me.id,
         "new_broup_name": new_broup_name
     }
     await sio.emit(

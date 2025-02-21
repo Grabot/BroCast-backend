@@ -58,9 +58,8 @@ async def broup_change_description(
 
     for result_broup in result_broups:
         broup: Broup = result_broup.Broup
-        broup.set_updated()
+        broup.broup_updated = True
         db.add(broup)
-        print(f"adding borup {broup.serialize}")
 
     broup_room = f"broup_{broup_id}"
     socket_response = {"broup_id": broup_id, "new_broup_description": new_broup_description}

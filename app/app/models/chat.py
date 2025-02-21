@@ -20,6 +20,7 @@ class Chat(SQLModel, table=True):
     bro_ids: List[int] = Field(default=[], sa_column=Column(ARRAY(Integer())))
     bro_admin_ids: List[int] = Field(default=[], sa_column=Column(ARRAY(Integer())))
     private: bool = Field(default=True)  # indicates if it's a private chat between 2 bros
+    broup_name: str
     broup_description: str
     broup_colour: str
     default_avatar: bool = Field(default=True)
@@ -70,8 +71,19 @@ class Chat(SQLModel, table=True):
         new_bros = []
         for old in old_bros:
             new_bros.append(old)
-        new_bros.append(bro_id)
+        if bro_id not in new_bros:
+            new_bros.append(bro_id)
         new_bros.sort()
+        self.bro_ids = new_bros
+    
+    def remove_participant(self, bro_id):
+        if self.bro_ids is None:
+            self.bro_ids = []
+        old_bros = self.bro_ids
+        new_bros = []
+        for old in old_bros:
+            if old != bro_id:
+                new_bros.append(old)
         self.bro_ids = new_bros
 
     def add_admin(self, bro_id):
@@ -79,7 +91,8 @@ class Chat(SQLModel, table=True):
         new_admins = []
         for old in old_admins:
             new_admins.append(old)
-        new_admins.append(bro_id)
+        if bro_id not in new_admins:
+            new_admins.append(bro_id)
         new_admins.sort()
         self.bro_admin_ids = new_admins
 
@@ -98,6 +111,12 @@ class Chat(SQLModel, table=True):
 
     def get_broup_description(self):
         return self.broup_description
+
+    def set_broup_name(self, broup_name):
+        self.broup_name = broup_name
+
+    def get_broup_name(self):
+        return self.broup_name
 
     def avatar_filename(self):
         # We need something that is unique for each broup but doesn't change
@@ -134,6 +153,7 @@ class Chat(SQLModel, table=True):
         return {
             "bro_ids": self.bro_ids,
             "admin_ids": self.bro_admin_ids,
+            "broup_name": self.broup_name,
             "private": self.private,
             "broup_description": self.broup_description,
             "broup_colour": self.broup_colour,

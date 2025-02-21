@@ -14,10 +14,10 @@ from app.util.util import check_token, get_auth_token
 
 
 class GetBroRequest(BaseModel):
-    bro_ids: List[int]
+    bro_id: int
 
 
-@api_router_v1.post("/bro/get", status_code=200)
+@api_router_v1.post("/bro/get/single", status_code=200)
 async def get_bro(
     get_bros_request: GetBroRequest,
     request: Request,
@@ -33,20 +33,16 @@ async def get_bro(
     if not me:
         return get_failed_response("An error occurred", response)
 
-    bro_ids = get_bros_request.bro_ids
-    bros_statement = select(Bro).where(Bro.id.in_(bro_ids))
-    results_bros = await db.execute(bros_statement)
-    result_bros = results_bros.all()
-
-    if result_bros is None or result_bros == []:
+    bro_id = get_bros_request.bro_id
+    bro_statement = select(Bro).where(Bro.id == bro_id)
+    results_bro = await db.execute(bro_statement)
+    result_bro = results_bro.first()
+    
+    if not result_bro:
         return {
             "result": True,
-            "bros": [],
         }
 
-    bro_list = []
-    for bro_object in result_bros:
-        bro: Bro = bro_object.Bro
-        bro_list.append(bro.serialize_big)
+    bro: Bro = result_bro.Bro
 
-    return {"result": True, "bros": bro_list}
+    return {"result": True, "bro": bro.serialize_big}

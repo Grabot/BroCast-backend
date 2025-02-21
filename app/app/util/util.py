@@ -8,7 +8,7 @@ from sqlalchemy.orm import selectinload
 from sqlmodel import select
 
 from app.config.config import settings
-from app.models import Bro, Broup, BroToken
+from app.models import Bro, Broup, BroToken, Chat
 
 
 async def delete_bro_token_and_return(db: AsyncSession, bro_token, return_value: Optional[Bro]):
@@ -75,7 +75,7 @@ async def check_token(db: AsyncSession, token, retrieve_full=False) -> Optional[
     if bro_token.token_expiration < int(time.time()):
         return None
     if retrieve_full:
-        bro_statement = select(Bro).filter_by(id=bro_token.bro_id).options(selectinload(Bro.broups))
+        bro_statement = select(Bro).filter_by(id=bro_token.bro_id).options(selectinload(Bro.broups).options(selectinload(Broup.chat).options(selectinload(Chat.chat_broups))))
     else:
         bro_statement = select(Bro).filter_by(id=bro_token.bro_id)
     results = await db.execute(bro_statement)

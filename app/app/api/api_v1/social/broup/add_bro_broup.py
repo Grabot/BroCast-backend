@@ -16,6 +16,7 @@ from app.sockets.sockets import sio
 from sqlalchemy.orm import selectinload
 
 
+
 class AddBroBroupRequest(BaseModel):
     broup_id: int
     bro_id: int
@@ -46,16 +47,38 @@ async def add_bro_broup(
     )
     results_bro_broup = await db.execute(new_bro_broup_statement)
     result_bro_broup = results_bro_broup.first()
+    broup_newly_added = False
     if result_bro_broup:
+        new_broup: Broup = result_bro_broup.Broup
         print("broup object exists, the bro has been here before!")
-        # TODO: Add the bro to the broup again?
+        if new_broup.removed:
+            new_broup.removed = False
+            db.add(new_broup)
+        await db.commit()
+    else:
+        broup_newly_added = True
+        new_broup = Broup(
+            bro_id=bro_id,
+            broup_id=broup_id,
+            broup_name="",
+            alias="",
+            unread_messages=0,
+            mute=False,
+            deleted=False,
+            removed=False,
+            broup_updated=True,
+            new_members=True,
+        )
 
     new_bro_statement = select(Bro).where(Bro.id == bro_id)
     results_bro = await db.execute(new_bro_statement)
     result_bro = results_bro.first()
     print("query all new bro")
     if not result_bro:
-        return get_failed_response("Bro not found", response)
+        return {
+            "result": False,
+            "message": "Bro does not exists",
+        }
     new_bro_for_broup: Bro = result_bro.Bro
 
     broups_statement = (
@@ -65,36 +88,29 @@ async def add_bro_broup(
     result_broups = results_broups.all()
     print("query all new broups")
     if not result_broups:
-        return get_failed_response("Broup not found", response)
+        return {
+            "result": False,
+            "message": "Broup does not exists",
+        }
     test_broup: Broup = result_broups[0].Broup
     test_chat: Chat = test_broup.chat
     print(f"broup: {test_broup.serialize_no_chat}")
     print(f"chat participants: {test_chat.serialize}")
 
-    broup_name = test_broup.get_broup_name()
+    broup_name = test_chat.get_broup_name()
     print("checking bro ids")
     new_broup_name = broup_name + new_bro_for_broup.get_bromotion()
     for result_broup in result_broups:
         broup: Broup = result_broup.Broup
-        broup.set_broup_name(new_broup_name)
-        broup.broup_new_member()
-        print(f"updating broup fro bro {broup.bro_id}")
-        db.add(broup)
+        if not broup.removed:
+            broup.new_members = True
+            broup.broup_updated = True
+            print(f"updating broup fro bro {broup.bro_id}")
+            db.add(broup)
     test_chat.add_participant(bro_id)
+    test_chat.set_broup_name(new_broup_name)
     db.add(test_chat)
 
-    new_broup = Broup(
-        bro_id=bro_id,
-        broup_id=broup_id,
-        broup_name=new_broup_name,
-        alias="",
-        unread_messages=0,
-        mute=False,
-        is_left=False,
-        removed=False,
-        broup_updated=True,
-        new_members=True,
-    )
     print(f"new broup fro bro {new_broup.bro_id}")
     db.add(new_broup)
     await db.commit()
@@ -104,14 +120,15 @@ async def add_bro_broup(
     new_broup_dict_bro["chat"] = chat_serialize
     new_broup_dict_bro["chat"]["current_message_id"] = test_chat.current_message_id
 
-    bro_add_room = f"room_{bro_id}"
-    socket_response = {"broup": new_broup_dict_bro}
-    print(f"sending details to new bro {socket_response}")
-    await sio.emit(
-        "chat_added",
-        socket_response,
-        room=bro_add_room,
-    )
+    if broup_newly_added:
+        bro_add_room = f"room_{bro_id}"
+        socket_response = {"broup": new_broup_dict_bro}
+        print(f"sending details to new bro {socket_response}")
+        await sio.emit(
+            "chat_added",
+            socket_response,
+            room=bro_add_room,
+        )
 
     broup_room = f"broup_{broup_id}"
     socket_response = {
@@ -124,6 +141,8 @@ async def add_bro_broup(
         socket_response,
         room=broup_room,
     )
+
+    # TODO: Add information message?
 
     return {
         "result": True,

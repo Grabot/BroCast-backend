@@ -31,7 +31,7 @@ class Bro(SQLModel, table=True):
 
     broups: List["Broup"] = Relationship(
         sa_relationship_kwargs={
-            "primaryjoin": "and_(Bro.id==Broup.bro_id, Broup.removed==False)",
+            "primaryjoin": "and_(Bro.id==Broup.bro_id, Broup.deleted==False)",
         },
     )
 

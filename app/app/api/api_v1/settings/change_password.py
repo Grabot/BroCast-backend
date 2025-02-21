@@ -38,7 +38,7 @@ async def change_password(
     if not bro.verify_password(old_password):
         return {
             "result": False,
-            "message": "password not correct",
+            "message": "old password not correct",
         }
 
     bro.hash_password(new_password)

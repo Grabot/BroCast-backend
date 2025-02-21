@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 
 from fastapi import Depends, Request, Response
 from pydantic import BaseModel
@@ -8,9 +8,10 @@ from sqlmodel import select, update
 
 from app.api.api_v1 import api_router_v1
 from app.database import get_db
-from app.models import Bro
+from app.models import Bro, Broup, Chat
 from app.util.rest_util import get_failed_response
 from app.util.util import check_token, get_auth_token
+from app.sockets.sockets import sio
 
 
 class ChangeBronameRequest(BaseModel):
@@ -29,25 +30,61 @@ async def change_broname(
     if auth_token == "":
         return get_failed_response("An error occurred", response)
 
-    bro: Optional[Bro] = await check_token(db, auth_token, False)
-    if not bro:
+    me: Optional[Bro] = await check_token(db, auth_token, True)
+    if not me:
         return get_failed_response("An error occurred", response)
 
     new_broname = change_broname_request.broname
-    bro_statement = select(Bro).where(func.lower(Bro.bro_name) == new_broname.lower())
+    bro_statement = select(Bro).where(
+        func.lower(Bro.bro_name) == new_broname.lower(),
+        Bro.bromotion == me.bromotion
+    )
     results = await db.execute(bro_statement)
     result = results.first()
     if result is not None:
         return get_failed_response(
-            "Bro name is already taken, please choose a different one.", response
+            "Bro name bromotion combination is already taken, please choose a different one.", response
         )
 
-    bro.set_new_broname(new_broname)
-    # TODO: update message?
+    me.set_new_broname(new_broname)
+    db.add(me)
+    broups: List[Broup] = me.broups
+    for broup in broups:
+        print(f"broup {broup.serialize_no_chat}")
+        chat: Chat = broup.chat
+        chat_broups: List[Broup] = chat.chat_broups
+        for chat_broup in chat_broups:
+            if chat_broup.bro_id != me.id:
+                chat_broup.broup_updated = True
+                chat_broup.add_bro_to_update(me.id)
+                db.add(chat_broup)
+                if chat.private:
+                    # We send it specifically to the other bro, who's broup name we changed.
+                    bro_room = f"room_{chat_broup.bro_id}"
+                    socket_response = {
+                        "bro_id": me.id,
+                        "broname": new_broname
+                    }
+                    await sio.emit(
+                        "bro_update",
+                        socket_response,
+                        room=bro_room,
+                    )
+            
+        broup_room = f"broup_{chat.id}"
+        socket_response = {
+            "broup_id": chat.id,
+            "broup_updated": True
+        }
+        await sio.emit(
+            "chat_changed",
+            socket_response,
+            room=broup_room,
+        )
 
-    db.add(bro)
     await db.commit()
 
+    # TODO: update message?
     return {
         "result": True,
         "message": new_broname,

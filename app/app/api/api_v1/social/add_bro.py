@@ -15,17 +15,16 @@ from app.sockets.sockets import sio
 
 
 def add_bros_object(
-    bro_id: int, broup_id: int, broup_name: str, broup_update: bool, member_update: bool
+    bro_id: int, broup_id: int, broup_update: bool, member_update: bool
 ) -> Broup:
 
     broup = Broup(
         bro_id=bro_id,
         broup_id=broup_id,
-        broup_name=broup_name,
         alias="",
         unread_messages=0,
         mute=False,
-        is_left=False,
+        deleted=False,
         removed=False,
         broup_updated=broup_update,
         new_members=member_update,
@@ -43,6 +42,7 @@ async def create_bro_chat(db: AsyncSession, me: Bro, bro_add: Bro, private_broup
 
     chat = Chat(
         private=True,
+        broup_name="",  # In a private chat we will build the broup name in the app (the other bro)
         bro_ids=private_broup_ids,
         bro_admin_ids=admins,
         broup_description="",
@@ -55,14 +55,11 @@ async def create_bro_chat(db: AsyncSession, me: Bro, bro_add: Bro, private_broup
 
     broup_id = chat.id
 
-    broup_name_me = bro_add.bro_name + " " + bro_add.bromotion
-    broup_name_bro = me.bro_name + " " + me.bromotion
-
     # Create the broups. make sure the ids are in order for the array column
     # The person creating the broup will get the other bro details via the post call
     # But the other broup should indicate that there are new members in the broup.
-    new_broup_me = add_bros_object(me.id, broup_id, broup_name_me, False, False)
-    new_broup_bro = add_bros_object(bro_add.id, broup_id, broup_name_bro, True, True)
+    new_broup_me = add_bros_object(me.id, broup_id, False, False)
+    new_broup_bro = add_bros_object(bro_add.id, broup_id, True, True)
 
     db.add(new_broup_me)
     db.add(new_broup_bro)
