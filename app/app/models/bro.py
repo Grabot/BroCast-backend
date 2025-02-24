@@ -26,6 +26,9 @@ class Bro(SQLModel, table=True):
     salt: str
     origin: int
     default_avatar: bool = Field(default=True)
+    fcm_token: Optional[str] = Field(default=None)
+    fcm_token_timestamp: Optional[int] = Field(default=None)  # timestamp when fcm token was set in unix time
+    platform: int = Field(default=0)  # 0: android, 1: ios
 
     tokens: List["BroToken"] = Relationship(back_populates="bro_token")
 

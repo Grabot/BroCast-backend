@@ -15,6 +15,7 @@ from app.sockets.sockets import sio
 from app.util.rest_util import get_failed_response
 from app.util.util import get_bro_tokens
 import hashlib
+import time
 
 
 class RegisterRequest(BaseModel):
@@ -22,6 +23,8 @@ class RegisterRequest(BaseModel):
     bro_name: str
     bromotion: str
     password: str
+    platform: int
+    fcm_token: Optional[str]
 
 
 @api_router_v1.post("/register", status_code=200)
@@ -34,6 +37,8 @@ async def register_bro(
     bro_name = register_request.bro_name
     bromotion = register_request.bromotion
     password = register_request.password
+    fcm_token = register_request.fcm_token
+    platform = register_request.platform
 
     if email is None or password is None or bro_name is None or bromotion is None:
         return get_failed_response("Invalid request", response)
@@ -64,7 +69,16 @@ async def register_bro(
             response,
         )
 
-    bro = Bro(bro_name=bro_name, bromotion=bromotion, email_hash=email_hash, origin=0)
+    fcm_refresh_expiration_time = 7889232  # about 3 months
+    bro = Bro(
+        bro_name=bro_name,
+        bromotion=bromotion,
+        email_hash=email_hash,
+        origin=0,
+        fcm_token=fcm_token,
+        fcm_token_timestamp=time.time() + fcm_refresh_expiration_time,
+        platform=platform,
+    )
     bro.hash_password(password)
     db.add(bro)
     # Refresh bro so we can get the id.

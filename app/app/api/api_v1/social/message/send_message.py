@@ -13,6 +13,7 @@ from app.api.api_v1 import api_router_v1
 from app.database import get_db
 from app.models import Bro, Message, Broup, Chat
 from app.util.rest_util import get_failed_response
+from app.util.notification_util import send_notification_broup
 from app.util.util import check_token, get_auth_token
 
 
@@ -47,7 +48,7 @@ async def send_message(
 
     broup_statement = select(Broup).where(
         Broup.broup_id == broup_id,
-    )
+    ).options(selectinload(Broup.broup_member))
     results_broup = await db.execute(broup_statement)
     broup_objects = results_broup.all()
     # The broup object and the message will have the same timestamp so we can check if it's equal
@@ -59,6 +60,7 @@ async def send_message(
             "error": "Broup does not exist",
         }
 
+    tokens = []
     for broup_object in broup_objects:
         broup: Broup = broup_object.Broup
         if broup.bro_id == me.id:
@@ -66,6 +68,15 @@ async def send_message(
             broup.read_messages(current_timestamp)
             print(f"bro {me.id} sent message. Last read time: {broup.last_message_read_time}")
         else:
+            broup_member: Bro = broup.broup_member
+            bro_fcm_token = broup_member.fcm_token
+            if bro_fcm_token is not None:
+                tokens.append(
+                    [
+                        bro_fcm_token,
+                        broup_member.platform
+                    ]
+                )
             if not broup.is_removed():
                 broup.update_unread_messages()
                 broup.check_mute()
@@ -102,7 +113,18 @@ async def send_message(
     await db.commit()
     # No need to refresh message because we don't send the message id
 
-    # send_notification_broup(bro_ids, message, broup_id, broup_objects, bro_id)
+    broup_name = chat.broup_name
+    if chat.private:
+        for broup_object in broup_objects:
+            broup: Broup = broup_object.Broup
+            if broup.bro_id != me.id:
+                bro: Bro = broup.broup_member
+                broup_name = bro.bro_name + " " + bro.bromotion
+                break
+
+    sender_name = me.bro_name + " " + me.bromotion
+    await send_notification_broup(tokens, chat.id, chat.private, broup_name, sender_name, message)
+
     broup_room = f"broup_{broup_id}"
     await sio.emit(
         "message_received",

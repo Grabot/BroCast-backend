@@ -44,6 +44,8 @@ requests = "2.32.3"
 PyJWT = "2.10.1"
 python-multipart = "0.0.20"
 pytz = "2024.2"
+firebase-admin = "6.6.0"
+firebase_functions = "0.4.2"
 
 
 [build-system]

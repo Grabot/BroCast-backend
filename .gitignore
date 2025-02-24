@@ -166,3 +166,4 @@ kubernetes/kubernetes_production
 kubernetes/kubernetes_production/*
 
 poetry.lock
+brocast_firebase.json

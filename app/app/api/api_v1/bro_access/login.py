@@ -21,6 +21,7 @@ class LoginRequest(BaseModel):
     bro_name: Optional[str] = None
     bromotion: Optional[str] = None
     password: str
+    platform: int
 
 
 @api_router_v1.post("/login", status_code=200)
@@ -33,6 +34,7 @@ async def login_bro(
     bro_name = login_request.bro_name
     bromotion = login_request.bromotion
     password = login_request.password
+    platform = login_request.platform
 
     if password is None:
         return get_failed_response("Invalid request", response)
@@ -74,6 +76,8 @@ async def login_bro(
 
     # Valid login, we refresh the token for this bro.
     bro_token = get_bro_tokens(bro)
+    if bro.platform != platform:
+        bro.platform = platform
     db.add(bro_token)
     await db.commit()
 
@@ -83,6 +87,7 @@ async def login_bro(
         "message": "Bro logged in successfully.",
         "access_token": bro_token.access_token,
         "refresh_token": bro_token.refresh_token,
+        "fcm_token": bro.fcm_token,
         "bro": bro.serialize,
     }
 
