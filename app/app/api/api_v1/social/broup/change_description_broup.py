@@ -1,5 +1,6 @@
 from typing import Optional
-
+from datetime import datetime
+import pytz
 from fastapi import Depends, Request, Response
 from pydantic import BaseModel
 from sqlalchemy import func
@@ -8,7 +9,7 @@ from sqlmodel import select, update
 
 from app.api.api_v1 import api_router_v1
 from app.database import get_db
-from app.models import Bro, Broup, Chat
+from app.models import Bro, Broup, Chat, Message
 from app.util.rest_util import get_failed_response
 from app.util.util import check_token, get_auth_token
 from sqlalchemy.orm import selectinload
@@ -17,7 +18,7 @@ from app.sockets.sockets import sio
 
 class BroupChangeDescriptionRequest(BaseModel):
     broup_id: int
-    new_broup_description: str
+    new_broup_description: Optional[str]
 
 
 @api_router_v1.post("/broup/change_description", status_code=200)
@@ -55,10 +56,17 @@ async def broup_change_description(
         return {
             "result": False,
         }
+    chat: Chat = result_broups[0].Broup.chat
+    if chat.broup_description == new_broup_description:
+        return {
+            "result": False,
+            "message": "Description is the same",
+        }
 
     for result_broup in result_broups:
         broup: Broup = result_broup.Broup
         broup.broup_updated = True
+        broup.new_messages = True
         db.add(broup)
 
     broup_room = f"broup_{broup_id}"
@@ -69,13 +77,31 @@ async def broup_change_description(
         room=broup_room,
     )
 
-    chat: Chat = result_broups[0].Broup.chat
     chat.update_broup_description(new_broup_description)
+
+    message_text = f"Bro {me.bro_name} {me.bromotion} changed the chat description! 📝"
+    bro_message = Message(
+        sender_id=me.id,
+        broup_id=broup_id,
+        message_id=chat.current_message_id,
+        body=message_text,
+        text_message="",
+        timestamp=datetime.now(pytz.utc).replace(tzinfo=None),
+        info=True,
+        data=None,
+    )
+    chat.current_message_id += 1
     db.add(chat)
-
-    # TODO: Add information message to chat
-
+    db.add(bro_message)
     await db.commit()
+
+    # Send message via socket. No need for notification
+    await sio.emit(
+        "message_received",
+        bro_message.serialize,
+        room=broup_room,
+    )
+
     return {
         "result": True,
     }

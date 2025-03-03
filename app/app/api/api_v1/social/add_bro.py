@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 
 from fastapi import Depends, Request, Response
 from pydantic import BaseModel
@@ -84,7 +84,7 @@ async def create_bro_chat(db: AsyncSession, me: Bro, bro_add: Bro, private_broup
     return {
         "result": True,
         "broup": new_broup_dict_me,
-        "bro": bro_add.serialize_no_detail,
+        "bro": bro_add.serialize_big,
     }
 
 
@@ -147,5 +147,6 @@ async def add_bro(
             "result": False,
         }
     else:
+        private_broup_ids = [me.id, bro_add.id] if me.id < bro_add.id else [bro_add.id, me.id]
         return await create_bro_chat(db, me, bro_add, private_broup_ids)
         # We return the broup without the avatar because it is being created

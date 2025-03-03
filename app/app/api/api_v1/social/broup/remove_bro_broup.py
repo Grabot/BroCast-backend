@@ -1,5 +1,6 @@
 from typing import Optional, List
-
+from datetime import datetime
+import pytz
 from fastapi import Depends, Request, Response
 from pydantic import BaseModel
 from sqlalchemy import func
@@ -9,7 +10,7 @@ import random
 
 from app.api.api_v1 import api_router_v1
 from app.database import get_db
-from app.models import Bro, Broup, Chat
+from app.models import Bro, Broup, Chat, Message
 from app.util.rest_util import get_failed_response
 from app.util.util import check_token, get_auth_token
 from app.sockets.sockets import sio
@@ -100,8 +101,6 @@ async def remove_bro_broup(
         broup.broup_updated = True
         db.add(broup)
 
-    await db.commit()
-
     broup_room = f"broup_{broup_id}"
     socket_response = {
         "broup_id": broup_id,
@@ -114,7 +113,28 @@ async def remove_bro_broup(
         room=broup_room,
     )
 
-    # TODO: Add information message?
+    message_text = f"Bro {me.bro_name} {me.bromotion} has removed bro {remove_bro.bro_name} {remove_bro.bromotion}! 😢"
+    bro_message = Message(
+        sender_id=me.id,
+        broup_id=broup_id,
+        message_id=chat.current_message_id,
+        body=message_text,
+        text_message="",
+        timestamp=datetime.now(pytz.utc).replace(tzinfo=None),
+        info=True,
+        data=None,
+    )
+    chat.current_message_id += 1
+    db.add(chat)
+    db.add(bro_message)
+    await db.commit()
+
+    # Send message via socket. No need for notification
+    await sio.emit(
+        "message_received",
+        bro_message.serialize,
+        room=broup_room,
+    )
 
     return {
         "result": True,

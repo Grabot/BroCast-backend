@@ -34,6 +34,8 @@ class Broup(SQLModel, table=True):
     # We don't need to send these details all the time. Only when needed.
     broup_updated: bool = Field(default=True)
     update_bros: List[int] = Field(default=[], sa_column=Column(ARRAY(Integer())))
+    # Don't send the avatar every time. Only send it if changes have been made.
+    new_avatar: bool = Field(default=True)
 
     chat: "Chat" = Relationship(
         back_populates="chat_broups",
@@ -116,7 +118,7 @@ class Broup(SQLModel, table=True):
     def serialize(self):
         return {
             "broup_id": self.broup_id,
-            "bro_id": self.bro_id,
+            # "bro_id": self.bro_id,
             "alias": self.alias,
             "unread_messages": self.unread_messages,
             "removed": self.removed,
@@ -124,24 +126,26 @@ class Broup(SQLModel, table=True):
             "broup_updated": self.broup_updated,
             "new_messages": self.new_messages,
             "update_bros": self.update_bros,
+            "new_avatar": self.new_avatar,
             "chat": self.chat.serialize,
         }
 
     @property
     def serialize_minimal(self):
-        return {
+        data = {
             "broup_id": self.broup_id,
-            "bro_id": self.bro_id,
+            # "bro_id": self.bro_id,  # This is send to the bro so the id will always be himself
             "unread_messages": self.unread_messages,
             "broup_updated": self.broup_updated,
             "new_messages": self.new_messages,
         }
+        return data
 
     @property
     def serialize_no_chat(self):
         return {
             "broup_id": self.broup_id,
-            "bro_id": self.bro_id,
+            # "bro_id": self.bro_id,
             "alias": self.alias,
             "unread_messages": self.unread_messages,
             "removed": self.removed,

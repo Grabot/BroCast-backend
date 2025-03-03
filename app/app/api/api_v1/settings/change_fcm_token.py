@@ -36,7 +36,7 @@ async def change_broname(
 
     fcm_token = change_fcm_token_request.fcm_token
     me.fcm_token = fcm_token
-    fcm_refresh_expiration_time = 7889232  # about 3 months
+    fcm_refresh_expiration_time = 15778463  # about 6 months
     me.fcm_token_timestamp = int(time.time()) + fcm_refresh_expiration_time
     db.add(me)
     await db.commit()

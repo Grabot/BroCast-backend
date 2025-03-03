@@ -9,14 +9,17 @@ celery_app = Celery("tasks", broker=settings.REDIS_URI, backend=f"db+{settings.S
 
 
 @celery_app.task
-def task_generate_avatar(avatar_filename: str, user_id: int):
+def task_generate_avatar(avatar_filename: str, bro_id: int, broup: bool):
     generate_avatar(avatar_filename, settings.UPLOAD_FOLDER_AVATARS)
 
     base_url = settings.BASE_URL
     api_prefix = settings.API_V1_STR
     endpoint = "/avatar/created"
     total_url = base_url + api_prefix + endpoint
-    requests.post(total_url, json={"user_id": user_id})
+    if broup:
+        requests.post(total_url, json={"broup_id": bro_id})
+    else:
+        requests.post(total_url, json={"bro_id": bro_id})
 
     return {"success": True}
 

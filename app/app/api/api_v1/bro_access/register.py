@@ -39,7 +39,7 @@ async def register_bro(
     password = register_request.password
     fcm_token = register_request.fcm_token
     platform = register_request.platform
-
+    print(f"Registering bro: {bro_name} with email: {email} and bromotion: {bromotion} and platform: {platform} and fcm_token: {fcm_token}")
     if email is None or password is None or bro_name is None or bromotion is None:
         return get_failed_response("Invalid request", response)
 
@@ -69,7 +69,7 @@ async def register_bro(
             response,
         )
 
-    fcm_refresh_expiration_time = 7889232  # about 3 months
+    fcm_refresh_expiration_time = 15778463  # about 6 months
     bro = Bro(
         bro_name=bro_name,
         bromotion=bromotion,
@@ -90,7 +90,7 @@ async def register_bro(
     bro_return = bro.serialize_no_detail
     bro_return["origin"] = True
 
-    _ = task_generate_avatar.delay(bro.avatar_filename(), bro.id)
+    _ = task_generate_avatar.delay(bro.avatar_filename(), bro.id, False)
 
     # Return the bro with no bro information because they have none yet.
     # And no avatar, because it might still be generating.
@@ -104,7 +104,8 @@ async def register_bro(
 
 
 class AvatarCreatedRequest(BaseModel):
-    bro_id: int
+    bro_id: Optional[int]
+    broup_id: Optional[int]
 
 
 @api_router_v1.post("/avatar/created", status_code=200)
@@ -112,14 +113,29 @@ async def avatar_created(
     avatar_created_request: AvatarCreatedRequest,
 ) -> dict:
     bro_id = avatar_created_request.bro_id
-    room = "room_%s" % bro_id
+    broup_id = avatar_created_request.broup_id
+    if bro_id:
+        room = "room_%s" % bro_id
+        socket_response = {
+            "bro_id": bro_id,
+        }
+    elif broup_id:
+        room = "broup_%s" % broup_id
+        socket_response = {
+            "broup_id": broup_id,
+        }
+    else:
+        return {
+            "result": False,
+            "message": "No bro or broup id provided",
+        }
 
     # A short sleep, just in case the bro has not made the socket connection yet
     await asyncio.sleep(1)
 
     await sio.emit(
-        "message_event",
-        "Avatar creation done!",
+        "avatar_change",
+        socket_response,
         room=room,
     )
 

@@ -12,6 +12,8 @@ from app.models import Bro, Broup, Chat
 from app.util.rest_util import get_failed_response
 from app.util.util import check_token, get_auth_token
 from app.sockets.sockets import sio
+from app.celery_worker.tasks import task_generate_avatar
+from copy import deepcopy
 
 
 def add_broup_object(bro_id: int, broup_id: int, broup_update: bool, member_update: bool) -> Broup:
@@ -26,6 +28,7 @@ def add_broup_object(bro_id: int, broup_id: int, broup_update: bool, member_upda
         removed=False,
         broup_updated=broup_update,
         new_members=member_update,
+        new_avatar=True
     )
     return broup
 
@@ -40,7 +43,6 @@ async def create_broup_chat(
         random.randint(0, 255),
     )
 
-    broup_add_me = None
     broup_name = f"{broup_name} "
     for bro in bros:
         bromotion = bro.bromotion
@@ -61,11 +63,12 @@ async def create_broup_chat(
 
     broup_id = chat.id
 
+    broup_add_me = None
     chat_serialize = chat.serialize
     for bro in bros:
         bro_id = bro.id
         print(f"test: {bro_id}")
-        broup_add = add_broup_object(bro_id, broup_id, True, True)
+        broup_add: Broup = add_broup_object(bro_id, broup_id, True, True)
 
         db.add(broup_add)
         bro_add_room = f"room_{bro_id}"
@@ -76,7 +79,7 @@ async def create_broup_chat(
         socket_response = {"broup": new_broup_dict}
 
         if bro_id == me.id:
-            broup_add_me = new_broup_dict
+            broup_add_me = deepcopy(new_broup_dict)
         else:
             print(f"bro_add_room {bro_add_room}")
             await sio.emit(
@@ -86,6 +89,8 @@ async def create_broup_chat(
             )
 
     await db.commit()
+
+    _ = task_generate_avatar.delay(chat.avatar_filename(), broup_id, True)
 
     return {
         "result": True,

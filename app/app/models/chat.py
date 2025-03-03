@@ -31,8 +31,6 @@ class Chat(SQLModel, table=True):
     last_message_received_time_bro: datetime = Field(
         default=datetime.now(pytz.utc).replace(tzinfo=None)
     )
-    # Don't send the avatar every time. Only send it if changes have been made.
-    new_avatar: bool = Field(default=True)  # TODO: implement this?
 
     chat_broups: List["Broup"] = Relationship(
         back_populates="chat",
@@ -118,6 +116,9 @@ class Chat(SQLModel, table=True):
     def get_broup_name(self):
         return self.broup_name
 
+    def is_default(self):
+        return self.default_avatar
+    
     def avatar_filename(self):
         # We need something that is unique for each broup but doesn't change
         # So we use the broup_id
@@ -129,8 +130,11 @@ class Chat(SQLModel, table=True):
 
     def avatar_filename_default(self):
         return self.avatar_filename() + "_default"
+    
+    def set_default_avatar(self, value):
+        self.default_avatar = value
 
-    def get_bro_avatar(self, full=False):
+    def get_broup_avatar(self, full=False):
         if self.default_avatar:
             file_name = self.avatar_filename_default()
         else:
@@ -157,4 +161,17 @@ class Chat(SQLModel, table=True):
             "private": self.private,
             "broup_description": self.broup_description,
             "broup_colour": self.broup_colour,
+        }
+
+    @property
+    def serialize_big(self):
+        return {
+            "bro_ids": self.bro_ids,
+            "admin_ids": self.bro_admin_ids,
+            "broup_name": self.broup_name,
+            "private": self.private,
+            "broup_description": self.broup_description,
+            "broup_colour": self.broup_colour,
+            "avatar": self.get_broup_avatar(True),
+            "avatar_default": self.default_avatar,
         }

@@ -92,7 +92,7 @@ async def reddit_callback(
 
         if bro_created:
             await db.refresh(bro)
-            _ = task_generate_avatar.delay(bro.avatar_filename(), bro.id)
+            _ = task_generate_avatar.delay(bro.avatar_filename(), bro.id, False)
         else:
             await db.commit()
 

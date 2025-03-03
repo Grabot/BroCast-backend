@@ -1,5 +1,6 @@
 from typing import Optional, List
-
+from datetime import datetime
+import pytz
 from fastapi import Depends, Request, Response
 from pydantic import BaseModel
 from sqlalchemy import func
@@ -9,7 +10,7 @@ import random
 
 from app.api.api_v1 import api_router_v1
 from app.database import get_db
-from app.models import Bro, Broup, Chat
+from app.models import Bro, Broup, Chat, Message
 from app.util.rest_util import get_failed_response
 from app.util.util import check_token, get_auth_token
 from app.sockets.sockets import sio
@@ -92,12 +93,12 @@ async def add_bro_broup(
             "result": False,
             "message": "Broup does not exists",
         }
-    test_broup: Broup = result_broups[0].Broup
-    test_chat: Chat = test_broup.chat
-    print(f"broup: {test_broup.serialize_no_chat}")
-    print(f"chat participants: {test_chat.serialize}")
+    bro_broup: Broup = result_broups[0].Broup
+    bro_chat: Chat = bro_broup.chat
+    print(f"broup: {bro_broup.serialize_no_chat}")
+    print(f"chat participants: {bro_chat.serialize}")
 
-    broup_name = test_chat.get_broup_name()
+    broup_name = bro_chat.get_broup_name()
     print("checking bro ids")
     new_broup_name = broup_name + new_bro_for_broup.get_bromotion()
     for result_broup in result_broups:
@@ -107,18 +108,18 @@ async def add_bro_broup(
             broup.broup_updated = True
             print(f"updating broup fro bro {broup.bro_id}")
             db.add(broup)
-    test_chat.add_participant(bro_id)
-    test_chat.set_broup_name(new_broup_name)
-    db.add(test_chat)
+    bro_chat.add_participant(bro_id)
+    bro_chat.set_broup_name(new_broup_name)
+    db.add(bro_chat)
 
     print(f"new broup fro bro {new_broup.bro_id}")
     db.add(new_broup)
     await db.commit()
 
-    chat_serialize = test_chat.serialize
+    chat_serialize = bro_chat.serialize
     new_broup_dict_bro = new_broup.serialize_no_chat
     new_broup_dict_bro["chat"] = chat_serialize
-    new_broup_dict_bro["chat"]["current_message_id"] = test_chat.current_message_id
+    new_broup_dict_bro["chat"]["current_message_id"] = bro_chat.current_message_id
 
     if broup_newly_added:
         bro_add_room = f"room_{bro_id}"
@@ -142,7 +143,28 @@ async def add_bro_broup(
         room=broup_room,
     )
 
-    # TODO: Add information message?
+    message_text = f"Bro {new_bro_for_broup.bro_name} {new_bro_for_broup.bromotion} added to the broup! Welcome! 🥰"
+    bro_message = Message(
+        sender_id=me.id,
+        broup_id=broup_id,
+        message_id=bro_chat.current_message_id,
+        body=message_text,
+        text_message="",
+        timestamp=datetime.now(pytz.utc).replace(tzinfo=None),
+        info=True,
+        data=None,
+    )
+    bro_chat.current_message_id += 1
+    db.add(bro_chat)
+    db.add(bro_message)
+    await db.commit()
+
+    # Send message via socket. No need for notification
+    await sio.emit(
+        "message_received",
+        bro_message.serialize,
+        room=broup_room,
+    )
 
     return {
         "result": True,

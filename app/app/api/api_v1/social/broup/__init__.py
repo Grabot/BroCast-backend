@@ -10,5 +10,7 @@ from . import (
     dismiss_admin_broup,
     leave_broup,
     broup_bros_retrieved,
-    get_broup_single
+    get_broup_single,
+    unblock_broup,
+    get_avatar_broup
 )
