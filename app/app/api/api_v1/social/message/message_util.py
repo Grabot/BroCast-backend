@@ -8,6 +8,7 @@ from app.sockets.sockets import sio
 from sqlalchemy.orm import selectinload
 from app.models import Broup, Chat, Bro, Message
 from app.util.rest_util import get_failed_response
+from app.util.util import remove_message_image_data
 from copy import deepcopy
 
 
@@ -93,5 +94,7 @@ async def reading_messages(
             for result_message in result_messages:
                 message: Message = result_message.Message
                 print(f"remove message: {message.body}")
+                if message.data:
+                    remove_message_image_data(message.data)
                 await db.delete(message)
     await db.commit()

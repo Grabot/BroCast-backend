@@ -14,7 +14,7 @@ from app.database import get_db
 from app.models import Bro, Message, Broup, Chat
 from app.util.rest_util import get_failed_response
 from app.util.notification_util import send_notification_broup
-from app.util.util import check_token, get_auth_token
+from app.util.util import check_token, get_auth_token, save_image
 
 
 class SendMessageRequest(BaseModel):
@@ -97,6 +97,14 @@ async def send_message(
             "error": "Chat does not exist",
         }
     chat: Chat = chat_objects.Chat
+    file_name = None
+    if message_data is not None:
+        # If the message includes image data we want to take the data and save it as an image
+        # The path to that image will be saved on the message db object.
+        # This is because we don't want to save the image in the db itself.
+        # Create a filename based on the current timestamp
+        file_name = f"broup_{broup_id}_image_{current_timestamp.strftime('%Y%m%d%H%M%S%f')}"
+        save_image(message_data, file_name)
     bro_message = Message(
         sender_id=me.id,
         broup_id=broup_id,
@@ -105,7 +113,7 @@ async def send_message(
         text_message=text_message,
         timestamp=current_timestamp,
         info=False,
-        data=message_data,
+        data=file_name,
     )
     chat.current_message_id += 1
     db.add(chat)
@@ -125,10 +133,14 @@ async def send_message(
     sender_name = me.bro_name + " " + me.bromotion
     await send_notification_broup(tokens, chat.id, chat.private, broup_name, sender_name, message)
 
+    print("send message to broup")
     broup_room = f"broup_{broup_id}"
+    message_send_data = bro_message.serialize_no_image
+    if message_data is not None:
+        message_send_data["data"] = message_data
     await sio.emit(
         "message_received",
-        bro_message.serialize,
+        message_send_data,
         room=broup_room,
     )
 

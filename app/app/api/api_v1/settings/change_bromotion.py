@@ -72,18 +72,17 @@ async def change_bromotion(
                 chat_broup.broup_updated = True
                 chat_broup.add_bro_to_update(me.id)
                 db.add(chat_broup)
-                if chat.private:
-                    # We send it specifically to the other bro, who's broup name we changed.
-                    bro_room = f"room_{chat_broup.bro_id}"
-                    socket_response = {
-                        "bro_id": me.id,
-                        "bromotion": new_bromotion
-                    }
-                    await sio.emit(
-                        "bro_update",
-                        socket_response,
-                        room=bro_room,
-                    )
+                # We send it specifically to the other bro, who's broup name we changed.
+                bro_room = f"room_{chat_broup.bro_id}"
+                socket_response = {
+                    "bro_id": me.id,
+                    "bromotion": new_bromotion
+                }
+                await sio.emit(
+                    "bro_update",
+                    socket_response,
+                    room=bro_room,
+                )
             
         broup_room = f"broup_{chat.id}"
         if not chat.private:

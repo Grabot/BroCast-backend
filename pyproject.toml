@@ -46,6 +46,8 @@ python-multipart = "0.0.20"
 pytz = "2024.2"
 firebase-admin = "6.6.0"
 firebase_functions = "0.4.2"
+numpy = "2.2.4"
+opencv-python-headless = "4.11.0.86"
 
 
 [build-system]

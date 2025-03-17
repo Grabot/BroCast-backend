@@ -9,6 +9,11 @@ from sqlmodel import select
 
 from app.config.config import settings
 from app.models import Bro, Broup, BroToken, Chat
+import os
+import base64
+import numpy as np
+import cv2
+import stat
 
 
 async def delete_bro_token_and_return(db: AsyncSession, bro_token, return_value: Optional[Bro]):
@@ -110,3 +115,29 @@ def get_auth_token(auth_header):
     else:
         auth_token = ""
     return auth_token
+
+
+def save_image(image_data: str, file_name: str):
+    # Decode the base64 image data
+    image_bytes = base64.b64decode(image_data)
+    image_array = np.frombuffer(image_bytes, dtype=np.uint8)
+    new_image = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
+
+    # Get the file name and path
+    file_folder = settings.UPLOAD_FOLDER_IMAGES
+    file_name = f"{file_name}.png"
+    file_path = os.path.join(file_folder, file_name)
+
+    # Save the image using OpenCV
+    cv2.imwrite(file_path, new_image)
+    os.chmod(file_path, stat.S_IRWXO)
+
+
+def remove_message_image_data(file_name: str):
+    print("removing image!")
+    file_folder = settings.UPLOAD_FOLDER_IMAGES
+    file_path = os.path.join(file_folder, f"{file_name}.png")
+    if os.path.isfile(file_path):
+        os.remove(file_path)
+    return
+

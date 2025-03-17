@@ -86,7 +86,7 @@ async def get_avatar_bro(
     else:
         file_name = bro_avatar.avatar_filename()
 
-    file_path = os.path.join(file_folder, "%s.png" % file_name)
+    file_path = os.path.join(file_folder, f"{file_name}.png")
 
     if not os.path.isfile(file_path):
         return get_failed_response("An error occurred", response)

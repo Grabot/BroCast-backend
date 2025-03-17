@@ -1,8 +1,11 @@
 from datetime import datetime
-import time
+import base64
+import os
 from typing import Optional
 import pytz
-from sqlmodel import Field, Relationship, SQLModel
+from sqlmodel import Field, SQLModel
+from app.config.config import settings
+import cv2
 
 
 class Message(SQLModel, table=True):
@@ -21,6 +24,24 @@ class Message(SQLModel, table=True):
     info: bool = Field(default=False)
     data: Optional[str]
 
+    def get_message_image_data(self):
+        if not self.data:
+            return None
+        file_folder = settings.UPLOAD_FOLDER_IMAGES
+
+        file_path = os.path.join(file_folder, f"{self.data}.png")
+        if not os.path.isfile(file_path):
+            return None
+        else:
+            image = cv2.imread(file_path)
+            if image is None:
+                return None
+
+            # Encode the image as a base64 string
+            _, buffer = cv2.imencode('.png', image)
+            image_as_base64 = base64.b64encode(buffer).decode()
+            return image_as_base64
+        
     @property
     def serialize(self):
         return {
@@ -31,5 +52,19 @@ class Message(SQLModel, table=True):
             "text_message": self.text_message,
             "timestamp": self.timestamp.strftime("%Y-%m-%dT%H:%M:%S.%f"),
             "info": self.info,
-            "data": self.data,
+            "data": self.get_message_image_data(),
+        }
+        
+    # If you send the image we know the data already, so there's no need to retrieve it again.
+    @property
+    def serialize_no_image(self):
+        return {
+            "sender_id": self.sender_id,
+            "broup_id": self.broup_id,
+            "message_id": self.message_id,
+            "body": self.body,
+            "text_message": self.text_message,
+            "timestamp": self.timestamp.strftime("%Y-%m-%dT%H:%M:%S.%f"),
+            "info": self.info,
+            "data": None,
         }

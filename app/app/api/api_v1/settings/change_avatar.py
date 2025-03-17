@@ -6,7 +6,8 @@ from typing import Optional, List
 from datetime import datetime
 import pytz
 from fastapi import Depends, Request, Response
-from PIL import Image
+import numpy as np
+import cv2
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
@@ -44,8 +45,12 @@ async def change_avatar(
     new_avatar = change_avatar_request.avatar
     new_avatar_small = change_avatar_request.avatar_small
 
-    new_avatar_pil = Image.open(io.BytesIO(base64.b64decode(new_avatar)))
-    new_avatar_small_pil = Image.open(io.BytesIO(base64.b64decode(new_avatar_small)))
+    image_bytes = base64.b64decode(new_avatar)
+    image_bytes_small = base64.b64decode(new_avatar_small)
+    image_array = np.frombuffer(image_bytes, dtype=np.uint8)
+    image_array_small = np.frombuffer(image_bytes_small, dtype=np.uint8)
+    new_image = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
+    new_image_small = cv2.imdecode(image_array_small, cv2.IMREAD_COLOR)
 
     # Get the file name and path
     file_folder = settings.UPLOAD_FOLDER_AVATARS
@@ -54,11 +59,13 @@ async def change_avatar(
     # Store the image under the same hash but without the "default".
     file_path = os.path.join(file_folder, "%s.png" % file_name)
     file_path_small = os.path.join(file_folder, "%s.png" % file_name_small)
-
-    new_avatar_pil.save(file_path)
-    new_avatar_small_pil.save(file_path_small)
+    
+    # Save the image using OpenCV
+    cv2.imwrite(file_path, new_image)
+    cv2.imwrite(file_path_small, new_image_small)
     os.chmod(file_path, stat.S_IRWXO)
     os.chmod(file_path_small, stat.S_IRWXO)
+    print("message image saved to: ", file_path)
 
     me.set_default_avatar(False)
     db.add(me)
@@ -67,28 +74,30 @@ async def change_avatar(
     # Update all private chats of the bro. 
     # This is because they have the avatar of the bro.
     # and they have to update it now.
+    # For broups we will list the bro id in the bros to update column.
     broups: List[Broup] = me.broups
     for broup in broups:
         chat: Chat = broup.chat
-        if chat.private:
-            chat_broups: List[Broup] = chat.chat_broups
-            for chat_broup in chat_broups:
-                if chat_broup.bro_id != me.id:
-                    chat_broup.broup_updated = True
+        chat_broups: List[Broup] = chat.chat_broups
+        for chat_broup in chat_broups:
+            if chat_broup.bro_id != me.id:
+                chat_broup.broup_updated = True
+                if chat.private:
+                    # In a private chat the bro avatar is the broup avatar
                     chat_broup.new_avatar = True
-                    db.add(chat_broup)
+                db.add(chat_broup)
 
-                    bro_room = f"room_{chat_broup.bro_id}"
-                    socket_response = {
-                        "bro_id": me.id,
-                        "new_avatar": True
-                    }
-                    await sio.emit(
-                        "bro_update",
-                        socket_response,
-                        room=bro_room,
-                    )
-                    break
+                bro_room = f"room_{chat_broup.bro_id}"
+                socket_response = {
+                    "bro_id": me.id,
+                    "new_avatar": True
+                }
+                # This will update the avatar of the bro, not the broup.
+                await sio.emit(
+                    "bro_update",
+                    socket_response,
+                    room=bro_room,
+                )
         db.add(chat)
 
     return {

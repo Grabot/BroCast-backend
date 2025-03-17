@@ -10,7 +10,7 @@ from app.api.api_v1 import api_router_v1
 from app.database import get_db
 from app.models import Bro, Broup, Message, Chat
 from app.util.rest_util import get_failed_response
-from app.util.util import check_token, get_auth_token
+from app.util.util import check_token, get_auth_token, remove_message_image_data
 from sqlalchemy.orm import selectinload
 from datetime import datetime
 import pytz
@@ -100,6 +100,8 @@ async def message_received(
                 print(f"message id: {message_id} ")
                 message: Message = result_message.Message
                 print(f"remove message: {message.body}")
+                if message.data:
+                    remove_message_image_data(message.data)
                 await db.delete(message)
     await db.commit()
 
