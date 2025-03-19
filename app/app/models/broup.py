@@ -22,7 +22,7 @@ class Broup(SQLModel, table=True):
     )
     unread_messages: int
     mute: bool = Field(default=False)
-    mute_timestamp: datetime = Field(default=datetime.now(pytz.utc).replace(tzinfo=None))
+    mute_timestamp: Optional[datetime]
     removed: bool = Field(default=False)
     deleted: bool = Field(default=False)
     # This is different from the unread messages.
@@ -100,8 +100,9 @@ class Broup(SQLModel, table=True):
         return self.mute
 
     def check_mute(self):
-        if self.is_muted() and self.mute_timestamp < datetime.now(pytz.utc).replace(tzinfo=None):
+        if self.is_muted() and (self.mute_timestamp is not None and self.mute_timestamp < datetime.now(pytz.utc).replace(tzinfo=None)):
             self.mute_broup(False)
+            self.set_mute_timestamp(None)
             return True
         return False
 

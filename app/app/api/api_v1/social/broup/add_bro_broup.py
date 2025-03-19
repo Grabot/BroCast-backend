@@ -55,6 +55,15 @@ async def add_bro_broup(
         if new_broup.removed:
             new_broup.removed = False
             db.add(new_broup)
+            socket_response_chat_unblocked = {
+                "broup_id": broup_id,
+                "chat_unblocked": bro_id,
+            }
+            await sio.emit(
+                "chat_changed",
+                socket_response_chat_unblocked,
+                room=broup_room,
+            )
         await db.commit()
     else:
         broup_newly_added = True

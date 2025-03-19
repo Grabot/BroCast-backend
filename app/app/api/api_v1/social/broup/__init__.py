@@ -12,5 +12,8 @@ from . import (
     broup_bros_retrieved,
     get_broup_single,
     unblock_broup,
-    get_avatar_broup
+    get_avatar_broup,
+    delete_broup,
+    mute_broup,
+    report_broup
 )

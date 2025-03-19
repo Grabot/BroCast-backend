@@ -97,6 +97,8 @@ class Settings(BaseSettings):
     UPLOAD_FOLDER_AVATARS: str = "static/uploads/avatars"
     UPLOAD_FOLDER_IMAGES: str = "static/uploads/images"
 
+    LOG_READ_PASSWORD: str = os.environ.get("LOG_READ_PASSWORD")
+
     class Config:
         case_sensitive: bool = True
 

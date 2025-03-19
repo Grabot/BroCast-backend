@@ -91,15 +91,12 @@ async def unblock_bro(
             # This should reset the admin ids back to nothing for private chats.
             chat.dismiss_admin(me.id)
         broup.broup_updated = True
-        # We will send a new message, so we need to set this to true
-        broup.new_messages = True
         db.add(broup)
 
     broup_room = f"broup_{broup_id}"
-    message_text = f"Bro {me.bro_name} {me.bromotion} has unblocked the Chat! 🥰"
     socket_response_chat_unblocked = {
         "broup_id": broup_id,
-        "chat_unblocked": me.id,
+        "chat_blocked": False,
     }
     await sio.emit(
         "chat_changed",
@@ -107,27 +104,28 @@ async def unblock_bro(
         room=broup_room,
     )
 
-    bro_message = Message(
-        sender_id=me.id,
-        broup_id=broup_id,
-        message_id=chat.current_message_id,
-        body=message_text,
-        text_message="",
-        timestamp=datetime.now(pytz.utc).replace(tzinfo=None),
-        info=True,
-        data=None,
-    )
-    chat.current_message_id += 1
-    db.add(chat)
-    db.add(bro_message)
-    await db.commit()
+    # message_text = f"Bro {me.bro_name} {me.bromotion} has unblocked the Chat! 🥰"
+    # bro_message = Message(
+    #     sender_id=me.id,
+    #     broup_id=broup_id,
+    #     message_id=chat.current_message_id,
+    #     body=message_text,
+    #     text_message="",
+    #     timestamp=datetime.now(pytz.utc).replace(tzinfo=None),
+    #     info=True,
+    #     data=None,
+    # )
+    # chat.current_message_id += 1
+    # db.add(chat)
+    # db.add(bro_message)
     
-    # Send message via socket. No need for notification
-    await sio.emit(
-        "message_received",
-        bro_message.serialize,
-        room=broup_room,
-    )
+    # # Send message via socket. No need for notification
+    # await sio.emit(
+    #     "message_received",
+    #     bro_message.serialize,
+    #     room=broup_room,
+    # )
+    await db.commit()
 
     return {
         "result": True,

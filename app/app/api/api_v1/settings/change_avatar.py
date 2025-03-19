@@ -6,6 +6,7 @@ from typing import Optional, List
 from datetime import datetime
 import pytz
 from fastapi import Depends, Request, Response
+from PIL import Image
 import numpy as np
 import cv2
 from pydantic import BaseModel

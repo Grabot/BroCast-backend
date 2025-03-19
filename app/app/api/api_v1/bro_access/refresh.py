@@ -35,7 +35,6 @@ async def refresh_bro(
         "message": "Bro logged in successfully.",
         "access_token": bro_token.access_token,
         "refresh_token": bro_token.refresh_token,
-        "bro": bro.serialize,
     }
 
     return login_response

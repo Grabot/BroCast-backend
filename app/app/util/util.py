@@ -8,7 +8,7 @@ from sqlalchemy.orm import selectinload
 from sqlmodel import select
 
 from app.config.config import settings
-from app.models import Bro, Broup, BroToken, Chat
+from app.models import Bro, Broup, BroToken, Chat, Message
 import os
 import base64
 import numpy as np
@@ -140,4 +140,25 @@ def remove_message_image_data(file_name: str):
     if os.path.isfile(file_path):
         os.remove(file_path)
     return
+
+
+async def remove_broup_traces(chat: Chat, db: AsyncSession):
+    chat.delete_broup_avatar()
+    for broup in chat.chat_broups:
+        await db.delete(broup)
+    select_statement = (
+        select(Message)
+        .where(
+            Message.broup_id == chat.id,
+        )
+    )
+    results_messages = await db.execute(select_statement)
+    result_messages = results_messages.all()
+    if result_messages is None:
+        return 
+    for result_message in result_messages:
+        message: Message = result_message.Message
+        await db.delete(message)
+    await db.delete(chat)
+    await db.commit()
 

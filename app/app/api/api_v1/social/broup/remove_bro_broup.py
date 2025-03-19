@@ -52,6 +52,7 @@ async def remove_bro_broup(
             "message": "Bro does not exists",
         }
     remove_bro: Bro = result.Bro
+
     print(f"remove_bro_broup_request {bro_id}  {broup_id}")
     broups_statement = (
         select(Broup)
@@ -73,6 +74,28 @@ async def remove_bro_broup(
         }
     chat: Chat = result_broups[0].Broup.chat
 
+    broup_room = f"broup_{broup_id}"
+    message_text = f"Bro {me.bro_name} {me.bromotion} has removed bro {remove_bro.bro_name} {remove_bro.bromotion}! 😢"
+    bro_message = Message(
+        sender_id=me.id,
+        broup_id=broup_id,
+        message_id=chat.current_message_id,
+        body=message_text,
+        text_message="",
+        timestamp=datetime.now(pytz.utc).replace(tzinfo=None),
+        info=True,
+        data=None,
+    )
+    chat.current_message_id += 1
+    db.add(chat)
+    db.add(bro_message)
+    # Send message via socket. No need for notification
+    await sio.emit(
+        "message_received",
+        bro_message.serialize,
+        room=broup_room,
+    )
+    
     if bro_id not in chat.bro_ids:
         return {
             "result": False,
@@ -101,7 +124,6 @@ async def remove_bro_broup(
         broup.broup_updated = True
         db.add(broup)
 
-    broup_room = f"broup_{broup_id}"
     socket_response = {
         "broup_id": broup_id,
         "remove_bro_id": bro_id,
@@ -113,28 +135,8 @@ async def remove_bro_broup(
         room=broup_room,
     )
 
-    message_text = f"Bro {me.bro_name} {me.bromotion} has removed bro {remove_bro.bro_name} {remove_bro.bromotion}! 😢"
-    bro_message = Message(
-        sender_id=me.id,
-        broup_id=broup_id,
-        message_id=chat.current_message_id,
-        body=message_text,
-        text_message="",
-        timestamp=datetime.now(pytz.utc).replace(tzinfo=None),
-        info=True,
-        data=None,
-    )
-    chat.current_message_id += 1
-    db.add(chat)
-    db.add(bro_message)
     await db.commit()
 
-    # Send message via socket. No need for notification
-    await sio.emit(
-        "message_received",
-        bro_message.serialize,
-        room=broup_room,
-    )
 
     return {
         "result": True,

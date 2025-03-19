@@ -68,18 +68,19 @@ async def send_message(
             broup.read_messages(current_timestamp)
             print(f"bro {me.id} sent message. Last read time: {broup.last_message_read_time}")
         else:
-            broup_member: Bro = broup.broup_member
-            bro_fcm_token = broup_member.fcm_token
-            if bro_fcm_token is not None:
-                tokens.append(
-                    [
-                        bro_fcm_token,
-                        broup_member.platform
-                    ]
-                )
             if not broup.is_removed():
                 broup.update_unread_messages()
                 broup.check_mute()
+            if not broup.is_muted() and not broup.removed and not broup.deleted:
+                broup_member: Bro = broup.broup_member
+                bro_fcm_token = broup_member.fcm_token
+                if bro_fcm_token is not None:
+                    tokens.append(
+                        [
+                            bro_fcm_token,
+                            broup_member.platform
+                        ]
+                    )
             print(f"current last read time other bro: {broup.last_message_read_time}")
         db.add(broup)
         await db.commit()

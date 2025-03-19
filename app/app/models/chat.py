@@ -151,6 +151,22 @@ class Chat(SQLModel, table=True):
             with open(file_path, "rb") as fd:
                 image_as_base64 = base64.encodebytes(fd.read()).decode()
             return image_as_base64
+    
+    def delete_broup_avatar(self):
+        file_folder = settings.UPLOAD_FOLDER_AVATARS
+        file_name = self.avatar_filename_default()
+        file_path = os.path.join(file_folder, "%s.png" % file_name)
+        if os.path.isfile(file_path):
+            os.remove(file_path)
+        file_name_avatar = self.avatar_filename()
+        file_path_avatar = os.path.join(file_folder, "%s.png" % file_name_avatar)
+        if os.path.isfile(file_path_avatar):
+            os.remove(file_path_avatar)
+        file_name_avatar_small = self.avatar_filename_small()
+        file_path_avatar_small = os.path.join(file_folder, "%s.png" % file_name_avatar_small)
+        if os.path.isfile(file_path_avatar_small):
+            os.remove(file_path_avatar_small)
+            
 
     @property
     def serialize(self):
