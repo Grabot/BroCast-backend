@@ -48,29 +48,19 @@ async def add_bro_broup(
     )
     results_bro_broup = await db.execute(new_bro_broup_statement)
     result_bro_broup = results_bro_broup.first()
-    broup_newly_added = False
+    broup_room = f"broup_{broup_id}"
     if result_bro_broup:
+        # The broup object already exits which means the bro has been here before
+        # Set the values back to be part of the broup
         new_broup: Broup = result_bro_broup.Broup
-        print("broup object exists, the bro has been here before!")
-        if new_broup.removed:
-            new_broup.removed = False
-            db.add(new_broup)
-            socket_response_chat_unblocked = {
-                "broup_id": broup_id,
-                "chat_unblocked": bro_id,
-            }
-            await sio.emit(
-                "chat_changed",
-                socket_response_chat_unblocked,
-                room=broup_room,
-            )
-        await db.commit()
+        new_broup.removed = False
+        new_broup.deleted = False
+        new_broup.broup_updated = True
+        db.add(new_broup)
     else:
-        broup_newly_added = True
         new_broup = Broup(
             bro_id=bro_id,
             broup_id=broup_id,
-            broup_name="",
             alias="",
             unread_messages=0,
             mute=False,
@@ -130,17 +120,6 @@ async def add_bro_broup(
     new_broup_dict_bro["chat"] = chat_serialize
     new_broup_dict_bro["chat"]["current_message_id"] = bro_chat.current_message_id
 
-    if broup_newly_added:
-        bro_add_room = f"room_{bro_id}"
-        socket_response = {"broup": new_broup_dict_bro}
-        print(f"sending details to new bro {socket_response}")
-        await sio.emit(
-            "chat_added",
-            socket_response,
-            room=bro_add_room,
-        )
-
-    broup_room = f"broup_{broup_id}"
     socket_response = {
         "broup_id": broup_id,
         "new_broup_name": new_broup_name,
@@ -150,6 +129,17 @@ async def add_bro_broup(
         "chat_changed",
         socket_response,
         room=broup_room,
+    )
+
+    # if broup_newly_added:
+    # Send the new bro the details of the broup
+    bro_add_room = f"room_{bro_id}"
+    socket_response = {"broup": new_broup_dict_bro}
+    print(f"sending details to new bro {socket_response}")
+    await sio.emit(
+        "chat_added",
+        socket_response,
+        room=bro_add_room,
     )
 
     message_text = f"Bro {new_bro_for_broup.bro_name} {new_bro_for_broup.bromotion} added to the broup! Welcome! 🥰"

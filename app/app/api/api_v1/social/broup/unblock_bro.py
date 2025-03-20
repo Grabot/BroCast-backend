@@ -40,37 +40,28 @@ async def unblock_bro(
 
     broup_id = bro_unblock_request.broup_id
     bro_id = bro_unblock_request.bro_id
-
-    bro_statement = select(Bro).where(
-        Bro.id == bro_id
-    )
-    results = await db.execute(bro_statement)
-    result = results.first()
-    if result is None:
-        return {
-            "result": False,
-            "message": "Bro does not exists",
-        }
-    unblock_bro: Bro = result.Bro
+    
     print(f"remove_bro_broup_request {bro_id}  {broup_id}")
     broups_statement = (
         select(Broup)
         .where(
             Broup.broup_id == broup_id,
+            Broup.bro_id == bro_id,
         )
-        .options(selectinload(Broup.chat))
+        .options(selectinload(Broup.chat).options(selectinload(Chat.chat_broups)))
     )
 
     results_broups = await db.execute(broups_statement)
     print(f"results_bromotions {results_broups}")
-    result_broups = results_broups.all()
+    result_broups = results_broups.first()
     print(f"result_bromotion {result_broups}")
-    if result_broups is None or result_broups == []:
+    if result_broups is None:
         return {
             "result": False,
             "message": "Broup not found",
         }
-    chat: Chat = result_broups[0].Broup.chat
+    result_broup: Broup = result_broups.Broup
+    chat: Chat = result_broup.chat
 
     if not chat.private:
         return {
@@ -78,22 +69,26 @@ async def unblock_bro(
             "error": "This is not a private broup",
         }
 
+    # Check if the chat was a correct private chat with both ids
     if bro_id not in chat.bro_ids or me.id not in chat.bro_ids:
         return {
             "result": False,
             "error": "Bro was not in the Broup",
         }
 
-    for result_broup in result_broups:
-        broup: Broup = result_broup.Broup
-        broup.removed = False
-        if broup.bro_id == me.id:
+    for chat_broup in chat.chat_broups:
+        chat_broup.removed = False
+        if chat_broup.bro_id == me.id:
             # This should reset the admin ids back to nothing for private chats.
             chat.dismiss_admin(me.id)
-        broup.broup_updated = True
-        db.add(broup)
+        chat_broup.broup_updated = True
+        db.add(chat_broup)
 
-    broup_room = f"broup_{broup_id}"
+    # The client will create a new message but we need to increment the message id here as well
+    chat.current_message_id += 1
+    # Send a socket message to the other bro, 
+    # the bro that did the unblocking will be notified via the REST call
+    bro_room = f"room_{bro_id}"
     socket_response_chat_unblocked = {
         "broup_id": broup_id,
         "chat_blocked": False,
@@ -101,30 +96,9 @@ async def unblock_bro(
     await sio.emit(
         "chat_changed",
         socket_response_chat_unblocked,
-        room=broup_room,
+        room=bro_room,
     )
 
-    # message_text = f"Bro {me.bro_name} {me.bromotion} has unblocked the Chat! 🥰"
-    # bro_message = Message(
-    #     sender_id=me.id,
-    #     broup_id=broup_id,
-    #     message_id=chat.current_message_id,
-    #     body=message_text,
-    #     text_message="",
-    #     timestamp=datetime.now(pytz.utc).replace(tzinfo=None),
-    #     info=True,
-    #     data=None,
-    # )
-    # chat.current_message_id += 1
-    # db.add(chat)
-    # db.add(bro_message)
-    
-    # # Send message via socket. No need for notification
-    # await sio.emit(
-    #     "message_received",
-    #     bro_message.serialize,
-    #     room=broup_room,
-    # )
     await db.commit()
 
     return {

@@ -115,12 +115,12 @@ async def avatar_created(
     bro_id = avatar_created_request.bro_id
     broup_id = avatar_created_request.broup_id
     if bro_id:
-        room = "room_%s" % bro_id
+        room = f"room_{bro_id}"
         socket_response = {
             "bro_id": bro_id,
         }
     elif broup_id:
-        room = "broup_%s" % broup_id
+        room = f"broup_{broup_id}"
         socket_response = {
             "broup_id": broup_id,
         }

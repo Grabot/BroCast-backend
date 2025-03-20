@@ -47,7 +47,7 @@ async def create_bro_chat(db: AsyncSession, me: Bro, bro_add: Bro, private_broup
         bro_admin_ids=admins,
         broup_description="",
         broup_colour=broup_colour,
-        current_message_id=1,
+        current_message_id=2, # 1 is the initial message which is created in the client
     )
     db.add(chat)
     await db.commit()
