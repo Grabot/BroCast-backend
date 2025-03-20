@@ -126,6 +126,16 @@ class Bro(SQLModel, table=True):
             "origin": self.origin == 0,
             "broups": [broup.serialize_minimal for broup in self.broups],
         }
+    
+    @property
+    def serialize_token(self):
+        return {
+            "id": self.id,
+            "bro_name": self.bro_name,
+            "bromotion": self.bromotion,
+            "origin": self.origin == 0,
+            "broups": [broup.serialize for broup in self.broups if broup.broup_updated],
+        }
 
     @property
     def serialize_small(self):

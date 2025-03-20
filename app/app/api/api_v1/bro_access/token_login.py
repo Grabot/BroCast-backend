@@ -23,18 +23,16 @@ async def login_token_bro(
     if not bro:
         return get_failed_response("Bro not found", response)
 
-    return_bro = bro.serialize
     bro_token = get_bro_tokens(bro)
     db.add(bro_token)
     await db.commit()
-    # TODO: Add check for the fcm token expiration? With a cronjob? Once per month check the timestamps and if it's older than x days we remove all brotokens which will force the bro to login regularly which will check the token.
-    # We don't refresh the bro object because we know all we want to know
+
     login_response = {
         "result": True,
         "message": "Bro logged in successfully.",
         "access_token": bro_token.access_token,
         "refresh_token": bro_token.refresh_token,
-        "bro": return_bro,
+        "bro": bro.serialize_token,
     }
 
     return login_response
