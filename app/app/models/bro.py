@@ -99,14 +99,11 @@ class Bro(SQLModel, table=True):
     def is_default(self):
         return self.default_avatar
 
-    def get_bro_avatar(self, full=False):
+    def get_bro_avatar(self):
         if self.default_avatar:
             file_name = self.avatar_filename_default()
         else:
-            if full:
-                file_name = self.avatar_filename()
-            else:
-                file_name = self.avatar_filename_small()
+            file_name = self.avatar_filename()
         file_folder = settings.UPLOAD_FOLDER_AVATARS
 
         file_path = os.path.join(file_folder, "%s.png" % file_name)
@@ -129,32 +126,29 @@ class Bro(SQLModel, table=True):
     
     @property
     def serialize_token(self):
+        return_broups = []
+        for broup in self.broups:
+            # We only send the broups if there is something new
+            if broup.broup_updated:
+                return_broups.append(broup.serialize)
+            elif broup.new_messages:
+                return_broups.append(broup.serialize_minimal)
         return {
             "id": self.id,
             "bro_name": self.bro_name,
             "bromotion": self.bromotion,
             "origin": self.origin == 0,
-            "broups": [broup.serialize for broup in self.broups if broup.broup_updated],
+            "broups": return_broups,
         }
 
     @property
-    def serialize_small(self):
+    def serialize_avatar(self):
         # get bro details but make it small
         return {
             "id": self.id,
             "bro_name": self.bro_name,
             "bromotion": self.bromotion,
-            "avatar": self.get_bro_avatar(False),
-        }
-
-    @property
-    def serialize_big(self):
-        # get bro details but make it small
-        return {
-            "id": self.id,
-            "bro_name": self.bro_name,
-            "bromotion": self.bromotion,
-            "avatar": self.get_bro_avatar(True),
+            "avatar": self.get_bro_avatar(),
         }
 
     @property

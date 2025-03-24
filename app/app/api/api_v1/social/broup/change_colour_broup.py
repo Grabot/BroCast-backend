@@ -47,11 +47,8 @@ async def broup_change_colour(
         )
         .options(selectinload(Broup.chat))
     )
-    print(f"broups_statement {broups_statement}")
     results_broups = await db.execute(broups_statement)
-    print(f"results_broups {results_broups}")
     result_broups = results_broups.all()
-    print(f"result_broups {result_broups}")
     if result_broups is None or result_broups == []:
         return {
             "result": False,
@@ -62,7 +59,6 @@ async def broup_change_colour(
         broup.new_messages = True
         broup.broup_updated = True
         db.add(broup)
-        print(f"adding borup {broup.serialize}")
 
     broup_room = f"broup_{broup_id}"
     socket_response = {"broup_id": broup_id, "new_broup_colour": new_broup_colour}

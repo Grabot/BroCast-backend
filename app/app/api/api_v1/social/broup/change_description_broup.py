@@ -47,11 +47,8 @@ async def broup_change_description(
         )
         .options(selectinload(Broup.chat))
     )
-    print(f"broups_statement {broups_statement}")
     results_broups = await db.execute(broups_statement)
-    print(f"results_broups {results_broups}")
     result_broups = results_broups.all()
-    print(f"result_broups {result_broups}")
     if result_broups is None or result_broups == []:
         return {
             "result": False,

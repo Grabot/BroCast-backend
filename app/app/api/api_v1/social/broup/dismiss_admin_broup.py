@@ -37,7 +37,6 @@ async def dismiss_admin_broup(
 
     broup_id = dimsiss_admin_broup_request.broup_id
     bro_id = dimsiss_admin_broup_request.bro_id
-    print(f"dimsiss_admin_broup_request {bro_id}  {broup_id}")
     
     bro_statement = select(Bro).where(
         Bro.id == bro_id
@@ -51,7 +50,6 @@ async def dismiss_admin_broup(
         }
     dismiss_bro: Bro = result.Bro
 
-    print("getting chat")
     chat_statement = select(Chat).where(
         Chat.id == broup_id,
     )
@@ -60,15 +58,12 @@ async def dismiss_admin_broup(
     if not chat_object:
         return get_failed_response("Broup not found", response)
 
-    print("chat gotten")
     chat: Chat = chat_object.Chat
-    print(f"bro Id {bro_id} admins {chat.bro_admin_ids}")
     if bro_id not in chat.bro_admin_ids and bro_id in chat.bro_ids:
         return {
             "result": False,
             "error": "Bro is not an admin",
         }
-    print(f"admins then {chat.bro_admin_ids}")
     chat.dismiss_admin(bro_id)
     db.add(chat)
 

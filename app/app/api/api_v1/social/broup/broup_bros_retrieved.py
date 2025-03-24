@@ -47,9 +47,7 @@ async def remove_bro_broup(
     )
 
     results_broup = await db.execute(broup_statement)
-    print(f"results_bromotions {results_broup}")
     result_broup = results_broup.first()
-    print(f"result_bromotion {result_broup}")
     if result_broup is None:
         return {
             "result": False,

@@ -34,7 +34,6 @@ async def message_read(
     if not me:
         return get_failed_response("An error occurred", response)
 
-    print(f"reading message bro {me.id}: {me.bro_name} {me.bromotion}")
     broup_id = read_message_request.broup_id
 
     await reading_messages(db, response, me, broup_id)

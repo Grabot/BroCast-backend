@@ -38,22 +38,23 @@ async def broup_change_alias(
     broup_id = broup_change_alias_request.broup_id
     new_broup_alias = broup_change_alias_request.new_broup_alias
 
-    broups_statement = select(Broup).where(
-        Broup.broup_id == broup_id,
-        Broup.bro_id == me.id,
+    broup_statement = (
+        select(Broup)
+        .where(
+            Broup.bro_id == me.id,
+            Broup.broup_id == broup_id
+        ).options(selectinload(Broup.chat))
     )
-    print(f"broups_statement {broups_statement}")
-    results_broups = await db.execute(broups_statement)
-    print(f"results_broups {results_broups}")
-    result_broups = results_broups.first()
-    print(f"result_broups {result_broups}")
-    if result_broups is None or result_broups == []:
+    results_broup = await db.execute(broup_statement)
+    result_broup = results_broup.first()
+
+    if result_broup is None:
         return {
-            "result": False,
+            "result": True,
         }
 
     # The alias is only visible to the user who set the alias.
-    broup: Broup = result_broups.Broup
+    broup: Broup = result_broup.Broup
     broup.update_broup_alias(new_broup_alias)
     db.add(broup)
     await db.commit()

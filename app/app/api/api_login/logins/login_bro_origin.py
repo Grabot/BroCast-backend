@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
 from app.database import get_db
-from app.models import Bro, Broup
+from app.models import Bro
 from sqlalchemy.orm import selectinload
 import hashlib
 

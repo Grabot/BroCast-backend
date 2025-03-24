@@ -66,7 +66,6 @@ async def change_avatar(
     cv2.imwrite(file_path_small, new_image_small)
     os.chmod(file_path, stat.S_IRWXO)
     os.chmod(file_path_small, stat.S_IRWXO)
-    print("message image saved to: ", file_path)
 
     me.set_default_avatar(False)
     db.add(me)

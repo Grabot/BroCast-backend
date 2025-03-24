@@ -134,7 +134,6 @@ def save_image(image_data: str, file_name: str):
 
 
 def remove_message_image_data(file_name: str):
-    print("removing image!")
     file_folder = settings.UPLOAD_FOLDER_IMAGES
     file_path = os.path.join(file_folder, f"{file_name}.png")
     if os.path.isfile(file_path):

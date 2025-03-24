@@ -17,9 +17,9 @@ def task_generate_avatar(avatar_filename: str, bro_id: int, broup: bool):
     endpoint = "/avatar/created"
     total_url = base_url + api_prefix + endpoint
     if broup:
-        requests.post(total_url, json={"broup_id": bro_id})
+        requests.post(total_url, json={"identifier": bro_id, "for_bro": False})
     else:
-        requests.post(total_url, json={"bro_id": bro_id})
+        requests.post(total_url, json={"identifier": bro_id, "for_bro": True})
 
     return {"success": True}
 

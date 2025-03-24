@@ -41,7 +41,6 @@ async def add_bro_broup(
 
     broup_id = add_bro_broup_request.broup_id
     bro_id = add_bro_broup_request.bro_id
-    print(f"add_bro_broup_request {bro_id}  {broup_id}")
 
     new_bro_broup_statement = select(Broup).where(
         Broup.broup_id == broup_id, Broup.bro_id == bro_id
@@ -73,7 +72,6 @@ async def add_bro_broup(
     new_bro_statement = select(Bro).where(Bro.id == bro_id)
     results_bro = await db.execute(new_bro_statement)
     result_bro = results_bro.first()
-    print("query all new bro")
     if not result_bro:
         return {
             "result": False,
@@ -86,7 +84,6 @@ async def add_bro_broup(
     )
     results_broups = await db.execute(broups_statement)
     result_broups = results_broups.all()
-    print("query all new broups")
     if not result_broups:
         return {
             "result": False,
@@ -94,24 +91,19 @@ async def add_bro_broup(
         }
     bro_broup: Broup = result_broups[0].Broup
     bro_chat: Chat = bro_broup.chat
-    print(f"broup: {bro_broup.serialize_no_chat}")
-    print(f"chat participants: {bro_chat.serialize}")
 
     broup_name = bro_chat.get_broup_name()
-    print("checking bro ids")
     new_broup_name = broup_name + new_bro_for_broup.get_bromotion()
     for result_broup in result_broups:
         broup: Broup = result_broup.Broup
         if not broup.removed:
             broup.new_members = True
             broup.broup_updated = True
-            print(f"updating broup fro bro {broup.bro_id}")
             db.add(broup)
     bro_chat.add_participant(bro_id)
     bro_chat.set_broup_name(new_broup_name)
     db.add(bro_chat)
 
-    print(f"new broup fro bro {new_broup.bro_id}")
     db.add(new_broup)
     await db.commit()
 
@@ -135,7 +127,6 @@ async def add_bro_broup(
     # Send the new bro the details of the broup
     bro_add_room = f"room_{bro_id}"
     socket_response = {"broup": new_broup_dict_bro}
-    print(f"sending details to new bro {socket_response}")
     await sio.emit(
         "chat_added",
         socket_response,

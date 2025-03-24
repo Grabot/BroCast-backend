@@ -125,23 +125,17 @@ class Chat(SQLModel, table=True):
         broup_indicator = f"broup_{self.id}"
         return md5(broup_indicator.encode("utf-8")).hexdigest()
 
-    def avatar_filename_small(self):
-        return self.avatar_filename() + "_small"
-
     def avatar_filename_default(self):
         return self.avatar_filename() + "_default"
     
     def set_default_avatar(self, value):
         self.default_avatar = value
 
-    def get_broup_avatar(self, full=False):
+    def get_broup_avatar(self):
         if self.default_avatar:
             file_name = self.avatar_filename_default()
         else:
-            if full:
-                file_name = self.avatar_filename()
-            else:
-                file_name = self.avatar_filename_small()
+            file_name = self.avatar_filename()
         file_folder = settings.UPLOAD_FOLDER_AVATARS
 
         file_path = os.path.join(file_folder, "%s.png" % file_name)
@@ -162,14 +156,11 @@ class Chat(SQLModel, table=True):
         file_path_avatar = os.path.join(file_folder, "%s.png" % file_name_avatar)
         if os.path.isfile(file_path_avatar):
             os.remove(file_path_avatar)
-        file_name_avatar_small = self.avatar_filename_small()
-        file_path_avatar_small = os.path.join(file_folder, "%s.png" % file_name_avatar_small)
-        if os.path.isfile(file_path_avatar_small):
-            os.remove(file_path_avatar_small)
             
 
     @property
     def serialize(self):
+        # Avatar is not included and is retrieved with a seperate call.
         return {
             "bro_ids": self.bro_ids,
             "admin_ids": self.bro_admin_ids,
@@ -178,16 +169,4 @@ class Chat(SQLModel, table=True):
             "broup_description": self.broup_description,
             "broup_colour": self.broup_colour,
         }
-
-    @property
-    def serialize_big(self):
-        return {
-            "bro_ids": self.bro_ids,
-            "admin_ids": self.bro_admin_ids,
-            "broup_name": self.broup_name,
-            "private": self.private,
-            "broup_description": self.broup_description,
-            "broup_colour": self.broup_colour,
-            "avatar": self.get_broup_avatar(True),
-            "avatar_default": self.default_avatar,
-        }
+    

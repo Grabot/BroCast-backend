@@ -53,7 +53,6 @@ async def remove_bro_broup(
         }
     remove_bro: Bro = result.Bro
 
-    print(f"remove_bro_broup_request {bro_id}  {broup_id}")
     broups_statement = (
         select(Broup)
         .where(
@@ -64,9 +63,7 @@ async def remove_bro_broup(
     )
 
     results_broups = await db.execute(broups_statement)
-    print(f"results_bromotions {results_broups}")
     result_broups = results_broups.all()
-    print(f"result_bromotion {result_broups}")
     if result_broups is None or result_broups == []:
         return {
             "result": False,
@@ -101,22 +98,18 @@ async def remove_bro_broup(
             "result": False,
             "error": "Bro was not in the Broup",
         }
-    print("chat gotten")
     chat.remove_participant(bro_id)
-    print(f"bro Id {bro_id} admins {chat.bro_admin_ids}")
 
     remove_bromotion = remove_bro.bromotion
     # In a broup the broup name is the same for all broup members
     # First find out what the new name should be.
     broup_name_now = chat.broup_name
-    print(f"broup_name_now {broup_name_now}")
     # Remove the first occurence from the end of the broup name
     new_broup_name = broup_name_now[::-1].replace(remove_bromotion, "", 1)
     # Reverse the string again
     new_broup_name = new_broup_name[::-1]
     chat.set_broup_name(new_broup_name)
     db.add(chat)
-    print(f"broup_name_new {new_broup_name}")
     for result_broup in result_broups:
         broup: Broup = result_broup.Broup
         if broup.bro_id == bro_id:
@@ -136,7 +129,6 @@ async def remove_bro_broup(
     )
 
     await db.commit()
-
 
     return {
         "result": True,

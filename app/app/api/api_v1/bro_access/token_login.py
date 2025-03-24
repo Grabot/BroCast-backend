@@ -8,6 +8,7 @@ from app.util.rest_util import get_failed_response
 from app.util.util import check_token, get_bro_tokens
 import time
 
+
 class LoginTokenRequest(BaseModel):
     access_token: str
 

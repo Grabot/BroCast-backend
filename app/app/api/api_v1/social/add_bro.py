@@ -84,7 +84,7 @@ async def create_bro_chat(db: AsyncSession, me: Bro, bro_add: Bro, private_broup
     return {
         "result": True,
         "broup": new_broup_dict_me,
-        "bro": bro_add.serialize_big,
+        "bro": bro_add.serialize_avatar,
     }
 
 

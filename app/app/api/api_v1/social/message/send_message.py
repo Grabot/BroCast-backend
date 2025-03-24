@@ -40,7 +40,6 @@ async def send_message(
     if not me:
         return get_failed_response("An error occurred", response)
 
-    print(f"message send by bro {me.id}: {me.bro_name} {me.bromotion}")
     broup_id = send_message_request.broup_id
     message = send_message_request.message
     text_message = send_message_request.text_message
@@ -53,7 +52,6 @@ async def send_message(
     broup_objects = results_broup.all()
     # The broup object and the message will have the same timestamp so we can check if it's equal
     current_timestamp = datetime.now(pytz.utc).replace(tzinfo=None)
-    print(f"send time indicator {current_timestamp}")
     if broup_objects is None:
         return {
             "result": False,
@@ -66,7 +64,6 @@ async def send_message(
         if broup.bro_id == me.id:
             broup.received_message(current_timestamp)
             broup.read_messages(current_timestamp)
-            print(f"bro {me.id} sent message. Last read time: {broup.last_message_read_time}")
         else:
             if not broup.is_removed():
                 broup.update_unread_messages()
@@ -81,7 +78,6 @@ async def send_message(
                             broup_member.platform
                         ]
                     )
-            print(f"current last read time other bro: {broup.last_message_read_time}")
         db.add(broup)
         await db.commit()
 
@@ -134,7 +130,6 @@ async def send_message(
     sender_name = me.bro_name + " " + me.bromotion
     await send_notification_broup(tokens, chat.id, chat.private, broup_name, sender_name, message)
 
-    print("send message to broup")
     broup_room = f"broup_{broup_id}"
     message_send_data = bro_message.serialize_no_image
     if message_data is not None:

@@ -27,18 +27,15 @@ async def reading_messages(
     current_read_time = datetime.now(pytz.utc).replace(tzinfo=None)
     last_message_read_time = deepcopy(current_read_time)
     last_message_received_time = deepcopy(current_read_time)
-    print(f"time indicator: {last_message_read_time}")
     for broup_object in result_broups:
         broup: Broup = broup_object.Broup
         if broup.bro_id == me.id:
             # The bro who read the message
             broup.read_messages(current_read_time)
-            print(f"bro {me.id} read message. Last read time: {broup.last_message_read_time}")
             db.add(broup)
         else:
             if not broup.is_removed():
                 if broup.last_message_read_time < last_message_read_time:
-                    print(f"last_message_read_time: {last_message_read_time}")
                     last_message_read_time = broup.last_message_read_time
                 if broup.last_message_received_time < last_message_received_time:
                     last_message_received_time = broup.last_message_received_time
@@ -57,20 +54,16 @@ async def reading_messages(
             "error": "Chat does not exist",
         }
     chat: Chat = chat_objects.Chat
-    print(f"chat last message read time before: {chat.last_message_read_time_bro}")
     if chat.last_message_read_time_bro <= last_message_read_time:
-        print("updating chat last message read time")
         # update the chat last message read time
         # We add 1 miliseconds in case that 2 bros read it at the same time. It will update
         # The chat object but maybe some issue arrises that the message is not marked as read
         # Because it only emits the wrong timestamp. Some small delta added to it should fix it.
         last_message_read_time = last_message_read_time + timedelta(milliseconds=2)
         chat.last_message_read_time_bro = last_message_read_time
-        print(f"chat last message read time after: {chat.last_message_read_time_bro}")
         db.add(chat)
         # emit to the broup the latests read time of the chat
         broup_room = f"broup_{broup_id}"
-        print(f"emitting timestamp {last_message_read_time}")
         await sio.emit(
             "message_read",
             {
@@ -83,7 +76,6 @@ async def reading_messages(
         # update the chat last message read time
         chat.last_message_received_time_bro = last_message_received_time
         db.add(chat)
-        print(f"current last read time after receiving {chat.last_message_read_time_bro}")
         # Now check if there are messages that can be removed based on the timestamp
         messages_statement = select(Message).where(
             Message.broup_id == broup_id, Message.timestamp <= last_message_received_time
@@ -93,7 +85,6 @@ async def reading_messages(
         if result_messages:
             for result_message in result_messages:
                 message: Message = result_message.Message
-                print(f"remove message: {message.body}")
                 if message.data:
                     remove_message_image_data(message.data)
                 await db.delete(message)

@@ -38,7 +38,6 @@ async def get_messages(
     if not me:
         return get_failed_response("An error occurred", response)
 
-    print(f"message getting by bro {me.id}: {me.bro_name} {me.bromotion}")
     broup_id = get_messages_request.broup_id
     last_message_id = get_messages_request.last_message_id
 

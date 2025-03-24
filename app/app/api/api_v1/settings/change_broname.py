@@ -50,7 +50,6 @@ async def change_broname(
     db.add(me)
     broups: List[Broup] = me.broups
     for broup in broups:
-        print(f"broup {broup.serialize_no_chat}")
         chat: Chat = broup.chat
         chat_broups: List[Broup] = chat.chat_broups
         for chat_broup in chat_broups:

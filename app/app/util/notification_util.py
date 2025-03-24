@@ -61,37 +61,3 @@ async def send_notification_broup(tokens, broup_id, private, broup_name, sender_
         except Exception as e:
             print(f"Error sending message: {e}")
 
-
-# if __name__ == "__main__":
-#     tokens = [
-#         "fCDnzH0oTuSMungkmuniza:APA91bHJJzQgtF3k3h_86lnTRik8v7-duQ8O5qDc27sMqaZzccCzssO005fsqSxagox88dAVTDVWQik6nHG0Ry0-KcrQzh0zYyqGA4JMJuAUKw4E0LQ44w8"
-#     ]
-#     for token in tokens:
-#         message_title = 'New Bro from test 2 :)'
-#         message_body = 'This is a test 2 notification'
-#         notification = messaging.Notification(
-#             title=message_title,
-#             body=message_body,
-#         )
-#         android_config = messaging.AndroidConfig(
-#             notification=messaging.AndroidNotification(
-#                 channel_id="channel_bro"
-#             )
-#         )
-#         message_data = {
-#             "test": str(2),
-#         }
-#         message = messaging.Message(
-#             notification=notification,
-#             data=message_data,
-#             android=android_config,
-#             token=token
-#         )
-
-#         # Send the message
-#         try:
-#             response = messaging.send(message)
-#             print(f"Successfully sent message: {response}")
-#         except Exception as e:
-#             print(f"Error sending message: {e}")
-#     print("Notifications sent")

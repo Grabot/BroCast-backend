@@ -9,7 +9,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.api_v1 import api_router_v1
 from app.config.config import settings
 from app.database import get_db
-from app.models import Bro, Chat
+from app.models import Bro, Chat, Broup
+from sqlalchemy.orm import selectinload
 from app.util.rest_util import get_failed_response
 from app.util.util import check_token, get_auth_token
 
@@ -36,16 +37,21 @@ async def get_avatar_broup(
 
     broup_id = get_avatar_broup_request.broup_id
 
-    chat_statement = select(Chat).where(
-        Chat.id == broup_id,
+    broup_statement = (
+        select(Broup)
+        .where(
+            Broup.bro_id == me.id,
+            Broup.broup_id == broup_id
+        ).options(selectinload(Broup.chat))
     )
-    results_chat = await db.execute(chat_statement)
-    chat_object = results_chat.first()
-    if not chat_object:
-        return get_failed_response("Broup not found", response)
+    results_broup = await db.execute(broup_statement)
+    result_broup = results_broup.first()
 
-    print("chat gotten")
-    chat: Chat = chat_object.Chat
+    if result_broup is None:
+        get_failed_response("Broup not found", response)
+
+    me_broup: Broup = result_broup.Broup
+    chat: Chat = me_broup.chat
 
     file_folder = settings.UPLOAD_FOLDER_AVATARS
     if chat.is_default():
@@ -60,6 +66,10 @@ async def get_avatar_broup(
     else:
         with open(file_path, "rb") as fd:
             image_as_base64 = base64.encodebytes(fd.read()).decode()
+
+        me_broup.new_avatar = False
+        db.add(me_broup)
+        await db.commit()
 
         return {
             "result": True,

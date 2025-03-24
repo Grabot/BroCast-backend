@@ -67,7 +67,6 @@ async def create_broup_chat(
     chat_serialize = chat.serialize
     for bro in bros:
         bro_id = bro.id
-        print(f"test: {bro_id}")
         broup_add: Broup = add_broup_object(bro_id, broup_id, True, True)
 
         db.add(broup_add)
@@ -81,7 +80,6 @@ async def create_broup_chat(
         if bro_id == me.id:
             broup_add_me = deepcopy(new_broup_dict)
         else:
-            print(f"bro_add_room {bro_add_room}")
             await sio.emit(
                 "chat_added",
                 socket_response,
@@ -121,13 +119,10 @@ async def add_broup(
 
     bro_ids = add_broup_request.bro_ids
     broup_name = add_broup_request.broup_name
-    print(f"add_broup_request {bro_ids}")
 
     # The private chat will be a broup object where private is true and the bro ids are the two bros")
     private_broup_ids = [me.id] + bro_ids
-    print(f"before sort private_broup_ids {private_broup_ids}")
     private_broup_ids.sort()
-    print(f"after sort private_broup_ids {private_broup_ids}")
 
     bros_statement = select(Bro).where(Bro.id.in_(private_broup_ids))
     results_bros = await db.execute(bros_statement)

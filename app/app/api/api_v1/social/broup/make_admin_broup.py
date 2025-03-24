@@ -38,7 +38,6 @@ async def make_admin_broup(
     broup_id = make_admin_broup_request.broup_id
     bro_id = make_admin_broup_request.bro_id
     
-    print(f"make_admin_broup_request {bro_id}  {broup_id}")
     bro_statement = select(Bro).where(
         Bro.id == bro_id
     )
@@ -51,7 +50,6 @@ async def make_admin_broup(
         }
     new_admin_bro: Bro = result.Bro
 
-    print("getting chat")
     chat_statement = select(Chat).where(
         Chat.id == broup_id,
     )
@@ -60,19 +58,14 @@ async def make_admin_broup(
     if not chat_object:
         return get_failed_response("Broup not found", response)
 
-    print("chat gotten")
     chat: Chat = chat_object.Chat
-    print(f"bro Id {bro_id} admins {chat.bro_admin_ids}")
     if bro_id in chat.bro_admin_ids and bro_id in chat.bro_ids:
         return {
             "result": False,
             "error": "Bro is already an admin",
         }
-    print(f"admins then {chat.bro_admin_ids}")
     chat.add_admin(bro_id)
     db.add(chat)
-    
-    print(f"admins now {chat.bro_admin_ids}")
 
     broup_room = f"broup_{broup_id}"
     socket_response = {"broup_id": broup_id, "new_admin_id": bro_id}

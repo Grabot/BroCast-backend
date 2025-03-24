@@ -41,7 +41,6 @@ async def unblock_bro(
     broup_id = bro_unblock_request.broup_id
     bro_id = bro_unblock_request.bro_id
     
-    print(f"remove_bro_broup_request {bro_id}  {broup_id}")
     broups_statement = (
         select(Broup)
         .where(
@@ -52,9 +51,7 @@ async def unblock_bro(
     )
 
     results_broups = await db.execute(broups_statement)
-    print(f"results_bromotions {results_broups}")
     result_broups = results_broups.first()
-    print(f"result_bromotion {result_broups}")
     if result_broups is None:
         return {
             "result": False,

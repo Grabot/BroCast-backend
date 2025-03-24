@@ -53,12 +53,10 @@ async def change_bromotion(
 
     broups: List[Broup] = me.broups
     for broup in broups:
-        print(f"broup {broup.serialize_no_chat}")
         chat: Chat = broup.chat
         if not chat.private:
             # For broup chats the bromotion is shown in the broup name, we want to update it
             broup_name_now = chat.broup_name
-            print(f"broup_name_now {broup_name_now}")
             # Remove the first occurence from the end of the broup name
             new_broup_name = broup_name_now[::-1].replace(old_bromotion, new_bromotion, 1)
             # Reverse the string again

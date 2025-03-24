@@ -37,7 +37,6 @@ async def message_received(
     if not me:
         return get_failed_response("An error occurred", response)
 
-    print(f"receiving indication of bro {me.id}: {me.bro_name} {me.bromotion}")
     broup_id = receieved_message_request.broup_id
     message_id = receieved_message_request.message_id
 
@@ -73,22 +72,16 @@ async def message_received(
             # before the last received time can be updated
             if broup.new_messages == 0:
                 broup.update_last_message_received()
-                print(
-                    f"bro {me.id} received message. Last read time: {broup.last_message_read_time}"
-                )
                 db.add(broup)
         else:
             if not broup.is_removed():
                 if broup.last_message_received_time < last_message_received_time:
-                    print(f"last_message_received_time: {last_message_received_time}")
                     last_message_received_time = broup.last_message_received_time
-                print(f"Last read time other bro: {broup.last_message_read_time}")
 
     if chat.last_message_received_time_bro < last_message_received_time:
         # update the chat last message read time
         chat.last_message_received_time_bro = last_message_received_time
         db.add(chat)
-        print(f"current last read time after receiving {chat.last_message_read_time_bro}")
         # Now check if there are messages that can be removed based on the timestamp
         messages_statement = select(Message).where(
             Message.broup_id == broup_id, Message.timestamp <= last_message_received_time
@@ -97,9 +90,7 @@ async def message_received(
         result_messages = results_messages.all()
         if result_messages:
             for result_message in result_messages:
-                print(f"message id: {message_id} ")
                 message: Message = result_message.Message
-                print(f"remove message: {message.body}")
                 if message.data:
                     remove_message_image_data(message.data)
                 await db.delete(message)

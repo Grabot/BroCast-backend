@@ -39,7 +39,6 @@ async def register_bro(
     password = register_request.password
     fcm_token = register_request.fcm_token
     platform = register_request.platform
-    print(f"Registering bro: {bro_name} with email: {email} and bromotion: {bromotion} and platform: {platform} and fcm_token: {fcm_token}")
     if email is None or password is None or bro_name is None or bromotion is None:
         return get_failed_response("Invalid request", response)
 
@@ -104,30 +103,25 @@ async def register_bro(
 
 
 class AvatarCreatedRequest(BaseModel):
-    bro_id: Optional[int]
-    broup_id: Optional[int]
+    identifier: int
+    for_bro: bool
 
 
 @api_router_v1.post("/avatar/created", status_code=200)
 async def avatar_created(
     avatar_created_request: AvatarCreatedRequest,
 ) -> dict:
-    bro_id = avatar_created_request.bro_id
-    broup_id = avatar_created_request.broup_id
-    if bro_id:
-        room = f"room_{bro_id}"
+    identifier = avatar_created_request.identifier
+    for_bro = avatar_created_request.for_bro
+    if for_bro:
+        room = f"room_{identifier}"
         socket_response = {
-            "bro_id": bro_id,
-        }
-    elif broup_id:
-        room = f"broup_{broup_id}"
-        socket_response = {
-            "broup_id": broup_id,
+            "bro_id": identifier,
         }
     else:
-        return {
-            "result": False,
-            "message": "No bro or broup id provided",
+        room = f"broup_{identifier}"
+        socket_response = {
+            "broup_id": identifier,
         }
 
     # A short sleep, just in case the bro has not made the socket connection yet

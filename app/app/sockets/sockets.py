@@ -9,19 +9,17 @@ sio_app = socketio.ASGIApp(socketio_server=sio, socketio_path="/socket.io")
 
 @sio.on("connect")
 async def handle_connect(sid, *args, **kwargs):
-    print(f"Received connect: {sid}")
-    # await sio.emit('lobby', 'Bro joined')
+    pass
 
 
 @sio.on("disconnect")
 async def handle_disconnect(sid, *args, **kwargs):
-    print(f"Received disconnect: {sid}")
-    # await sio.emit('lobby', 'Bro joined')
+    pass
 
 
 @sio.on("message_event")
 async def handle_message_event(sid, *args, **kwargs):
-    print(f"Received message_event: {sid}")
+    pass
 
 
 @sio.on("join_solo")

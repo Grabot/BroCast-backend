@@ -45,4 +45,4 @@ async def get_bro(
 
     bro: Bro = result_bro.Bro
 
-    return {"result": True, "bro": bro.serialize_big}
+    return {"result": True, "bro": bro.serialize_avatar}

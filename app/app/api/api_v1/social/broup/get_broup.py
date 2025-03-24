@@ -24,7 +24,6 @@ async def get_broup(
     response: Response,
     db: AsyncSession = Depends(get_db),
 ) -> dict:
-    print("getting broups")
     auth_token = get_auth_token(request.headers.get("Authorization"))
 
     if auth_token == "":
@@ -40,11 +39,8 @@ async def get_broup(
         .where(Broup.bro_id == me.id, Broup.broup_id.in_(broup_ids))
         .options(selectinload(Broup.chat))
     )
-    print(f"broups_statement {broups_statement}")
     results_broups = await db.execute(broups_statement)
-    print(f"results_broups {results_broups}")
     result_broups = results_broups.all()
-    print(f"result_broups {result_broups}")
 
     if result_broups is None or result_broups == []:
         return {
@@ -55,7 +51,6 @@ async def get_broup(
     broup_list = []
     for broup_object in result_broups:
         broup: Broup = broup_object.Broup
-        print(f"retrieving broup: {broup.serialize}")
         # Retrieved full data, so no longer set to updated
         broup.broup_updated = False
         db.add(broup)

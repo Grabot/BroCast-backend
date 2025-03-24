@@ -53,7 +53,6 @@ async def test_call(
             "result": False,
             "log_list": ["no logs"]
         }
-    print(f"deleting log with line id {log_id}")
     statement = (
         select(Log).where(Log.id == log_id)
     )

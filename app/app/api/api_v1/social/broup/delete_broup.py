@@ -42,11 +42,8 @@ async def delete_broup(
             Broup.broup_id == broup_id
         ).options(selectinload(Broup.chat))
     )
-    print(f"broups_statement {broup_statement}")
     results_broup = await db.execute(broup_statement)
-    print(f"results_broups {results_broup}")
     result_broup = results_broup.first()
-    print(f"result_broups {result_broup}")
 
     if result_broup is None:
         # Broup is already gone, so we can return True

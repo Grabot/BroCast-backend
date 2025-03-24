@@ -67,7 +67,6 @@ class Broup(SQLModel, table=True):
     def received_message(self, last_message_received_time):
         # The bro has received a new message
         self.last_message_received_time = last_message_received_time
-        self.new_messages = False
 
     def get_alias(self):
         return self.alias
@@ -117,40 +116,49 @@ class Broup(SQLModel, table=True):
 
     @property
     def serialize(self):
-        return {
+        data = {
             "broup_id": self.broup_id,
-            # "bro_id": self.bro_id,
             "alias": self.alias,
             "unread_messages": self.unread_messages,
-            "removed": self.removed,
-            "mute": self.mute,
-            "broup_updated": self.broup_updated,
-            "new_messages": self.new_messages,
             "update_bros": self.update_bros,
-            "new_avatar": self.new_avatar,
             "chat": self.chat.serialize,
         }
+        if self.removed:
+            data["removed"] = self.removed
+        if self.mute:
+            data["mute"] = self.mute
+        if self.broup_updated:
+            data["broup_updated"] = self.broup_updated
+        if self.new_messages:
+            data["new_messages"] = self.new_messages
+        if self.new_avatar:
+            data["new_avatar"] = self.new_avatar
+        return data
+
 
     @property
     def serialize_minimal(self):
         data = {
             "broup_id": self.broup_id,
-            # "bro_id": self.bro_id,  # This is send to the bro so the id will always be himself
             "unread_messages": self.unread_messages,
-            "broup_updated": self.broup_updated,
             "new_messages": self.new_messages,
         }
+        if self.broup_updated:
+            data["broup_updated"] = self.broup_updated
         return data
 
     @property
     def serialize_no_chat(self):
-        return {
+        data = {
             "broup_id": self.broup_id,
-            # "bro_id": self.bro_id,
             "alias": self.alias,
             "unread_messages": self.unread_messages,
             "removed": self.removed,
             "mute": self.mute,
-            "broup_updated": self.broup_updated,
-            "new_messages": self.new_messages,
         }
+        if self.new_messages:
+            data["new_messages"] = self.new_messages
+        if self.broup_updated:
+            data["broup_updated"] = self.broup_updated
+        return data
+

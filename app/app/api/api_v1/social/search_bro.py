@@ -58,7 +58,7 @@ async def search_bro(
     bro_list = []
     for bro in bros:
         if bro.Bro is not me:
-            bro_list.append(bro.Bro.serialize_small)
+            bro_list.append(bro.Bro.serialize_avatar)
 
     return {
         "result": True,

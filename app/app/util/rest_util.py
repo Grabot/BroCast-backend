@@ -37,11 +37,8 @@ async def leave_broup_me(
         .options(selectinload(Broup.chat).options(selectinload(Chat.chat_broups)))
     )
 
-    print(f"broups_statement {broup_statement}")
     results_broup = await db.execute(broup_statement)
-    print(f"results_broups {results_broup}")
     result_broup = results_broup.first()
-    print(f"result_broups {result_broup}")
 
     if result_broup is None:
         return {
@@ -98,16 +95,13 @@ async def leave_broup_me(
         # In a broup the broup name is the same for all broup members
         # First find out what the new name should be.
         broup_name_now = chat.broup_name
-        print(f"broup_name_now {broup_name_now}")
         # Remove the first occurence from the end of the broup name
         new_broup_name = broup_name_now[::-1].replace(remove_bromotion, "", 1)
         # Reverse the string again
         new_broup_name = new_broup_name[::-1]
-        print(f"broup_name_new {new_broup_name}")
         chat.set_broup_name(new_broup_name)
         chat.remove_participant(me.id)
         if len(chat.bro_ids) == 0:
-            print("all bros left the chat, remove all broup traces")
             await remove_broup_traces(chat, db)
             await db.commit()
             return {

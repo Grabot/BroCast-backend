@@ -47,6 +47,6 @@ async def get_bro(
     bro_list = []
     for bro_object in result_bros:
         bro: Bro = bro_object.Bro
-        bro_list.append(bro.serialize_big)
+        bro_list.append(bro.serialize_avatar)
 
     return {"result": True, "bros": bro_list}
