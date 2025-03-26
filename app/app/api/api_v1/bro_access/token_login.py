@@ -1,25 +1,23 @@
-from fastapi import Depends, Response
-from pydantic import BaseModel
+from fastapi import Depends, Request, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.api_v1 import api_router_v1
 from app.database import get_db
 from app.util.rest_util import get_failed_response
-from app.util.util import check_token, get_bro_tokens
-import time
-
-
-class LoginTokenRequest(BaseModel):
-    access_token: str
-
+from app.util.util import check_token, get_auth_token, get_bro_tokens
 
 @api_router_v1.post("/login/token", status_code=200)
 async def login_token_bro(
-    login_token_request: LoginTokenRequest,
+    request: Request,
     response: Response,
     db: AsyncSession = Depends(get_db),
 ) -> dict:
-    bro = await check_token(db, login_token_request.access_token, True)
+
+    auth_token = get_auth_token(request.headers.get("Authorization"))
+    
+    if auth_token == "":
+        return get_failed_response("An error occurred", response)
+    bro = await check_token(db, auth_token, True)
 
     if not bro:
         return get_failed_response("Bro not found", response)

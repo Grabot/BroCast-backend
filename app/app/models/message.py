@@ -23,24 +23,23 @@ class Message(SQLModel, table=True):
     timestamp: datetime = Field(default=datetime.now(pytz.utc).replace(tzinfo=None))
     info: bool = Field(default=False)
     data: Optional[str]
+    data_type: Optional[int]
 
     def get_message_image_data(self):
         if not self.data:
             return None
         file_folder = settings.UPLOAD_FOLDER_IMAGES
-
         file_path = os.path.join(file_folder, f"{self.data}.png")
         if not os.path.isfile(file_path):
             return None
         else:
-            image = cv2.imread(file_path)
-            if image is None:
-                return None
-
-            # Encode the image as a base64 string
-            _, buffer = cv2.imencode('.png', image)
-            image_as_base64 = base64.b64encode(buffer).decode()
-            return image_as_base64
+            with open(file_path, "rb") as fd:
+                image_as_base64 = base64.encodebytes(fd.read()).decode()
+            image_data = {
+                "data": image_as_base64,
+                "type": self.data_type,
+            }
+            return image_data
         
     @property
     def serialize(self):

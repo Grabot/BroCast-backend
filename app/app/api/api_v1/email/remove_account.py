@@ -60,6 +60,7 @@ async def remove_account(
 ) -> dict:
 
     email = remove_account_request.email
+    email = email.strip()
     email_hash = hashlib.sha512(email.lower().encode("utf-8")).hexdigest()
     statement = (
         select(Bro)

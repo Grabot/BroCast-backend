@@ -30,7 +30,7 @@ async def refresh_bro_token(db: AsyncSession, access_token, refresh_token):
     result_token = results_token.first()
     if result_token is None:
         return None
-
+    
     bro_token: BroToken = result_token.BroToken
     if bro_token.refresh_token_expiration < int(time.time()):
         return await delete_bro_token_and_return(db, bro_token, None)
@@ -127,7 +127,7 @@ def save_image(image_data: str, file_name: str):
     file_folder = settings.UPLOAD_FOLDER_IMAGES
     file_name = f"{file_name}.png"
     file_path = os.path.join(file_folder, file_name)
-
+    
     # Save the image using OpenCV
     cv2.imwrite(file_path, new_image)
     os.chmod(file_path, stat.S_IRWXO)

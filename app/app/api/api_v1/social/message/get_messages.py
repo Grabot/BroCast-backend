@@ -57,11 +57,11 @@ async def get_messages(
             "error": "No messages found",
         }
 
-    await reading_messages(db, response, me, broup_id)
-
     message_list = []
     for result_message in result_messages:
         message: Message = result_message.Message
         message_list.append(message.serialize)
+
+    await reading_messages(db, response, me, broup_id)
 
     return {"result": True, "messages": message_list}

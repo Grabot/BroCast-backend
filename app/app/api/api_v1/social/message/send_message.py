@@ -32,7 +32,6 @@ async def send_message(
     db: AsyncSession = Depends(get_db),
 ) -> dict:
     auth_token = get_auth_token(request.headers.get("Authorization"))
-
     if auth_token == "":
         return get_failed_response("An error occurred", response)
 
@@ -95,12 +94,14 @@ async def send_message(
         }
     chat: Chat = chat_objects.Chat
     file_name = None
+    data_type = None
     if message_data is not None:
         # If the message includes image data we want to take the data and save it as an image
         # The path to that image will be saved on the message db object.
         # This is because we don't want to save the image in the db itself.
         # Create a filename based on the current timestamp
         file_name = f"broup_{broup_id}_image_{current_timestamp.strftime('%Y%m%d%H%M%S%f')}"
+        data_type = 0
         save_image(message_data, file_name)
     bro_message = Message(
         sender_id=me.id,
@@ -111,6 +112,7 @@ async def send_message(
         timestamp=current_timestamp,
         info=False,
         data=file_name,
+        data_type=data_type,
     )
     chat.current_message_id += 1
     db.add(chat)
@@ -133,7 +135,11 @@ async def send_message(
     broup_room = f"broup_{broup_id}"
     message_send_data = bro_message.serialize_no_image
     if message_data is not None:
-        message_send_data["data"] = message_data
+        image_data = {
+            "data": message_data,
+            "type": data_type,
+        }
+        message_send_data["data"] = image_data
     await sio.emit(
         "message_received",
         message_send_data,

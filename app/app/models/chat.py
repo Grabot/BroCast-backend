@@ -169,4 +169,3 @@ class Chat(SQLModel, table=True):
             "broup_description": self.broup_description,
             "broup_colour": self.broup_colour,
         }
-    
