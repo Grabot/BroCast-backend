@@ -30,10 +30,11 @@ class Broup(SQLModel, table=True):
     # In this case this variable will remain False. If the bro later receives more messages without
     # his phone being active this variable will indicate that he has to retrieve the new messages.
     new_messages: bool = Field(default=False)
-    new_members: bool = Field(default=True)
     # We don't need to send these details all the time. Only when needed.
     broup_updated: bool = Field(default=True)
+    # If a bro made a change to themselves we have to update that in the broup.
     update_bros: List[int] = Field(default=[], sa_column=Column(ARRAY(Integer())))
+    update_bros_avatar: List[int] = Field(default=[], sa_column=Column(ARRAY(Integer())))
     # Don't send the avatar every time. Only send it if changes have been made.
     new_avatar: bool = Field(default=True)
 
@@ -83,6 +84,36 @@ class Broup(SQLModel, table=True):
             new_update_bros.append(bro_id)
         self.update_bros = new_update_bros
     
+    def dismiss_bro_to_update(self, bro_id):
+        if self.update_bros is None:
+            self.update_bros = []
+        old_bros = self.update_bros
+        new_bros = []
+        for old in old_bros:
+            if old != bro_id:
+                new_bros.append(old)
+        self.update_bros = new_bros
+    
+    def add_bro_avatar_to_update(self, bro_id):
+        old_update_bros_avatar = self.update_bros_avatar
+        new_update_bros_avatar = []
+        for old in old_update_bros_avatar:
+            new_update_bros_avatar.append(old)
+        if bro_id not in new_update_bros_avatar:
+            new_update_bros_avatar.append(bro_id)
+        self.update_bros_avatar = new_update_bros_avatar
+    
+    def dismiss_bro_avatar_to_update(self, bro_id):
+        if self.update_bros_avatar is None:
+            self.update_bros_avatar = []
+        old_bros_avatar = self.update_bros_avatar
+        new_bros_avatar = []
+        for old in old_bros_avatar:
+            if old != bro_id:
+                new_bros_avatar.append(old)
+        self.update_bros_avatar = new_bros_avatar
+    
+
     def bros_retrieved(self):
         self.update_bros = []
 
@@ -120,9 +151,12 @@ class Broup(SQLModel, table=True):
             "broup_id": self.broup_id,
             "alias": self.alias,
             "unread_messages": self.unread_messages,
-            "update_bros": self.update_bros,
             "chat": self.chat.serialize,
         }
+        if self.update_bros is not None and len(self.update_bros) > 0:
+            data["update_bros"] = self.update_bros
+        if self.update_bros_avatar is not None and len(self.update_bros_avatar) > 0:
+            data["update_bros_avatar"] = self.update_bros_avatar
         if self.removed:
             data["removed"] = self.removed
         if self.mute:

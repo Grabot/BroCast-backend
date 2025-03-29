@@ -28,13 +28,9 @@ async def reset_avatar_me(
     if auth_token == "":
         return get_failed_response("An error occurred", response)
 
-    me: Optional[Bro] = await check_token(db, auth_token, False)
+    me: Optional[Bro] = await check_token(db, auth_token, True)
     if not me:
         return get_failed_response("An error occurred", response)
-
-    me.set_default_avatar(True)
-    db.add(me)
-    await db.commit()
 
     file_folder = settings.UPLOAD_FOLDER_AVATARS
     file_name = me.avatar_filename_default()
@@ -46,6 +42,36 @@ async def reset_avatar_me(
         with open(file_path, "rb") as fd:
             image_as_base64 = base64.encodebytes(fd.read()).decode()
 
+        me.set_default_avatar(True)
+        db.add(me)
+        broups: List[Broup] = me.broups
+        for broup in broups:
+            chat: Chat = broup.chat
+            chat_broups: List[Broup] = chat.chat_broups
+            for chat_broup in chat_broups:
+                if chat_broup.bro_id != me.id:
+                    chat_broup.broup_updated = True
+                    if chat.private:
+                        # In a private chat the bro avatar is the broup avatar
+                        chat_broup.new_avatar = True
+                    else:
+                        # TODO:
+                        print("Updating bro in broup avatar")
+                    db.add(chat_broup)
+
+            broup_room = f"broup_{chat.id}"
+            socket_response = {
+                "bro_id": me.id,
+                "broup_id": chat.id,
+                "new_avatar": True
+            }
+            await sio.emit(
+                "bro_update",
+                socket_response,
+                room=broup_room,
+            )
+        await db.commit()
+        
         return {"result": True, "message": image_as_base64}
 
 
@@ -108,6 +134,7 @@ async def reset_avatar_broup(
         timestamp=datetime.now(pytz.utc).replace(tzinfo=None),
         info=True,
         data=None,
+        data_type=None,
     )
     chat.current_message_id += 1
     db.add(chat)

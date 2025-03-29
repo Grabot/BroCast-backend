@@ -15,6 +15,7 @@ from app.util.util import check_token, get_auth_token
 
 class GetBroRequest(BaseModel):
     bro_id: int
+    with_avatar: bool
 
 
 @api_router_v1.post("/bro/get/single", status_code=200)
@@ -29,11 +30,14 @@ async def get_bro(
     if auth_token == "":
         return get_failed_response("An error occurred", response)
 
-    me: Optional[Bro] = await check_token(db, auth_token, False)
+    me: Optional[Bro] = await check_token(db, auth_token, True)
     if not me:
         return get_failed_response("An error occurred", response)
 
     bro_id = get_bros_request.bro_id
+    with_avatar = get_bros_request.with_avatar
+    print(f"get bro {bro_id} with avatar {with_avatar}")
+
     bro_statement = select(Bro).where(Bro.id == bro_id)
     results_bro = await db.execute(bro_statement)
     result_bro = results_bro.first()
@@ -45,4 +49,25 @@ async def get_bro(
 
     bro: Bro = result_bro.Bro
 
-    return {"result": True, "bro": bro.serialize_avatar}
+    # Go over the broups, if the bro is marked to update we know that that is no longer needed
+    for broup in me.broups:
+        chat = broup.chat
+        if chat.private:
+            if me.id in chat.bro_ids and bro_id in chat.bro_ids:
+                # This is the private chat between the two bros
+                # If we also retrieve the avatar, we set the flag back to false.
+                if with_avatar:
+                    broup.new_avatar = False
+                    db.add(broup)
+        # We update every broup that the bro is in.
+        # Since it might be marked for update, but we are updating it now
+        if bro_id in broup.update_bros:
+            broup.dismiss_bro_to_update(bro_id)
+            db.add(broup)
+    
+    await db.commit()
+
+    return_bro = bro.serialize_avatar if with_avatar else bro.serialize_no_detail
+
+        
+    return {"result": True, "bro": return_bro}

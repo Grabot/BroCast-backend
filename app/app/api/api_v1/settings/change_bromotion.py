@@ -87,18 +87,12 @@ async def change_bromotion(
             socket_response = {
                 "broup_id": chat.id,
                 "new_broup_name": new_broup_name,
-                "broup_updated": True
             }
-        else:
-            socket_response = {
-                "broup_id": chat.id,
-                "broup_updated": True
-            }
-        await sio.emit(
-            "chat_changed",
-            socket_response,
-            room=broup_room,
-        )
+            await sio.emit(
+                "chat_changed",
+                socket_response,
+                room=broup_room,
+            )
 
     await db.commit()
 

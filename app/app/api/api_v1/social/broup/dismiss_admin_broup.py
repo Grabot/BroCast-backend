@@ -85,6 +85,7 @@ async def dismiss_admin_broup(
         timestamp=datetime.now(pytz.utc).replace(tzinfo=None),
         info=True,
         data=None,
+        data_type=None,
     )
     chat.current_message_id += 1
     db.add(chat)

@@ -5,17 +5,20 @@ from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 import random
+from datetime import datetime
+import pytz
 
 from app.api.api_v1 import api_router_v1
 from app.database import get_db
-from app.models import Bro, Broup, Chat
+from app.models import Bro, Broup, Chat, Message
 from app.util.rest_util import get_failed_response
 from app.util.util import check_token, get_auth_token
 from app.sockets.sockets import sio
+from sqlalchemy.orm import selectinload
 
 
 def add_bros_object(
-    bro_id: int, broup_id: int, broup_update: bool, member_update: bool
+    bro_id: int, broup_id: int, broup_update: bool, new_avatar: bool
 ) -> Broup:
 
     broup = Broup(
@@ -27,7 +30,7 @@ def add_bros_object(
         deleted=False,
         removed=False,
         broup_updated=broup_update,
-        new_members=member_update,
+        new_avatar=new_avatar,
     )
     return broup
 
@@ -88,6 +91,89 @@ async def create_bro_chat(db: AsyncSession, me: Bro, bro_add: Bro, private_broup
     }
 
 
+async def rejoin_bro_chat(db: AsyncSession, broup_me: Broup, broup_bro: Broup, chat: Chat, bro_add: Bro) -> dict:
+    # clear the admins, these are used in private chats to determine who blocked who.
+    print("rejoining the broup")
+    # If the other bro did the blocking and deleting we don't want the other bro to be able to add it again.
+    if broup_me.bro_id not in chat.get_admins():
+        return {
+            "result": False,
+            "message": "You're not able to add this bro",
+        }
+    chat.dismiss_admin(broup_me.bro_id)
+    was_deleted = False
+    if broup_bro.deleted:
+        was_deleted = True
+    
+    broup_me.unread_messages = 1
+    broup_me.deleted = False
+    broup_me.removed = False
+    broup_me.broup_updated = True
+    broup_me.new_messages = True
+    broup_me.mute = False
+    broup_bro.unread_messages = 1
+    broup_bro.deleted = False
+    broup_bro.removed = False
+    broup_bro.broup_updated = True
+    broup_bro.new_messages = True
+    broup_bro.mute = False
+    
+    message_text = f"Chat is unblocked! 🥰"
+    bro_message = Message(
+        sender_id=broup_me.bro_id,
+        broup_id=chat.id,
+        message_id=chat.current_message_id,
+        body=message_text,
+        text_message="",
+        timestamp=datetime.now(pytz.utc).replace(tzinfo=None),
+        info=True,
+        data=None,
+        data_type=None,
+    )
+    chat.current_message_id = chat.current_message_id + 1
+
+    db.add(bro_message)
+    db.add(chat)
+    db.add(broup_me)
+    db.add(broup_bro)
+    await db.commit()
+
+    chat_serialize = chat.serialize
+    new_broup_dict_me = broup_me.serialize_no_chat
+    new_broup_dict_me["chat"] = chat_serialize
+    new_broup_dict_bro = broup_bro.serialize_no_chat
+    new_broup_dict_bro["chat"] = chat_serialize
+    
+    if not was_deleted:
+        bro_room = f"room_{broup_bro.bro_id}"
+        socket_response_chat_unblocked = {
+            "broup_id": chat.id,
+            "chat_blocked": False,
+        }
+        await sio.emit(
+            "chat_changed",
+            socket_response_chat_unblocked,
+            room=bro_room,
+        )
+    else:
+        new_broup_dict_bro = broup_bro.serialize
+        # Send message to personal bro room that the bro has been added to a chat
+        bro_add_room = f"room_{broup_bro.bro_id}"
+        # We only send the broup details, the channel indicates that a broup is added
+        socket_response = {"broup": new_broup_dict_bro}
+        await sio.emit(
+            "chat_added",
+            socket_response,
+            room=bro_add_room,
+        )
+
+    return {
+        "result": True,
+        "broup": new_broup_dict_me,
+        "bro": bro_add.serialize_avatar,
+    }
+
+
 class AddBroRequest(BaseModel):
     bro_id: int
 
@@ -138,14 +224,40 @@ async def add_bro(
     result_broup = results_broup.first()
 
     if result_broup:
-        # The broup object already exists.
-        # This is possible if they are bros, or if the were bros before,
-        # but one of them unbroed the other.
-        # TODO: add functionality for re-broing?
-        # Already exists, indictated with `False`
-        return {
-            "result": False,
-        }
+        print("the broup existed, rejoin it!")
+        found_broup = result_broup.Broup
+        existing_broups_statement = (
+            select(Broup)
+            .where(
+                Broup.broup_id == found_broup.broup_id,
+            ).options(selectinload(Broup.chat))
+        )
+        results_existing_broups = await db.execute(existing_broups_statement)
+        result_existing_broups = results_existing_broups.all()
+        if result_existing_broups is None or result_existing_broups == []:
+            return get_failed_response("An error occurred", response)
+        print(f"found the broups {len(result_existing_broups)}")
+        broup_me = None
+        broup_bro = None
+        for existing_broup in result_existing_broups:
+            broup = existing_broup.Broup
+            if broup.bro_id == me.id:
+                broup_me = broup
+            else:
+                broup_bro = broup
+        if broup_me is None or broup_bro is None:
+            return get_failed_response("An error occurred", response)
+        
+        if not broup_me.deleted:
+            # If the bro is not deleted, there is not need to re-add it.
+            # It can be done via the existing chat.
+            return {
+                "result": False,
+                "message": "The bro is already in your bro list",
+            }
+        print("found the broups and assigned them properly")
+        chat: Chat = broup_me.chat
+        return await rejoin_bro_chat(db, broup_me, broup_bro, chat, bro_add)
     else:
         private_broup_ids = [me.id, bro_add.id] if me.id < bro_add.id else [bro_add.id, me.id]
         return await create_bro_chat(db, me, bro_add, private_broup_ids)

@@ -1,6 +1,6 @@
 import base64
 import os
-from typing import Optional
+from typing import Optional, List
 from sqlmodel import select
 from pydantic import BaseModel
 from fastapi import Depends, Request, Response
@@ -9,9 +9,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.api_v1 import api_router_v1
 from app.config.config import settings
 from app.database import get_db
-from app.models import Bro
+from app.models import Bro, Broup, Chat
 from app.util.rest_util import get_failed_response
 from app.util.util import check_token, get_auth_token
+from app.sockets.sockets import sio
 
 
 @api_router_v1.post("/get/avatar/me", status_code=200)
@@ -66,7 +67,7 @@ async def get_avatar_bro(
     if auth_token == "":
         return get_failed_response("An error occurred", response)
 
-    me: Optional[Bro] = await check_token(db, auth_token, False)
+    me: Optional[Bro] = await check_token(db, auth_token, True)
     if not me:
         return get_failed_response("An error occurred", response)
 
@@ -93,6 +94,27 @@ async def get_avatar_bro(
     else:
         with open(file_path, "rb") as fd:
             image_as_base64 = base64.encodebytes(fd.read()).decode()
+
+        # We are going to retrieve the avatar, 
+        # so we can remove the bro id from the list of bros to update.
+        broups: List[Broup] = me.broups
+        for broup in broups:
+            chat: Chat = broup.chat
+            print("found the chat")
+            if chat.private:
+                print("it should be private")
+                print(f"bro_id: {bro_id} and me {me.id} in {chat.bro_ids}   {bro_id in chat.bro_ids and me.id in chat.bro_ids}")
+                if bro_id in chat.bro_ids and me.id in chat.bro_ids:
+                    # This is a private chat, the broup avatar is the same as the bro avatar
+                    # So mark the broup as avatar retrieved.
+                    broup.new_avatar = False
+                    db.add(broup)
+
+            if bro_id in broup.update_bros_avatar:
+                broup.dismiss_bro_avatar_to_update(bro_id)
+                db.add(broup)
+
+        await db.commit()
 
         return {
             "result": True,

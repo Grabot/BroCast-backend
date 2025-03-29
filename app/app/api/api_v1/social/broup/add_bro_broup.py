@@ -55,6 +55,8 @@ async def add_bro_broup(
         new_broup.removed = False
         new_broup.deleted = False
         new_broup.broup_updated = True
+        new_broup.new_messages = True
+        new_broup.unread_messages = 1
         db.add(new_broup)
     else:
         new_broup = Broup(
@@ -66,7 +68,6 @@ async def add_bro_broup(
             deleted=False,
             removed=False,
             broup_updated=True,
-            new_members=True,
         )
 
     new_bro_statement = select(Bro).where(Bro.id == bro_id)
@@ -97,7 +98,6 @@ async def add_bro_broup(
     for result_broup in result_broups:
         broup: Broup = result_broup.Broup
         if not broup.removed:
-            broup.new_members = True
             broup.broup_updated = True
             db.add(broup)
     bro_chat.add_participant(bro_id)
@@ -105,7 +105,6 @@ async def add_bro_broup(
     db.add(bro_chat)
 
     db.add(new_broup)
-    await db.commit()
 
     chat_serialize = bro_chat.serialize
     new_broup_dict_bro = new_broup.serialize_no_chat
@@ -143,6 +142,7 @@ async def add_bro_broup(
         timestamp=datetime.now(pytz.utc).replace(tzinfo=None),
         info=True,
         data=None,
+        data_type=None,
     )
     bro_chat.current_message_id += 1
     db.add(bro_chat)

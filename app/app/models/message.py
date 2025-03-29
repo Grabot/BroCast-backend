@@ -65,5 +65,4 @@ class Message(SQLModel, table=True):
             "text_message": self.text_message,
             "timestamp": self.timestamp.strftime("%Y-%m-%dT%H:%M:%S.%f"),
             "info": self.info,
-            "data": None,
         }

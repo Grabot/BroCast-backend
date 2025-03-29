@@ -11,7 +11,7 @@ from app.database import get_db
 from app.models import Bro, Broup, Chat
 from app.util.rest_util import get_failed_response
 from app.util.util import check_token, get_auth_token
-from app.sockets.sockets import sio
+from sqlalchemy.orm import selectinload
 
 
 class BroupChangeAliasRequest(BaseModel):

@@ -73,7 +73,7 @@ async def change_broname(
         broup_room = f"broup_{chat.id}"
         socket_response = {
             "broup_id": chat.id,
-            "broup_updated": True
+            "bro_to_update": me.id
         }
         await sio.emit(
             "chat_changed",
@@ -83,7 +83,6 @@ async def change_broname(
 
     await db.commit()
 
-    # TODO: update message?
     return {
         "result": True,
         "message": new_broname,

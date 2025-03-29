@@ -81,6 +81,7 @@ async def broup_change_colour(
         timestamp=datetime.now(pytz.utc).replace(tzinfo=None),
         info=True,
         data=None,
+        data_type=None,
     )
     chat.current_message_id += 1
     db.add(chat)

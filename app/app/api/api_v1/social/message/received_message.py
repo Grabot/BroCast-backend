@@ -93,6 +93,7 @@ async def message_received(
                 message: Message = result_message.Message
                 if message.data:
                     remove_message_image_data(message.data)
+                print("remove message 2")
                 await db.delete(message)
     await db.commit()
 

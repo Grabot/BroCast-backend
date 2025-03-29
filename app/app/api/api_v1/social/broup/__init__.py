@@ -15,5 +15,6 @@ from . import (
     get_avatar_broup,
     delete_broup,
     mute_broup,
-    report_broup
+    report_broup,
+    retrieved_broup
 )

@@ -57,8 +57,8 @@ async def unblock_bro(
             "result": False,
             "message": "Broup not found",
         }
-    result_broup: Broup = result_broups.Broup
-    chat: Chat = result_broup.chat
+    broup_bro: Broup = result_broups.Broup
+    chat: Chat = broup_bro.chat
 
     if not chat.private:
         return {
@@ -73,28 +73,58 @@ async def unblock_bro(
             "error": "Bro was not in the Broup",
         }
 
+    was_deleted = False
+    if broup_bro.deleted:
+        was_deleted = True
+        broup_bro.deleted = False
+        broup_bro.broup_updated = True
+        broup_bro.new_messages = True
+        db.add(broup_bro)
+    
+    chat.dismiss_admin(me.id)
     for chat_broup in chat.chat_broups:
         chat_broup.removed = False
-        if chat_broup.bro_id == me.id:
-            # This should reset the admin ids back to nothing for private chats.
-            chat.dismiss_admin(me.id)
-        chat_broup.broup_updated = True
         db.add(chat_broup)
 
-    # The client will create a new message but we need to increment the message id here as well
-    chat.current_message_id += 1
+    message_text = f"Chat is unblocked! 🥰"
+    bro_message = Message(
+        sender_id=me.id,
+        broup_id=chat.id,
+        message_id=chat.current_message_id,
+        body=message_text,
+        text_message="",
+        timestamp=datetime.now(pytz.utc).replace(tzinfo=None),
+        info=True,
+        data=None,
+        data_type=None,
+    )
+    db.add(bro_message)
+
+    chat.current_message_id = chat.current_message_id + 1
     # Send a socket message to the other bro, 
     # the bro that did the unblocking will be notified via the REST call
-    bro_room = f"room_{bro_id}"
-    socket_response_chat_unblocked = {
-        "broup_id": broup_id,
-        "chat_blocked": False,
-    }
-    await sio.emit(
-        "chat_changed",
-        socket_response_chat_unblocked,
-        room=bro_room,
-    )
+    if not was_deleted:
+        bro_room = f"room_{bro_id}"
+        socket_response_chat_unblocked = {
+            "broup_id": broup_id,
+            "chat_blocked": False,
+        }
+        await sio.emit(
+            "chat_changed",
+            socket_response_chat_unblocked,
+            room=bro_room,
+        )
+    else:
+        new_broup_dict_bro = broup_bro.serialize
+        # Send message to personal bro room that the bro has been added to a chat
+        bro_add_room = f"room_{broup_bro.bro_id}"
+        # We only send the broup details, the channel indicates that a broup is added
+        socket_response = {"broup": new_broup_dict_bro}
+        await sio.emit(
+            "chat_added",
+            socket_response,
+            room=bro_add_room,
+        )
 
     await db.commit()
 

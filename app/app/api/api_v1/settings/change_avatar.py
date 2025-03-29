@@ -60,7 +60,6 @@ async def change_avatar(
 
     me.set_default_avatar(False)
     db.add(me)
-    await db.commit()
 
     # Update all private chats of the bro. 
     # This is because they have the avatar of the bro.
@@ -76,20 +75,23 @@ async def change_avatar(
                 if chat.private:
                     # In a private chat the bro avatar is the broup avatar
                     chat_broup.new_avatar = True
+                else:
+                    chat_broup.add_bro_avatar_to_update(me.id)
                 db.add(chat_broup)
 
-                bro_room = f"room_{chat_broup.bro_id}"
-                socket_response = {
-                    "bro_id": me.id,
-                    "new_avatar": True
-                }
-                # This will update the avatar of the bro, not the broup.
-                await sio.emit(
-                    "bro_update",
-                    socket_response,
-                    room=bro_room,
-                )
-        db.add(chat)
+        broup_room = f"broup_{chat.id}"
+        socket_response = {
+            "bro_id": me.id,
+            "broup_id": chat.id,
+            "new_avatar": True
+        }
+        # This will update the avatar of the bro, not the broup.
+        await sio.emit(
+            "bro_update",
+            socket_response,
+            room=broup_room,
+        )
+    await db.commit()
 
     return {
         "result": True,
@@ -148,6 +150,7 @@ async def change_avatar_broup(
         if chat_broup.bro_id != me.id:
             chat_broup.broup_updated = True
             chat_broup.update_unread_messages()
+            # include removed broups, since if they get unblocked they should see the new avatar
             chat_broup.new_avatar = True
         db.add(chat_broup)
 
@@ -169,6 +172,7 @@ async def change_avatar_broup(
         timestamp=datetime.now(pytz.utc).replace(tzinfo=None),
         info=True,
         data=None,
+        data_type=None,
     )
     chat.current_message_id += 1
     db.add(chat)

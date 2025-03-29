@@ -16,7 +16,7 @@ from app.celery_worker.tasks import task_generate_avatar
 from copy import deepcopy
 
 
-def add_broup_object(bro_id: int, broup_id: int, broup_update: bool, member_update: bool) -> Broup:
+def add_broup_object(bro_id: int, broup_id: int, broup_update: bool) -> Broup:
 
     broup = Broup(
         bro_id=bro_id,
@@ -27,7 +27,6 @@ def add_broup_object(bro_id: int, broup_id: int, broup_update: bool, member_upda
         deleted=False,
         removed=False,
         broup_updated=broup_update,
-        new_members=member_update,
         new_avatar=True
     )
     return broup
@@ -67,7 +66,12 @@ async def create_broup_chat(
     chat_serialize = chat.serialize
     for bro in bros:
         bro_id = bro.id
-        broup_add: Broup = add_broup_object(bro_id, broup_id, True, True)
+        update_broup = True
+        if bro_id == me.id:
+            # We are creating the broup so we don't need to update it. 
+            # We get all the information from the request
+            update_broup = False
+        broup_add: Broup = add_broup_object(bro_id, broup_id, update_broup)
 
         db.add(broup_add)
         bro_add_room = f"room_{bro_id}"
