@@ -16,5 +16,7 @@ from . import (
     delete_broup,
     mute_broup,
     report_broup,
-    retrieved_broup
+    retrieved_broup,
+    received_broids_broup,
+    broup_details
 )

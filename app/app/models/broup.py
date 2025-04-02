@@ -145,6 +145,7 @@ class Broup(SQLModel, table=True):
     def set_mute_timestamp(self, mute_timestamp):
         self.mute_timestamp = mute_timestamp
 
+
     @property
     def serialize(self):
         data = {
@@ -152,6 +153,37 @@ class Broup(SQLModel, table=True):
             "alias": self.alias,
             "unread_messages": self.unread_messages,
             "chat": self.chat.serialize,
+        }
+        if self.update_bros is not None and len(self.update_bros) > 0:
+            data["update_bros"] = self.update_bros
+            self.update_bros = []
+        if self.update_bros_avatar is not None and len(self.update_bros_avatar) > 0:
+            data["update_bros_avatar"] = self.update_bros_avatar
+            self.update_bros_avatar = []
+        if self.removed:
+            data["removed"] = self.removed
+        if self.mute:
+            data["mute"] = self.mute
+        if self.broup_updated:
+            data["broup_updated"] = self.broup_updated
+            self.broup_updated = False
+        if self.new_messages:
+            data["new_messages"] = self.new_messages
+            self.new_messages = False
+        if self.new_avatar:
+            data["new_avatar"] = self.new_avatar
+            self.new_avatar = False
+        return data
+
+
+    @property
+    def serialize_avatar(self):
+        # Full retrieval call.
+        data = {
+            "broup_id": self.broup_id,
+            "alias": self.alias,
+            "unread_messages": self.unread_messages,
+            "chat": self.chat.serialize_avatar,
         }
         if self.update_bros is not None and len(self.update_bros) > 0:
             data["update_bros"] = self.update_bros
@@ -169,20 +201,38 @@ class Broup(SQLModel, table=True):
             data["new_avatar"] = self.new_avatar
         return data
 
+    @property
+    def serialize_only_avatar(self):
+        return {
+            "broup_id": self.broup_id,
+            "chat": self.chat.serialize_only_avatar
+        }
 
+    @property
+    def serialize_new_avatar(self):
+        data = {
+            "broup_id": self.broup_id,
+            "unread_messages": self.unread_messages,
+        }
+        if self.new_messages:
+            data["new_messages"] = self.new_messages
+        if self.new_avatar:
+            data["new_avatar"] = self.new_avatar
+        return data
+    
     @property
     def serialize_minimal(self):
         data = {
             "broup_id": self.broup_id,
             "unread_messages": self.unread_messages,
-            "new_messages": self.new_messages,
         }
-        if self.broup_updated:
-            data["broup_updated"] = self.broup_updated
+        if self.new_messages:
+            data["new_messages"] = self.new_messages
         return data
 
     @property
     def serialize_no_chat(self):
+        # Used for creating a new broup, we might not have the chat yet.
         data = {
             "broup_id": self.broup_id,
             "alias": self.alias,
@@ -194,5 +244,7 @@ class Broup(SQLModel, table=True):
             data["new_messages"] = self.new_messages
         if self.broup_updated:
             data["broup_updated"] = self.broup_updated
+        # We don't include the `new_avatar` here because it should always be true for a new brou
+        # So there is not need to include it.
         return data
 

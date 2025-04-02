@@ -18,6 +18,7 @@ from sqlalchemy.orm import selectinload
 
 class BroupBrosRetrievedRequest(BaseModel):
     broup_id: int
+    bro_ids: List[int]
 
 
 @api_router_v1.post("/broup/bros_retrieved", status_code=200)
@@ -32,7 +33,7 @@ async def remove_bro_broup(
     if auth_token == "":
         return get_failed_response("An error occurred", response)
 
-    me: Optional[Bro] = await check_token(db, auth_token, False)
+    me: Optional[Bro] = await check_token(db, auth_token, True)
     if not me:
         return get_failed_response("An error occurred", response)
 
@@ -53,9 +54,20 @@ async def remove_bro_broup(
             "result": False,
             "message": "Broup not found",
         }
+    
+    bro_ids = broup_bros_retrieved_request.bro_ids
+
     broup: Broup = result_broup.Broup
     broup.bros_retrieved()
+    broup.broup_updated = False
     db.add(broup)
+
+    # Go over the broups, if the bro is marked to update we know that that is no longer needed
+    for bro_id in bro_ids:
+        for broup in me.broups:
+            if bro_id in broup.update_bros:
+                broup.dismiss_bro_to_update(bro_id)
+                db.add(broup)
     await db.commit()
 
     return {

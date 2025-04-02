@@ -71,7 +71,6 @@ async def change_avatar(
         chat_broups: List[Broup] = chat.chat_broups
         for chat_broup in chat_broups:
             if chat_broup.bro_id != me.id:
-                chat_broup.broup_updated = True
                 if chat.private:
                     # In a private chat the bro avatar is the broup avatar
                     chat_broup.new_avatar = True
@@ -148,9 +147,9 @@ async def change_avatar_broup(
     chat_broups: List[Broup] = chat.chat_broups
     for chat_broup in chat_broups:
         if chat_broup.bro_id != me.id:
-            chat_broup.broup_updated = True
             chat_broup.update_unread_messages()
             # include removed broups, since if they get unblocked they should see the new avatar
+            # We don't set `update_broup` since the new_avatar is seperate.
             chat_broup.new_avatar = True
         db.add(chat_broup)
 

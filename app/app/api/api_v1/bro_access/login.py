@@ -47,7 +47,7 @@ async def login_bro(
             select(Bro)
             .where(Bro.origin == 0)
             .where(Bro.email_hash == email_hash)
-            .options(selectinload(Bro.broups))
+            .options(selectinload(Bro.broups).options(selectinload(Broup.chat)))
         )
         results = await db.execute(statement)
         result_bro = results.first()
@@ -59,7 +59,7 @@ async def login_bro(
             select(Bro)
             .where(Bro.origin == 0)
             .where(func.lower(Bro.bro_name) == bro_name.lower(), Bro.bromotion == bromotion)
-            .options(selectinload(Bro.broups))
+            .options(selectinload(Bro.broups).options(selectinload(Broup.chat)))
         )
         results = await db.execute(statement)
         result_bro = results.first()
@@ -79,7 +79,41 @@ async def login_bro(
     if bro.platform != platform:
         bro.platform = platform
     db.add(bro_token)
+    
+    broup_ids = []
+    return_broups = []
+    for broup in bro.broups:
+        if not broup.deleted:
+            broup_ids.append(broup.broup_id)
+        # We only send the broups if there is something new
+        if broup.broup_updated:
+            return_broups.append(broup.serialize)
+            broup.broup_updated = False
+            broup.new_avatar = False
+            broup.new_messages = False
+            broup.update_bros = []
+            broup.update_bros_avatar = []
+            db.add(broup)
+        elif broup.new_avatar:
+            return_broups.append(broup.serialize_new_avatar)
+            broup.new_avatar = False
+            broup.new_messages = False
+            db.add(broup)
+        elif broup.new_messages:
+            return_broups.append(broup.serialize_minimal)
+            broup.new_messages = False
+            db.add(broup)
     await db.commit()
+
+    # When logging in via email or bro_name we will also pass all the broup ids
+    # If the bro logs in on another device we will know what is missing from the local db.
+    bro_details = {
+        "id": bro.id,
+        "bro_name": bro.bro_name,
+        "bromotion": bro.bromotion,
+        "origin": bro.origin == 0,
+        "broups": return_broups,
+    }
 
     # We don't refresh the bro object because we know all we want to know
     login_response = {
@@ -88,7 +122,8 @@ async def login_bro(
         "access_token": bro_token.access_token,
         "refresh_token": bro_token.refresh_token,
         "fcm_token": bro.fcm_token,
-        "bro": bro.serialize,
+        "bro": bro_details,
+        "broup_ids": broup_ids
     }
 
     return login_response

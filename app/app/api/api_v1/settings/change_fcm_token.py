@@ -19,7 +19,7 @@ class ChangeFCMTokenRequest(BaseModel):
 
 
 @api_router_v1.post("/change/fcm_token", status_code=200)
-async def change_broname(
+async def change_fcm_token(
     change_fcm_token_request: ChangeFCMTokenRequest,
     request: Request,
     response: Response,

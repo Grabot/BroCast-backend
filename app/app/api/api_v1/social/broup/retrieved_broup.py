@@ -50,6 +50,8 @@ async def retrieved_broup(
         }
     me_broup: Broup = result_broup.Broup
     me_broup.broup_updated = False
+    me_broup.update_bros = []
+    me_broup.update_bros_avatar = []
     db.add(me_broup)
     await db.commit()
 

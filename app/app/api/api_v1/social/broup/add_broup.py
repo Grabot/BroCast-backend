@@ -74,7 +74,6 @@ async def create_broup_chat(
         broup_add: Broup = add_broup_object(bro_id, broup_id, update_broup)
 
         db.add(broup_add)
-        bro_add_room = f"room_{bro_id}"
 
         new_broup_dict = broup_add.serialize_no_chat
         new_broup_dict["chat"] = chat_serialize
@@ -84,6 +83,8 @@ async def create_broup_chat(
         if bro_id == me.id:
             broup_add_me = deepcopy(new_broup_dict)
         else:
+            print(f"sending broup data {socket_response}")
+            bro_add_room = f"room_{bro_id}"
             await sio.emit(
                 "chat_added",
                 socket_response,

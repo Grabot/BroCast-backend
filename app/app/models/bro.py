@@ -125,7 +125,7 @@ class Bro(SQLModel, table=True):
         }
     
     @property
-    def serialize_token(self):
+    def serialize_login(self):
         return_broups = []
         for broup in self.broups:
             # We only send the broups if there is something new
@@ -143,7 +143,6 @@ class Bro(SQLModel, table=True):
 
     @property
     def serialize_avatar(self):
-        # get bro details but make it small
         return {
             "id": self.id,
             "bro_name": self.bro_name,

@@ -13,13 +13,14 @@ from app.util.rest_util import get_failed_response
 from app.util.util import check_token, get_auth_token
 
 
-class GetBroRequest(BaseModel):
-    bro_ids: List[int]
+class BroDetailsRequest(BaseModel):
+    bro_update_ids: List[int]
+    bro_avatar_update_ids: List[int]
 
 
-@api_router_v1.post("/bro/get", status_code=200)
-async def get_bro(
-    get_bros_request: GetBroRequest,
+@api_router_v1.post("/bro/details", status_code=200)
+async def bro_details(
+    bro_details_request: BroDetailsRequest,
     request: Request,
     response: Response,
     db: AsyncSession = Depends(get_db),
@@ -33,8 +34,16 @@ async def get_bro(
     if not me:
         return get_failed_response("An error occurred", response)
 
-    bro_ids = get_bros_request.bro_ids
-    print(f"get bros {bro_ids}")
+    bro_update_ids = bro_details_request.bro_update_ids
+    bro_avatar_update_ids = bro_details_request.bro_avatar_update_ids
+    bro_ids = list(set(bro_update_ids + bro_avatar_update_ids))
+    print(f"bro_ids {bro_ids}")
+
+    if not bro_ids:
+        return {
+            "result": True,
+            "bros": [],
+        }
 
     bros_statement = select(Bro).where(Bro.id.in_(bro_ids))
     results_bros = await db.execute(bros_statement)
@@ -50,14 +59,11 @@ async def get_bro(
     for bro_object in result_bros:
         bro: Bro = bro_object.Bro
         # No avatar since the `new_avatar` flag should have been true
-        bro_list.append(bro.serialize_no_detail)
-    
-    # Go over the broups, if the bro is marked to update we know that that is no longer needed
-    for broup in me.broups:
-        for bro_id in bro_ids:
-            if bro_id in broup.update_bros:
-                broup.dismiss_bro_to_update(bro_id)
-                db.add(broup)
-    await db.commit()
+        if bro.id in bro_avatar_update_ids:
+            # It's possible that we won't need the broname or bromotion.
+            # Maybe a future improvement, but we don't need to worry about it now.
+            bro_list.append(bro.serialize_avatar)
+        else:
+            bro_list.append(bro.serialize_no_detail)
 
     return {"result": True, "bros": bro_list}

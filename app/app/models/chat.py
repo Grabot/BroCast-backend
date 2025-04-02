@@ -169,3 +169,23 @@ class Chat(SQLModel, table=True):
             "broup_description": self.broup_description,
             "broup_colour": self.broup_colour,
         }
+
+    @property
+    def serialize_only_avatar(self):
+        return {
+            "avatar": self.get_broup_avatar(),
+            "avatar_default": self.default_avatar
+        }
+
+    @property
+    def serialize_avatar(self):
+        data = {
+            "bro_ids": self.bro_ids,
+            "admin_ids": self.bro_admin_ids,
+            "broup_name": self.broup_name,
+            "private": self.private,
+            "broup_description": self.broup_description,
+            "broup_colour": self.broup_colour,
+            "broup_colour": self.broup_colour,
+        }
+        return data

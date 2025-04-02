@@ -98,8 +98,11 @@ async def add_bro_broup(
     for result_broup in result_broups:
         broup: Broup = result_broup.Broup
         if not broup.removed:
-            broup.broup_updated = True
-            db.add(broup)
+            if me.id != broup.bro_id:
+                broup.broup_updated = True
+                db.add(broup)
+                broup.add_bro_to_update(bro_id)
+                broup.add_bro_avatar_to_update(bro_id)
     bro_chat.add_participant(bro_id)
     bro_chat.set_broup_name(new_broup_name)
     db.add(bro_chat)
