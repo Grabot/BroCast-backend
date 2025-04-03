@@ -161,3 +161,22 @@ async def remove_broup_traces(chat: Chat, db: AsyncSession):
     await db.delete(chat)
     await db.commit()
 
+
+async def bro_chat_open_close(db: AsyncSession, me_id, broup_id, chat_open: bool):
+    broup_statement = (
+        select(Broup)
+        .where(
+            Broup.bro_id == me_id,
+            Broup.broup_id == broup_id
+        )
+    )
+    results_broup = await db.execute(broup_statement)
+    result_broup = results_broup.first()
+
+    if result_broup is None:
+        return
+    broup: Broup = result_broup.Broup
+    broup.open = chat_open
+    db.add(broup)
+    await db.commit()
+

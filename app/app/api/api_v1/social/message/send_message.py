@@ -67,10 +67,10 @@ async def send_message(
             if not broup.is_removed():
                 broup.update_unread_messages()
                 broup.check_mute()
-            if not broup.is_muted() and not broup.removed and not broup.deleted:
+            if not broup.is_muted() and not broup.open and not broup.removed and not broup.deleted:
                 broup_member: Bro = broup.broup_member
                 bro_fcm_token = broup_member.fcm_token
-                if bro_fcm_token is not None:
+                if bro_fcm_token is not None and bro_fcm_token != "":
                     tokens.append(
                         [
                             bro_fcm_token,

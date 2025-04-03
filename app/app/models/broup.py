@@ -22,6 +22,8 @@ class Broup(SQLModel, table=True):
     )
     unread_messages: int
     mute: bool = Field(default=False)
+    # Determines if the bro currently has the chat open.
+    open: bool = Field(default=False)
     mute_timestamp: Optional[datetime]
     removed: bool = Field(default=False)
     deleted: bool = Field(default=False)
