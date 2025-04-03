@@ -37,7 +37,6 @@ async def bro_details(
     bro_update_ids = bro_details_request.bro_update_ids
     bro_avatar_update_ids = bro_details_request.bro_avatar_update_ids
     bro_ids = list(set(bro_update_ids + bro_avatar_update_ids))
-    print(f"bro_ids {bro_ids}")
 
     if not bro_ids:
         return {

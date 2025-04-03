@@ -35,7 +35,6 @@ async def get_bro(
         return get_failed_response("An error occurred", response)
 
     bro_ids = get_bros_request.bro_ids
-    print(f"get bros {bro_ids}")
 
     bros_statement = select(Bro).where(Bro.id.in_(bro_ids))
     results_bros = await db.execute(bros_statement)
@@ -87,7 +86,6 @@ async def get_bro(
 
     bro_id = get_bros_request.bro_id
     with_avatar = get_bros_request.with_avatar
-    print(f"get bro {bro_id} with avatar {with_avatar}")
 
     bro_statement = select(Bro).where(Bro.id == bro_id)
     results_bro = await db.execute(bro_statement)

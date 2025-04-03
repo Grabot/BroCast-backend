@@ -93,7 +93,6 @@ async def create_bro_chat(db: AsyncSession, me: Bro, bro_add: Bro, private_broup
 
 async def rejoin_bro_chat(db: AsyncSession, broup_me: Broup, broup_bro: Broup, chat: Chat, bro_add: Bro) -> dict:
     # clear the admins, these are used in private chats to determine who blocked who.
-    print("rejoining the broup")
     # If the other bro did the blocking and deleting we don't want the other bro to be able to add it again.
     if broup_me.bro_id not in chat.get_admins():
         return {
@@ -224,7 +223,6 @@ async def add_bro(
     result_broup = results_broup.first()
 
     if result_broup:
-        print("the broup existed, rejoin it!")
         found_broup = result_broup.Broup
         existing_broups_statement = (
             select(Broup)
@@ -236,7 +234,6 @@ async def add_bro(
         result_existing_broups = results_existing_broups.all()
         if result_existing_broups is None or result_existing_broups == []:
             return get_failed_response("An error occurred", response)
-        print(f"found the broups {len(result_existing_broups)}")
         broup_me = None
         broup_bro = None
         for existing_broup in result_existing_broups:
@@ -255,7 +252,6 @@ async def add_bro(
                 "result": False,
                 "message": "The bro is already in your bro list",
             }
-        print("found the broups and assigned them properly")
         chat: Chat = broup_me.chat
         return await rejoin_bro_chat(db, broup_me, broup_bro, chat, bro_add)
     else:

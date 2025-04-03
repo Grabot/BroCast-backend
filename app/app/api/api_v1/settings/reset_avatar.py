@@ -50,13 +50,11 @@ async def reset_avatar_me(
             chat_broups: List[Broup] = chat.chat_broups
             for chat_broup in chat_broups:
                 if chat_broup.bro_id != me.id:
-                    chat_broup.broup_updated = True
                     if chat.private:
                         # In a private chat the bro avatar is the broup avatar
                         chat_broup.new_avatar = True
                     else:
-                        # TODO:
-                        print("Updating bro in broup avatar")
+                        chat_broup.add_bro_avatar_to_update(me.id)
                     db.add(chat_broup)
 
             broup_room = f"broup_{chat.id}"

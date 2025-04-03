@@ -100,10 +100,7 @@ async def get_avatar_bro(
         broups: List[Broup] = me.broups
         for broup in broups:
             chat: Chat = broup.chat
-            print("found the chat")
             if chat.private:
-                print("it should be private")
-                print(f"bro_id: {bro_id} and me {me.id} in {chat.bro_ids}   {bro_id in chat.bro_ids and me.id in chat.bro_ids}")
                 if bro_id in chat.bro_ids and me.id in chat.bro_ids:
                     # This is a private chat, the broup avatar is the same as the bro avatar
                     # So mark the broup as avatar retrieved.

@@ -63,6 +63,4 @@ async def login_token_bro(
         "bro": bro_details,
     }
 
-    print(f"login response: {login_response}")
-
     return login_response

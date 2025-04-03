@@ -37,7 +37,6 @@ async def broup_details(
     broup_update_ids = broup_details_request.broup_update_ids
     broup_avatar_update_ids = broup_details_request.broup_avatar_update_ids
     broup_ids = list(set(broup_update_ids + broup_avatar_update_ids))
-    print(f"broup_ids {broup_ids}")
 
     if not broup_ids:
         return {
@@ -63,15 +62,12 @@ async def broup_details(
         broup: Broup = broup_object.Broup
         # No avatar since the `new_avatar` flag should have been true
         if broup.broup_id in broup_avatar_update_ids and broup.broup_id in broup_update_ids:
-            print("doing both")
             broup_list.append(broup.serialize_avatar)
         elif broup.broup_id in broup_avatar_update_ids:
-            print("only avatar")
             # It's possible that we won't need the broname or bromotion.
             # Maybe a future improvement, but we don't need to worry about it now.
             broup_list.append(broup.serialize_only_avatar)
         else:
-            print("the rest")
             broup_list.append(broup.serialize)
 
     return {"result": True, "broups": broup_list}

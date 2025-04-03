@@ -83,7 +83,6 @@ async def create_broup_chat(
         if bro_id == me.id:
             broup_add_me = deepcopy(new_broup_dict)
         else:
-            print(f"sending broup data {socket_response}")
             bro_add_room = f"room_{bro_id}"
             await sio.emit(
                 "chat_added",

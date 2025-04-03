@@ -34,7 +34,6 @@ async def retrieved_broup(
         return get_failed_response("An error occurred", response)
 
     broup_id = received_bro_ids_broup_request.broup_id
-    print(f"single broup received request {broup_id}")
 
     broup_statement = (
         select(Broup)
@@ -80,7 +79,6 @@ async def retrieved_broup(
         return get_failed_response("An error occurred", response)
 
     broup_ids = received_bro_ids_broups_request.broup_ids
-    print(f"many broups received request {broup_ids}")
 
     broups_statement = (
         select(Broup)

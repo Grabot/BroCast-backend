@@ -158,7 +158,6 @@ async def remove_broup_traces(chat: Chat, db: AsyncSession):
     for result_message in result_messages:
         message: Message = result_message.Message
         await db.delete(message)
-    print("remove message 3")
     await db.delete(chat)
     await db.commit()
 
