@@ -182,6 +182,7 @@ async def apple_verify(
             "bro": bro_detail,
         }
 
+        print(f"Apple success: {login_response}")
         return login_response
     else:
         return get_failed_response("An error occurred", response)

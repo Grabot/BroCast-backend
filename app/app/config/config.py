@@ -38,8 +38,6 @@ class Settings(BaseSettings):
     SECRET_KEY: str = os.environ.get("SECRET_KEY") or "you-will-never-guess"
 
     # Configuration
-    GOOGLE_CLIENT_ID: str = os.environ.get("GOOGLE_CLIENT_ID", None)
-    GOOGLE_CLIENT_SECRET: str = os.environ.get("GOOGLE_CLIENT_SECRET", None)
     GOOGLE_DISCOVERY_URL: str = "https://accounts.google.com/.well-known/openid-configuration"
     GOOGLE_ACCESS_TOKEN_URL: str = "https://www.googleapis.com/oauth2/v3/userinfo"
 

@@ -87,9 +87,6 @@ class Bro(SQLModel, table=True):
     def avatar_filename(self):
         return md5(self.email_hash.encode("utf-8")).hexdigest()
 
-    def avatar_filename_small(self):
-        return self.avatar_filename() + "_small"
-
     def avatar_filename_default(self):
         return self.avatar_filename() + "_default"
 

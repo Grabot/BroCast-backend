@@ -37,10 +37,6 @@ spec:
               value: redis-service.golden-age.svc.cluster.local
             - name: REDIS_PORT
               value: "6379"
-            - name: GOOGLE_CLIENT_ID
-              value: "<google-client-id>"
-            - name: GOOGLE_CLIENT_SECRET
-              value: "<google-client-secret>"
             - name: GITHUB_CLIENT_ID
               value: "<github-client-id>"
             - name: GITHUB_CLIENT_SECRET

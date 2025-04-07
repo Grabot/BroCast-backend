@@ -90,6 +90,7 @@ async def github_callback(
         request_base_url = request_base_url.replace("http://", "https://", 1)
         world_url = request_base_url + "broaccess"
         world_url_params = world_url + "?" + url_params
+        print(f"Github success: {world_url_params}")
         return RedirectResponse(world_url_params)
     else:
         request_base_url = str(request.base_url)

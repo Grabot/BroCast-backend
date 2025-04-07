@@ -42,7 +42,8 @@ async def send_notification_broup(tokens, broup_id, private, broup_name, sender_
                         alert=messaging.ApsAlert(
                             title=message_title,
                             body=message_body,
-                        )
+                        ),
+                        sound="res_brodio.caf"
                     )
                 )
             )
