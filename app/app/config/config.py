@@ -52,7 +52,7 @@ class Settings(BaseSettings):
     REDDIT_USER: str = "https://oauth.reddit.com/api/v1/me"
     REDDIT_CLIENT_ID: str = os.environ.get("REDDIT_CLIENT_ID", None)
     REDDIT_CLIENT_SECRET: str = os.environ.get("REDDIT_CLIENT_SECRET", None)
-    REDDIT_REDIRECT: str = "https://brocast.nl/login/reddit/callback"
+    REDDIT_REDIRECT: str = os.environ.get("REDDIT_REDIRECT", None)
 
     APPLE_AUTHORIZE: str = "https://appleid.apple.com/auth/token"
     APPLE_CLIENT_ID: str = os.environ.get("APPLE_CLIENT_ID", None)

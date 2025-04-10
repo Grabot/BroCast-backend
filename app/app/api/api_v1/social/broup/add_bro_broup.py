@@ -146,6 +146,7 @@ async def add_bro_broup(
         info=True,
         data=None,
         data_type=None,
+        replied_to=None,
     )
     bro_chat.current_message_id += 1
     db.add(bro_chat)

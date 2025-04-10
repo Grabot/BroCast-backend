@@ -60,7 +60,6 @@ async def broup_details(
     broup_list = []
     for broup_object in result_broups:
         broup: Broup = broup_object.Broup
-        # No avatar since the `new_avatar` flag should have been true
         if broup.broup_id in broup_avatar_update_ids and broup.broup_id in broup_update_ids:
             broup_list.append(broup.serialize_avatar)
         elif broup.broup_id in broup_avatar_update_ids:

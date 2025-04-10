@@ -24,6 +24,7 @@ class Message(SQLModel, table=True):
     info: bool = Field(default=False)
     data: Optional[str]
     data_type: Optional[int]
+    replied_to: Optional[int]
 
     def get_message_image_data(self):
         if not self.data:

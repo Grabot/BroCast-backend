@@ -113,6 +113,7 @@ async def send_message(
         info=False,
         data=file_name,
         data_type=data_type,
+        replied_to=None,
     )
     chat.current_message_id += 1
     db.add(chat)

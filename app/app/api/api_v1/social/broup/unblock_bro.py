@@ -77,12 +77,12 @@ async def unblock_bro(
     if broup_bro.deleted:
         was_deleted = True
         broup_bro.deleted = False
-        broup_bro.broup_updated = True
-        broup_bro.new_messages = True
-        db.add(broup_bro)
+    broup_bro.new_messages = True
+    db.add(broup_bro)
     
     chat.dismiss_admin(me.id)
     for chat_broup in chat.chat_broups:
+        chat_broup.broup_updated = True
         chat_broup.removed = False
         db.add(chat_broup)
 
@@ -97,10 +97,12 @@ async def unblock_bro(
         info=True,
         data=None,
         data_type=None,
+        replied_to=None,
     )
     db.add(bro_message)
 
     chat.current_message_id = chat.current_message_id + 1
+    db.add(chat)
     # Send a socket message to the other bro, 
     # the bro that did the unblocking will be notified via the REST call
     if not was_deleted:

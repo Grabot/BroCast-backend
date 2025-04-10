@@ -111,8 +111,9 @@ async def reset_avatar_broup(
     
     chat_broups: List[Broup] = chat.chat_broups
     for chat_broup in chat_broups:
-        chat_broup.new_avatar = True
-        db.add(chat_broup)
+        if chat_broup.bro_id != me.id:
+            chat_broup.new_avatar = True
+            db.add(chat_broup)
 
     broup_room = f"broup_{broup_id}"
     socket_response = {"broup_id": broup_id, "new_avatar": True}
@@ -133,6 +134,7 @@ async def reset_avatar_broup(
         info=True,
         data=None,
         data_type=None,
+        replied_to=None,
     )
     chat.current_message_id += 1
     db.add(chat)

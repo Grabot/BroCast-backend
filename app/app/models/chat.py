@@ -186,6 +186,7 @@ class Chat(SQLModel, table=True):
             "private": self.private,
             "broup_description": self.broup_description,
             "broup_colour": self.broup_colour,
-            "broup_colour": self.broup_colour,
+            "avatar": self.get_broup_avatar(),
+            "avatar_default": self.default_avatar
         }
         return data

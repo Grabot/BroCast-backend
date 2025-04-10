@@ -28,23 +28,27 @@ async def login_token_bro(
     return_broups = []
     for broup in bro.broups:
         # We only send the broups if there is something new
-        if broup.broup_updated:
-            return_broups.append(broup.serialize)
+        if broup.removed:
+            return_broups.append(broup.serialize_removed)
             broup.broup_updated = False
-            broup.new_avatar = False
-            broup.new_messages = False
-            broup.update_bros = []
-            broup.update_bros_avatar = []
-            db.add(broup)
-        elif broup.new_avatar:
-            return_broups.append(broup.serialize_new_avatar)
-            broup.new_avatar = False
-            broup.new_messages = False
-            db.add(broup)
-        elif broup.new_messages:
-            return_broups.append(broup.serialize_minimal)
-            broup.new_messages = False
-            db.add(broup)
+        else:
+            if broup.broup_updated:
+                return_broups.append(broup.serialize)
+                broup.broup_updated = False
+                broup.new_avatar = False
+                broup.new_messages = False
+                broup.update_bros = []
+                broup.update_bros_avatar = []
+                db.add(broup)
+            elif broup.new_avatar:
+                return_broups.append(broup.serialize_new_avatar)
+                broup.new_avatar = False
+                broup.new_messages = False
+                db.add(broup)
+            elif broup.new_messages:
+                return_broups.append(broup.serialize_minimal)
+                broup.new_messages = False
+                db.add(broup)
     await db.commit()
 
     bro_details = {

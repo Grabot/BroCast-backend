@@ -83,6 +83,7 @@ async def remove_bro_broup(
         info=True,
         data=None,
         data_type=None,
+        replied_to=None,
     )
     chat.current_message_id += 1
     db.add(chat)
