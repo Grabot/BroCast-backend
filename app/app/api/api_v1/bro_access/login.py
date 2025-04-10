@@ -128,6 +128,7 @@ async def login_bro(
         "access_token": bro_token.access_token,
         "refresh_token": bro_token.refresh_token,
         "fcm_token": bro.fcm_token,
+        "platform": bro.platform,
         "bro": bro_details,
         "broup_ids": broup_ids
     }

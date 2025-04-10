@@ -14,13 +14,13 @@ from app.util.rest_util import get_failed_response
 from app.util.util import check_token, get_auth_token
 
 
-class ChangeFCMTokenRequest(BaseModel):
-    fcm_token: str
+class ChangePlatformRequest(BaseModel):
+    platform: int
 
 
-@api_router_v1.post("/change/fcm_token", status_code=200)
-async def change_fcm_token(
-    change_fcm_token_request: ChangeFCMTokenRequest,
+@api_router_v1.post("/change/platform", status_code=200)
+async def change_platform(
+    change_platform_request: ChangePlatformRequest,
     request: Request,
     response: Response,
     db: AsyncSession = Depends(get_db),
@@ -34,10 +34,8 @@ async def change_fcm_token(
     if not me:
         return get_failed_response("An error occurred", response)
 
-    fcm_token = change_fcm_token_request.fcm_token
-    me.fcm_token = fcm_token
-    fcm_refresh_expiration_time = 15778463  # about 6 months
-    me.fcm_token_timestamp = int(time.time()) + fcm_refresh_expiration_time
+    platform = change_platform_request.platform
+    me.platform = platform
     db.add(me)
     await db.commit()
 

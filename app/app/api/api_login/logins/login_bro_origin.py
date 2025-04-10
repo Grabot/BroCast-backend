@@ -28,6 +28,7 @@ async def login_bro_origin(
     bro_name: str,
     bro_email: str,
     origin: int,
+    with_bro_details: bool,
     db: AsyncSession = Depends(get_db),
 ) -> [Optional[Bro], bool]:
     # Some very simple pre-check to make sure the broname will not be email formatted.
@@ -40,12 +41,19 @@ async def login_bro_origin(
     # Check if the bro has logged in before using this origin.
     # If that's the case it has a Row in the Bro database, and we log in
     hashed_email = hashlib.sha512(bro_email.lower().encode("utf-8")).hexdigest()
-    statement_origin = (
-        select(Bro)
-        .where(Bro.origin == origin)
-        .where(Bro.email_hash == hashed_email)
-        .options(selectinload(Bro.broups).options(selectinload(Broup.chat)))
-    )
+    if with_bro_details:
+        statement_origin = (
+            select(Bro)
+            .where(Bro.origin == origin)
+            .where(Bro.email_hash == hashed_email)
+            .options(selectinload(Bro.broups).options(selectinload(Broup.chat)))
+        )
+    else:
+        statement_origin = (
+            select(Bro)
+            .where(Bro.origin == origin)
+            .where(Bro.email_hash == hashed_email)
+        )
     results_origin = await db.execute(statement_origin)
     result_bro_origin = results_origin.first()
 

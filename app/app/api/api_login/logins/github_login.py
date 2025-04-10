@@ -65,7 +65,7 @@ async def github_callback(
     bro_name = github_bro["login"]
     bro_email = github_bro["email"]
 
-    [bro, bro_created] = await login_bro_origin(bro_name, bro_email, 2, db)
+    [bro, bro_created] = await login_bro_origin(bro_name, bro_email, 2, False, db)
 
     if bro:
         bro_token = get_bro_tokens(bro, 30, 60)
@@ -77,8 +77,6 @@ async def github_callback(
         if bro_created:
             await db.refresh(bro)
             _ = task_generate_avatar.delay(bro.avatar_filename(), bro.id, False)
-        else:
-            await db.commit()
 
         params = dict()
         params["access_token"] = access_token

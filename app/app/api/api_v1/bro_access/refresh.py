@@ -56,14 +56,15 @@ async def refresh_bro_oauth(
     access_token = refresh_request.access_token
     refresh_token = refresh_request.refresh_token
 
-    bro = await refresh_bro_token(db, access_token, refresh_token)
-    if not bro:
+    refresh_bro = await refresh_bro_token(db, access_token, refresh_token)
+    if not refresh_bro:
         return get_failed_response("An error occurred", response)
 
-    new_bro_token = get_bro_tokens(bro)
+    new_bro_token = get_bro_tokens(refresh_bro)
     new_access_token = new_bro_token.access_token
     new_refresh_token = new_bro_token.refresh_token
     db.add(new_bro_token)
+    await db.commit()
     
     me: Optional[Bro] = await check_token(db, new_access_token, True)
     if not me:
@@ -74,24 +75,30 @@ async def refresh_bro_oauth(
     for broup in me.broups:
         if not broup.deleted:
             broup_ids.append(broup.broup_id)
-        # We only send the broups if there is something new
-        if broup.broup_updated:
-            return_broups.append(broup.serialize)
+        
+        if broup.removed:
+            return_broups.append(broup.serialize_removed)
             broup.broup_updated = False
-            broup.new_avatar = False
-            broup.new_messages = False
-            broup.update_bros = []
-            broup.update_bros_avatar = []
             db.add(broup)
-        elif broup.new_avatar:
-            return_broups.append(broup.serialize_new_avatar)
-            broup.new_avatar = False
-            broup.new_messages = False
-            db.add(broup)
-        elif broup.new_messages:
-            return_broups.append(broup.serialize_minimal)
-            broup.new_messages = False
-            db.add(broup)
+        else:
+            # We only send the broups if there is something new
+            if broup.broup_updated:
+                return_broups.append(broup.serialize)
+                broup.broup_updated = False
+                broup.new_avatar = False
+                broup.new_messages = False
+                broup.update_bros = []
+                broup.update_bros_avatar = []
+                db.add(broup)
+            elif broup.new_avatar:
+                return_broups.append(broup.serialize_new_avatar)
+                broup.new_avatar = False
+                broup.new_messages = False
+                db.add(broup)
+            elif broup.new_messages:
+                return_broups.append(broup.serialize_minimal)
+                broup.new_messages = False
+                db.add(broup)
     await db.commit()
 
     # When logging in via email or bro_name we will also pass all the broup ids
@@ -111,6 +118,7 @@ async def refresh_bro_oauth(
         "access_token": new_access_token,
         "refresh_token": new_refresh_token,
         "fcm_token": me.fcm_token,
+        "platform": me.platform,
         "bro": bro_details,
         "broup_ids": broup_ids
     }

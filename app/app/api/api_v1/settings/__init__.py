@@ -6,4 +6,5 @@ from . import (
     change_bromotion,
     change_fcm_token,
     reset_avatar,
+    change_platform
 )

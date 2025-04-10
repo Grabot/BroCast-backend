@@ -81,7 +81,7 @@ async def reddit_callback(
     bro_name = reddit_bro["name"]
     bro_email = "%s@reddit.com" % bro_name  # Reddit gives no email
 
-    [bro, bro_created] = await login_bro_origin(bro_name, bro_email, 3, db)
+    [bro, bro_created] = await login_bro_origin(bro_name, bro_email, 3, False, db)
 
     if bro:
         bro_token = get_bro_tokens(bro, 30, 60)
@@ -93,8 +93,6 @@ async def reddit_callback(
         if bro_created:
             await db.refresh(bro)
             _ = task_generate_avatar.delay(bro.avatar_filename(), bro.id, False)
-        else:
-            await db.commit()
 
         params = dict()
         params["access_token"] = access_token

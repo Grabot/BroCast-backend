@@ -19,7 +19,7 @@ async def log_bro_in(
     bro_email = broinfo_response.json()["email"]
     bro_name = broinfo_response.json()["given_name"]
 
-    [bro, bro_created] = await login_bro_origin(bro_name, bro_email, 1, db)
+    [bro, bro_created] = await login_bro_origin(bro_name, bro_email, 1, True, db)
 
     if bro:
         bro_token = get_bro_tokens(bro, 30, 60)
@@ -31,7 +31,6 @@ async def log_bro_in(
         if bro_created:
             await db.refresh(bro)
             _ = task_generate_avatar.delay(bro.avatar_filename(), bro.id, False)
-            await db.commit()
 
         return [True, [access_token, refresh_token, bro, bro_created]]
     else:
@@ -140,6 +139,7 @@ async def login_google_token(
                 "access_token": bro_token.access_token,
                 "refresh_token": bro_token.refresh_token,
                 "fcm_token": bro.fcm_token,
+                "platform": bro.platform,
                 "bro": bro_details,
                 "broup_ids": broup_ids
             }

@@ -31,7 +31,7 @@ async def log_bro_in(
     bro_email = apple_token["email"]
     bro_name = apple_token["email"].split("@")[0]
 
-    [bro, bro_created] = await login_bro_origin(bro_name, bro_email, 4, db)
+    [bro, bro_created] = await login_bro_origin(bro_name, bro_email, 4, False, db)
 
     if bro:
         bro_token = get_bro_tokens(bro, 30, 60)
@@ -43,8 +43,6 @@ async def log_bro_in(
         if bro_created:
             await db.refresh(bro)
             _ = task_generate_avatar.delay(bro.avatar_filename(), bro.id, False)
-        else:
-            await db.commit()
 
         return [True, [access_token, refresh_token, bro, bro_created]]
     else:
@@ -126,117 +124,9 @@ async def apple_callback(
 
         url_params = urlencode(params)
 
-        base_url = settings.BASE_URL
-        full_url = f"{base_url}/login/apple/redirect?" + url_params
-        return RedirectResponse(full_url, status_code=status.HTTP_302_FOUND)
+        world_url = f"{settings.BASE_URL}/broaccess"
+        world_url_params = world_url + "?" + url_params
+        return RedirectResponse(world_url_params)
     else:
         return get_failed_response("An error occurred", response)
 
-
-@api_router_login.get("/apple/verify")
-async def apple_verify(
-    code: str,
-    response: Response,
-    db: AsyncSession = Depends(get_db),
-):
-    apple_key_url = settings.APPLE_AUTHORIZE
-
-    broinfo_response = requests.post(
-        apple_key_url,
-        headers={"Content-Type": "application/x-www-form-urlencoded"},
-        data={
-            "client_id": settings.APPLE_CLIENT_ID,
-            "client_secret": generate_token(),
-            "code": code,
-            "grant_type": settings.APPLE_GRANT_TYPE,
-            "redirect_uri": settings.APPLE_REDIRECT_URL,
-        },
-    )
-
-    if (
-        not broinfo_response.json().get("access_token")
-        or not broinfo_response.json().get("refresh_token")
-        or not broinfo_response.json().get("id_token")
-    ):
-        return get_failed_response("Bro email not available or not verified by Apple.", response)
-
-    [success, [_, _, bro, bro_created]] = await log_bro_in(broinfo_response, db)
-
-    if success:
-        # Valid login, we refresh the token for this bro.
-        bro_token = get_bro_tokens(bro)
-        db.add(bro_token)
-        await db.commit()
-
-        login_response ={}
-        if bro_created:
-            # Register Google login
-            bro_return = bro.serialize_no_detail
-            bro_return["origin"] = False
-
-            # Return the bro with no bro information because they have none yet.
-            # And no avatar, because it might still be generating.
-            login_response = {
-                "result": True,
-                "message": "Bro created successfully.",
-                "access_token": bro_token.access_token,
-                "refresh_token": bro_token.refresh_token,
-                "bro": bro_return,
-            }
-        else:
-            # Login Apple login
-            broup_ids = []
-            return_broups = []
-            for broup in bro.broups:
-                if not broup.deleted:
-                    broup_ids.append(broup.broup_id)
-                
-                if broup.removed:
-                    return_broups.append(broup.serialize_removed)
-                    broup.broup_updated = False
-                    db.add(broup)
-                else:
-                    # We only send the broup details if there is something new
-                    if broup.broup_updated:
-                        return_broups.append(broup.serialize)
-                        broup.broup_updated = False
-                        broup.new_avatar = False
-                        broup.new_messages = False
-                        broup.update_bros = []
-                        broup.update_bros_avatar = []
-                        db.add(broup)
-                    elif broup.new_avatar:
-                        return_broups.append(broup.serialize_new_avatar)
-                        broup.new_avatar = False
-                        broup.new_messages = False
-                        db.add(broup)
-                    elif broup.new_messages:
-                        return_broups.append(broup.serialize_minimal)
-                        broup.new_messages = False
-                        db.add(broup)
-            await db.commit()
-            
-            # When logging in via email or bro_name we will also pass all the broup ids
-            # If the bro logs in on another device we will know what is missing from the local db.
-            bro_details = {
-                "id": bro.id,
-                "bro_name": bro.bro_name,
-                "bromotion": bro.bromotion,
-                "origin": bro.origin == 0,
-                "broups": return_broups,
-            }
-
-            # We don't refresh the bro object because we know all we want to know
-            login_response = {
-                "result": True,
-                "message": "Bro logged in successfully.",
-                "access_token": bro_token.access_token,
-                "refresh_token": bro_token.refresh_token,
-                "fcm_token": bro.fcm_token,
-                "bro": bro_details,
-                "broup_ids": broup_ids
-            }
-
-        return login_response
-    else:
-        return get_failed_response("An error occurred", response)
