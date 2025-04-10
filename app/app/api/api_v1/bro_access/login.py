@@ -85,24 +85,30 @@ async def login_bro(
     for broup in bro.broups:
         if not broup.deleted:
             broup_ids.append(broup.broup_id)
-        # We only send the broups if there is something new
-        if broup.broup_updated:
-            return_broups.append(broup.serialize)
+
+        if broup.removed:
+            return_broups.append(broup.serialize_removed)
             broup.broup_updated = False
-            broup.new_avatar = False
-            broup.new_messages = False
-            broup.update_bros = []
-            broup.update_bros_avatar = []
             db.add(broup)
-        elif broup.new_avatar:
-            return_broups.append(broup.serialize_new_avatar)
-            broup.new_avatar = False
-            broup.new_messages = False
-            db.add(broup)
-        elif broup.new_messages:
-            return_broups.append(broup.serialize_minimal)
-            broup.new_messages = False
-            db.add(broup)
+        else:
+            # We only send the broups if there is something new
+            if broup.broup_updated:
+                return_broups.append(broup.serialize)
+                broup.broup_updated = False
+                broup.new_avatar = False
+                broup.new_messages = False
+                broup.update_bros = []
+                broup.update_bros_avatar = []
+                db.add(broup)
+            elif broup.new_avatar:
+                return_broups.append(broup.serialize_new_avatar)
+                broup.new_avatar = False
+                broup.new_messages = False
+                db.add(broup)
+            elif broup.new_messages:
+                return_broups.append(broup.serialize_minimal)
+                broup.new_messages = False
+                db.add(broup)
     await db.commit()
 
     # When logging in via email or bro_name we will also pass all the broup ids

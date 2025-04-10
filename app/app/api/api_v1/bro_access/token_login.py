@@ -31,6 +31,7 @@ async def login_token_bro(
         if broup.removed:
             return_broups.append(broup.serialize_removed)
             broup.broup_updated = False
+            db.add(broup)
         else:
             if broup.broup_updated:
                 return_broups.append(broup.serialize)

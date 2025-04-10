@@ -1,12 +1,10 @@
-from typing import Optional, List
+from typing import Optional
 from datetime import datetime
 import pytz
 from fastapi import Depends, Request, Response
 from pydantic import BaseModel
-from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlmodel import select, update
-import random
+from sqlmodel import select
 
 from app.api.api_v1 import api_router_v1
 from app.database import get_db
