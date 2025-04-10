@@ -135,5 +135,4 @@ async def avatar_created(
 
     return {
         "result": True,
-        "message": "Avatar creation done!",
     }
