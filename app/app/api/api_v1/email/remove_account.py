@@ -27,7 +27,7 @@ async def send_delete_email(bro: Bro, email: str, origin: int):
     delete_token = bro.generate_auth_token(access_expiration_time).decode("ascii")
     refresh_delete_token = bro.generate_refresh_token(refresh_expiration_time).decode("ascii")
 
-    subject = "BroCast - Delete your account"
+    subject = "Brocast - Delete your account"
     body = delete_account_email.format(
         base_url=settings.BASE_URL,
         token=delete_token,
@@ -82,7 +82,6 @@ async def remove_account(
 
     return {
         "result": True,
-        "message": "Account deletion email has been sent",
     }
 
 

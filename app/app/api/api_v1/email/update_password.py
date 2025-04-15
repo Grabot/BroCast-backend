@@ -26,7 +26,7 @@ async def update_password(
     access_token = password_update_request.access_token
     refresh_token = password_update_request.refresh_token
 
-    bro: Optional[Bro] = await refresh_bro_token(db, access_token, refresh_token)
+    bro: Optional[Bro] = await refresh_bro_token(db, access_token, refresh_token, False)
     if not bro:
         return get_failed_response("Bro not found", response)
 

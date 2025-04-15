@@ -13,6 +13,7 @@ from app.database import get_db
 from app.models import Bro, BroToken
 from app.util.email.reset_password_email import reset_password_email
 from app.util.rest_util import get_failed_response
+import hashlib
 
 
 class PasswordResetRequest(BaseModel):
@@ -25,9 +26,10 @@ async def reset_password(
     response: Response,
     db: AsyncSession = Depends(get_db),
 ) -> dict:
-    email = password_reset_request.email
+    email_to_send = password_reset_request.email
 
-    statement = select(Bro).where(Bro.origin == 0).where(func.lower(Bro.email) == email.lower())
+    hashed_email = hashlib.sha512(email_to_send.lower().encode("utf-8")).hexdigest()
+    statement = select(Bro).where(Bro.origin == 0).where(Bro.email_hash == hashed_email)
     results = await db.execute(statement)
     result_bro = results.first()
     if not result_bro:
@@ -41,13 +43,13 @@ async def reset_password(
     reset_token = bro.generate_auth_token(access_expiration_time).decode("ascii")
     refresh_reset_token = bro.generate_refresh_token(refresh_expiration_time).decode("ascii")
 
-    subject = "BroCast - Change your password"
+    subject = "Brocast - Change your password"
     body = reset_password_email.format(
         base_url=settings.BASE_URL, token=reset_token, refresh_token=refresh_reset_token
     )
 
     user_name = f"{bro.bro_name} {bro.bromotion}"
-    _ = task_send_email.delay(user_name, bro.email, subject, body)
+    _ = task_send_email.delay(user_name, email_to_send, subject, body)
 
     bro_token = BroToken(
         bro_id=bro.id,
@@ -61,5 +63,4 @@ async def reset_password(
 
     return {
         "result": True,
-        "message": "password check was good",
     }
