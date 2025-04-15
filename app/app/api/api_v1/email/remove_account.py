@@ -34,8 +34,9 @@ async def send_delete_email(bro: Bro, email: str, origin: int):
         refresh_token=refresh_delete_token,
         origin=origin,
     )
-    # TODO: add bromotion?
-    _ = task_send_email.delay(bro.bro_name, email, subject, body)
+    
+    user_name = f"{bro.bro_name} {bro.bromotion}"
+    _ = task_send_email.delay(user_name, email, subject, body)
 
     bro_token = BroToken(
         bro_id=bro.id,

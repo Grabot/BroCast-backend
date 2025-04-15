@@ -46,8 +46,8 @@ async def reset_password(
         base_url=settings.BASE_URL, token=reset_token, refresh_token=refresh_reset_token
     )
 
-    # TODO: add bromotion?
-    _ = task_send_email.delay(bro.bro_name, bro.email, subject, body)
+    user_name = f"{bro.bro_name} {bro.bromotion}"
+    _ = task_send_email.delay(user_name, bro.email, subject, body)
 
     bro_token = BroToken(
         bro_id=bro.id,
