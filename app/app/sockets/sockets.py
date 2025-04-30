@@ -1,5 +1,4 @@
 import socketio
-
 from app.config.config import settings
 
 mgr = socketio.AsyncRedisManager(settings.REDIS_URI)

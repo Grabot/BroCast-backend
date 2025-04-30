@@ -49,20 +49,33 @@ async def send_message(
     ).options(selectinload(Broup.broup_member))
     results_broup = await db.execute(broup_statement)
     broup_objects = results_broup.all()
-    # The broup object and the message will have the same timestamp so we can check if it's equal
-    current_timestamp = datetime.now(pytz.utc).replace(tzinfo=None)
     if broup_objects is None:
         return {
             "result": False,
             "error": "Broup does not exist",
         }
 
+    # We retrieve and quickly update the chat object allong with the message
+    # This is to avoid concurrency issues on the message id
+    chat_statement = select(Chat).where(
+        Chat.id == broup_id,
+    )
+    results_chat = await db.execute(chat_statement)
+    chat_objects = results_chat.first()
+    if chat_objects is None:
+        return {
+            "result": False,
+            "error": "Chat does not exist",
+        }
+    chat: Chat = chat_objects.Chat
+
     tokens = []
     for broup_object in broup_objects:
         broup: Broup = broup_object.Broup
         if broup.bro_id == me.id:
-            broup.received_message(current_timestamp)
-            broup.read_messages(current_timestamp)
+            # We have send a message, so the chat must be open, 
+            # which means we've read all the messages currently in the chat.
+            broup.last_message_read_id = chat.current_message_id
         else:
             if not broup.is_removed():
                 broup.update_unread_messages()
@@ -80,19 +93,8 @@ async def send_message(
         db.add(broup)
         await db.commit()
 
-    # We retrieve and quickly update the chat object allong with the message
-    # This is to avoid concurrency issues on the message id
-    chat_statement = select(Chat).where(
-        Chat.id == broup_id,
-    )
-    results_chat = await db.execute(chat_statement)
-    chat_objects = results_chat.first()
-    if chat_objects is None:
-        return {
-            "result": False,
-            "error": "Chat does not exist",
-        }
-    chat: Chat = chat_objects.Chat
+    # The broup object and the message will have the same timestamp so we can check if it's equal
+    current_timestamp = datetime.now(pytz.utc).replace(tzinfo=None)
     file_name = None
     data_type = None
     if message_data is not None:
@@ -114,6 +116,7 @@ async def send_message(
         data=file_name,
         data_type=data_type,
         replied_to=None,
+        receive_remaining=chat.bro_ids
     )
     chat.current_message_id += 1
     db.add(chat)
@@ -149,4 +152,5 @@ async def send_message(
 
     return {
         "result": True,
+        "message": message_send_data
     }

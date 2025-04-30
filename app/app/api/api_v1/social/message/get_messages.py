@@ -1,18 +1,12 @@
 from typing import Optional
-from datetime import datetime
-import pytz
 from fastapi import Depends, Request, Response
 from pydantic import BaseModel
-from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlmodel import select, update
-from app.api.api_v1.social.message.message_util import reading_messages
-from app.sockets.sockets import sio
-from sqlalchemy.orm import selectinload
+from sqlmodel import select
 
 from app.api.api_v1 import api_router_v1
 from app.database import get_db
-from app.models import Bro, Message, Broup, Chat
+from app.models import Bro, Message
 from app.util.rest_util import get_failed_response
 from app.util.util import check_token, get_auth_token
 
@@ -61,7 +55,5 @@ async def get_messages(
     for result_message in result_messages:
         message: Message = result_message.Message
         message_list.append(message.serialize)
-
-    await reading_messages(db, response, me, broup_id)
 
     return {"result": True, "messages": message_list}

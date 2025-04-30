@@ -117,7 +117,7 @@ async def login_google_token(
                         broup.new_messages = False
                         db.add(broup)
                     elif broup.new_messages:
-                        return_broups.append(broup.serialize_minimal)
+                        return_broups.append(broup.serialize_messages)
                         broup.new_messages = False
                         db.add(broup)
             await db.commit()

@@ -88,6 +88,7 @@ async def broup_change_description(
         data=None,
         data_type=None,
         replied_to=None,
+        receive_remaining=chat.bro_ids
     )
     chat.current_message_id += 1
     db.add(chat)

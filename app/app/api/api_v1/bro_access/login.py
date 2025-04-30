@@ -106,7 +106,7 @@ async def login_bro(
                 broup.new_messages = False
                 db.add(broup)
             elif broup.new_messages:
-                return_broups.append(broup.serialize_minimal)
+                return_broups.append(broup.serialize_messages)
                 broup.new_messages = False
                 db.add(broup)
     await db.commit()

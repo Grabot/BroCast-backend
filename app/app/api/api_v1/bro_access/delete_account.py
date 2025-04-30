@@ -77,12 +77,9 @@ async def delete_account_all(
     access_token = delete_account_request.access_token
     refresh_token = delete_account_request.refresh_token
 
-    print(f"called the delete account all endpoint with access token {access_token} and refresh token {refresh_token}")
-
     bro: Optional[Bro] = await refresh_bro_token(db, access_token, refresh_token, False)
     if not bro:
         return get_failed_response("Bro not found", response)
-    print(f"removing all accounts of bro {bro.bro_name} {bro.bromotion}")
     statement = (
         select(Bro)
         .where(Bro.email_hash == bro.email_hash)
@@ -93,16 +90,12 @@ async def delete_account_all(
     if result is None or result == []:
         return get_failed_response("no account found with that email", response)
 
-    print(f"found ${len(result)} accounts to remove")
     for bro_result in result:
         bro_remove = bro_result.Bro
 
         for token in bro_remove.tokens:
-            print("removing bro token")
             await db.delete(token)
-        print("removing bro")
         await db.delete(bro_remove)
-    print("finally removing bro")
     await db.commit()
 
     return {

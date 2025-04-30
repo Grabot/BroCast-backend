@@ -25,12 +25,10 @@ class Chat(SQLModel, table=True):
     broup_colour: str
     default_avatar: bool = Field(default=True)
     current_message_id: int
-    last_message_read_time_bro: datetime = Field(
-        default=datetime.now(pytz.utc).replace(tzinfo=None)
-    )
-    last_message_received_time_bro: datetime = Field(
-        default=datetime.now(pytz.utc).replace(tzinfo=None)
-    )
+    # This is the lowest of all the `last_message_read_id` fields on the Broup objects belonging to this chat.
+    # When it updates we set the `new_message` indicator and pass it along to the client.
+    # TODO: Also use it to remove message that might not have been removed due to concurrency stuff when receiving.
+    last_message_read_id_chat: int = Field(default=0)
 
     chat_broups: List["Broup"] = Relationship(
         back_populates="chat",
@@ -39,12 +37,6 @@ class Chat(SQLModel, table=True):
             "primaryjoin": "Chat.id==Broup.broup_id",
         },
     )
-
-    def update_last_message_received_time_bro(self):
-        self.last_message_received_time_bro = datetime.now(pytz.utc).replace(tzinfo=None)
-
-    def get_last_message_received_time_bro(self):
-        return self.last_message_received_time_bro
 
     def get_broup_colour(self):
         return self.broup_colour

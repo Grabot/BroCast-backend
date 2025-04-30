@@ -16,10 +16,6 @@ class Broup(SQLModel, table=True):
     bro_id: int = Field(foreign_key="Bro.id")
     broup_id: int = Field(foreign_key="Chat.id")
     alias: str
-    last_message_read_time: datetime = Field(default=datetime.now(pytz.utc).replace(tzinfo=None))
-    last_message_received_time: datetime = Field(
-        default=datetime.now(pytz.utc).replace(tzinfo=None)
-    )
     unread_messages: int
     mute: bool = Field(default=False)
     # Determines if the bro currently has the chat open.
@@ -39,6 +35,7 @@ class Broup(SQLModel, table=True):
     update_bros_avatar: List[int] = Field(default=[], sa_column=Column(ARRAY(Integer())))
     # Don't send the avatar every time. Only send it if changes have been made.
     new_avatar: bool = Field(default=True)
+    last_message_read_id: int = Field(default=0)
 
     chat: "Chat" = Relationship(
         back_populates="chat_broups",
@@ -59,17 +56,6 @@ class Broup(SQLModel, table=True):
     def update_unread_messages(self):
         self.unread_messages += 1
         self.new_messages = True
-
-    def read_messages(self, last_message_read_time):
-        self.unread_messages = 0
-        self.new_messages = False
-        self.last_message_read_time = last_message_read_time
-        # If you've read the message you've received it as well.
-        self.last_message_received_time = last_message_read_time
-
-    def received_message(self, last_message_received_time):
-        # The bro has received a new message
-        self.last_message_received_time = last_message_received_time
 
     def get_alias(self):
         return self.alias
@@ -119,9 +105,6 @@ class Broup(SQLModel, table=True):
     def bros_retrieved(self):
         self.update_bros = []
 
-    def update_last_message_received(self):
-        self.last_message_received_time = datetime.now(pytz.utc).replace(tzinfo=None)
-
     def update_broup_alias(self, new_broup_alias):
         self.alias = new_broup_alias
 
@@ -154,6 +137,7 @@ class Broup(SQLModel, table=True):
             "broup_id": self.broup_id,
             "alias": self.alias,
             "unread_messages": self.unread_messages,
+            "last_message_read_id_chat": self.chat.last_message_read_id_chat,
             "removed": self.removed,
             "mute": self.mute,
             "chat": self.chat.serialize,
@@ -183,6 +167,7 @@ class Broup(SQLModel, table=True):
             "broup_id": self.broup_id,
             "alias": self.alias,
             "unread_messages": self.unread_messages,
+            "last_message_read_id_chat": self.chat.last_message_read_id_chat,
             "removed": self.removed,
             "mute": self.mute,
             "chat": self.chat.serialize_avatar,
@@ -211,6 +196,7 @@ class Broup(SQLModel, table=True):
         data = {
             "broup_id": self.broup_id,
             "unread_messages": self.unread_messages,
+            "last_message_read_id_chat": self.chat.last_message_read_id_chat,
         }
         if self.new_messages:
             data["new_messages"] = self.new_messages
@@ -227,12 +213,13 @@ class Broup(SQLModel, table=True):
         if self.broup_updated:
             data["broup_updated"] = self.broup_updated
         return data
-    
+
     @property
-    def serialize_minimal(self):
+    def serialize_messages(self):
         data = {
             "broup_id": self.broup_id,
             "unread_messages": self.unread_messages,
+            "last_message_read_id_chat": self.chat.last_message_read_id_chat
         }
         if self.new_messages:
             data["new_messages"] = self.new_messages

@@ -77,6 +77,7 @@ async def create_broup_chat(
 
         new_broup_dict = broup_add.serialize_no_chat
         new_broup_dict["chat"] = chat_serialize
+
         # We only send the broup details, the channel indicates that a broup is added
         socket_response = {"broup": new_broup_dict}
 

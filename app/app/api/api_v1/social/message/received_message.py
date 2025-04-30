@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 
 from fastapi import Depends, Request, Response
 from pydantic import BaseModel
@@ -21,8 +21,8 @@ class ReceievedMessageRequest(BaseModel):
     message_id: int
 
 
-@api_router_v1.post("/message/received", status_code=200)
-async def message_received(
+@api_router_v1.post("/message/received/single", status_code=200)
+async def message_received_single(
     receieved_message_request: ReceievedMessageRequest,
     request: Request,
     response: Response,
@@ -40,60 +40,85 @@ async def message_received(
     broup_id = receieved_message_request.broup_id
     message_id = receieved_message_request.message_id
 
-    broups_statement = (
-        select(Broup).where(Broup.broup_id == broup_id).options(selectinload(Broup.chat))
-    )
-    results_broups = await db.execute(broups_statement)
-    result_broups = results_broups.all()
-    if not result_broups:
-        return get_failed_response("Broup not found", response)
-
-    if result_broups is None:
-        return {
-            "result": False,
-            "error": "Broup does not exist",
-        }
-
-    chat: Chat = result_broups[0].Broup.chat
-    if chat.current_message_id != message_id + 1:
-        # The `message_received` function only happens right after a message is send
-        # and immediatly received by another bro. This should not happen but check anyway.
-        # If these id's do not match up we just ignore it.
-        return {
-            "result": False,
-        }
-    last_message_received_time = datetime.now(pytz.utc).replace(tzinfo=None)
-    for broup_object in result_broups:
-        broup: Broup = broup_object.Broup
-        if broup.bro_id == me.id:
-            # The bro who received the message
-            # If the bro has new messages we can't update the received time yet
-            # The bro first needs to retrieve all messages
-            # before the last received time can be updated
-            if broup.new_messages == 0:
-                broup.update_last_message_received()
-                db.add(broup)
-        else:
-            if not broup.is_removed():
-                if broup.last_message_received_time < last_message_received_time:
-                    last_message_received_time = broup.last_message_received_time
-
-    if chat.last_message_received_time_bro < last_message_received_time:
-        # update the chat last message read time
-        chat.last_message_received_time_bro = last_message_received_time
-        db.add(chat)
-        # Now check if there are messages that can be removed based on the timestamp
-        messages_statement = select(Message).where(
-            Message.broup_id == broup_id, Message.timestamp <= last_message_received_time
+    select_message_statement = (
+        select(Message)
+        .where(
+            Message.message_id == message_id,
+            Message.broup_id == broup_id,
         )
-        results_messages = await db.execute(messages_statement)
-        result_messages = results_messages.all()
-        if result_messages:
-            for result_message in result_messages:
-                message: Message = result_message.Message
-                if message.data:
-                    remove_message_image_data(message.data)
-                await db.delete(message)
+    )
+    results_message = await db.execute(select_message_statement)
+    result_message = results_message.first()
+    if result_message is None:
+        return {
+            "result": False,
+            "error": "No messages found",
+        }
+
+    message: Message = result_message.Message
+    
+    message.bro_received_message(me.id)
+    db.add(message)
+    if message.receive_remaining == []:
+        if message.data:
+            remove_message_image_data(message.data)
+        await db.delete(message)
+
+    await db.commit()
+
+    return {
+        "result": True,
+    }
+
+
+
+
+class ReceievedMessagesRequest(BaseModel):
+    broup_id: int
+    message_ids: List[int]
+
+
+@api_router_v1.post("/message/received", status_code=200)
+async def message_received(
+    receieved_messages_request: ReceievedMessagesRequest,
+    request: Request,
+    response: Response,
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    auth_token = get_auth_token(request.headers.get("Authorization"))
+
+    if auth_token == "":
+        return get_failed_response("An error occurred", response)
+
+    me: Optional[Bro] = await check_token(db, auth_token, False)
+    if not me:
+        return get_failed_response("An error occurred", response)
+
+    broup_id = receieved_messages_request.broup_id
+    message_ids = receieved_messages_request.message_ids
+
+    select_messages_statement = (
+        select(Message)
+        .where(Message.message_id.in_(message_ids))
+        .where(Message.broup_id == broup_id)
+    )
+    results_messages = await db.execute(select_messages_statement)
+    result_messages = results_messages.all()
+    if result_messages is None or result_messages == []:
+        return {
+            "result": False,
+            "error": "No messages found",
+        }
+
+    for result_message in result_messages:
+        message: Message = result_message.Message
+
+        message.bro_received_message(me.id)
+        if message.receive_remaining == []:
+            if message.data:
+                remove_message_image_data(message.data)
+            await db.delete(message)
+
     await db.commit()
 
     return {

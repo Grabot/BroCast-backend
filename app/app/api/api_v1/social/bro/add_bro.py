@@ -129,6 +129,7 @@ async def rejoin_bro_chat(db: AsyncSession, broup_me: Broup, broup_bro: Broup, c
         data=None,
         data_type=None,
         replied_to=None,
+        receive_remaining=chat.bro_ids
     )
     chat.current_message_id = chat.current_message_id + 1
 

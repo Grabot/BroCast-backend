@@ -112,33 +112,6 @@ class Bro(SQLModel, table=True):
             return image_as_base64
 
     @property
-    def serialize(self):
-        return {
-            "id": self.id,
-            "bro_name": self.bro_name,
-            "bromotion": self.bromotion,
-            "origin": self.origin == 0,
-            "broups": [broup.serialize_minimal for broup in self.broups],
-        }
-    
-    @property
-    def serialize_login(self):
-        return_broups = []
-        for broup in self.broups:
-            # We only send the broups if there is something new
-            if broup.broup_updated:
-                return_broups.append(broup.serialize)
-            elif broup.new_messages:
-                return_broups.append(broup.serialize_minimal)
-        return {
-            "id": self.id,
-            "bro_name": self.bro_name,
-            "bromotion": self.bromotion,
-            "origin": self.origin == 0,
-            "broups": return_broups,
-        }
-
-    @property
     def serialize_avatar(self):
         return {
             "id": self.id,

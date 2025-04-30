@@ -1,11 +1,10 @@
 from datetime import datetime
 import base64
 import os
-from typing import Optional
+from typing import Optional, List
 import pytz
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field, SQLModel, Column, ARRAY, Integer
 from app.config.config import settings
-import cv2
 
 
 class Message(SQLModel, table=True):
@@ -25,6 +24,16 @@ class Message(SQLModel, table=True):
     data: Optional[str]
     data_type: Optional[int]
     replied_to: Optional[int]
+    # A int list which indicates which bros still need to receive and read this message.
+    receive_remaining: List[int] = Field(default=[], sa_column=Column(ARRAY(Integer())))
+
+    def bro_received_message(self, bro_id):
+        old_received = self.receive_remaining
+        new_received = []
+        for old in old_received:
+            if old != bro_id:
+                new_received.append(old)
+        self.receive_remaining = new_received
 
     def get_message_image_data(self):
         if not self.data:

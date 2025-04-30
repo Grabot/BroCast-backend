@@ -96,6 +96,7 @@ async def unblock_bro(
         data=None,
         data_type=None,
         replied_to=None,
+        receive_remaining=chat.bro_ids
     )
     db.add(bro_message)
 
