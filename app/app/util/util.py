@@ -140,6 +140,20 @@ def save_image(image_data: str, file_name: str):
     os.chmod(file_path, stat.S_IRWXO)
 
 
+def save_image_v1_5(image_bytes: bytes, file_name: str):
+    image_array = np.frombuffer(image_bytes, dtype=np.uint8)
+    new_image = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
+
+    # Get the file name and path
+    file_folder = settings.UPLOAD_FOLDER_IMAGES
+    file_name = f"{file_name}.png"
+    file_path = os.path.join(file_folder, file_name)
+    
+    # Save the image using OpenCV
+    cv2.imwrite(file_path, new_image)
+    os.chmod(file_path, stat.S_IRWXO)
+
+
 def remove_message_image_data(file_name: str):
     file_folder = settings.UPLOAD_FOLDER_IMAGES
     file_path = os.path.join(file_folder, f"{file_name}.png")

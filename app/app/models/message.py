@@ -36,6 +36,7 @@ class Message(SQLModel, table=True):
         self.receive_remaining = new_received
 
     def get_message_image_data(self):
+        # TODO: at some point only send the ids or something to do a seperate call for only images in bytes?
         if not self.data:
             return None
         file_folder = settings.UPLOAD_FOLDER_IMAGES

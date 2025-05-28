@@ -5,6 +5,7 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1.4"
+    API_V1_5_STR: str = "/api/v1.5"
     API_LOGIN_STR: str = "/login"
 
     POSTGRES_URL: str = os.environ["POSTGRES_URL"]
