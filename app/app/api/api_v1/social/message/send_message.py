@@ -3,9 +3,8 @@ from datetime import datetime
 import pytz
 from fastapi import Depends, Request, Response
 from pydantic import BaseModel
-from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlmodel import select, update
+from sqlmodel import select
 from app.sockets.sockets import sio
 from sqlalchemy.orm import selectinload
 
@@ -152,5 +151,4 @@ async def send_message(
 
     return {
         "result": True,
-        "message": message_send_data
     }

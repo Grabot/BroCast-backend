@@ -2,10 +2,8 @@ from typing import Optional
 from datetime import datetime
 import pytz
 from fastapi import Depends, Request, Response, UploadFile, File, Form
-from pydantic import BaseModel
-from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlmodel import select, update
+from sqlmodel import select
 from app.sockets.sockets import sio
 from sqlalchemy.orm import selectinload
 
@@ -34,11 +32,6 @@ async def send_message(
     me: Optional[Bro] = await check_token(db, auth_token)
     if not me:
         return get_failed_response("An error occurred", response)
-
-    print(f"broup_id: {broup_id}")
-    print(f"message: {message}")
-    print(f"text_message: {text_message}")
-    print(f"message_data: {message_data}")
 
     broup_statement = select(Broup).where(
         Broup.broup_id == broup_id,
@@ -93,9 +86,7 @@ async def send_message(
     current_timestamp = datetime.now(pytz.utc).replace(tzinfo=None)
     file_name = None
     data_type = None
-    print("going to check message data")
     if message_data is not None:
-        print("message data is not none")
         # If the message includes image data we want to take the data and save it as an image
         # The path to that image will be saved on the message db object.
         # This is because we don't want to save the image in the db itself.
@@ -152,7 +143,6 @@ async def send_message(
     )
     print(f"image send")
 
-    # TODO: no need to send message_send_data?. It also doesn't work with image bytes data.
     return {
         "result": True,
     }
