@@ -54,26 +54,38 @@ class Message(SQLModel, table=True):
         
     @property
     def serialize(self):
-        return {
+        data = {
             "sender_id": self.sender_id,
             "broup_id": self.broup_id,
             "message_id": self.message_id,
             "body": self.body,
-            "text_message": self.text_message,
             "timestamp": self.timestamp.strftime("%Y-%m-%dT%H:%M:%S.%f"),
             "info": self.info,
             "data": self.get_message_image_data(),
         }
+
+        if self.text_message is not None:
+            data["text_message"] = self.text_message
+
+        if self.replied_to is not None:
+            data["replied_to"] = self.replied_to
+
+        return data
         
     # If you send the image we know the data already, so there's no need to retrieve it again.
     @property
     def serialize_no_image(self):
-        return {
+        data = {
             "sender_id": self.sender_id,
             "broup_id": self.broup_id,
             "message_id": self.message_id,
             "body": self.body,
-            "text_message": self.text_message,
             "timestamp": self.timestamp.strftime("%Y-%m-%dT%H:%M:%S.%f"),
             "info": self.info,
         }
+        if self.text_message is not None:
+            data["text_message"] = self.text_message
+
+        if self.replied_to is not None:
+            data["replied_to"] = self.replied_to
+        return data

@@ -14,7 +14,6 @@ from app.util.rest_util import get_failed_response
 from app.util.notification_util import send_notification_broup
 from app.util.util import check_token, get_auth_token, save_image_v1_5
 
-
 @api_router_v1_5.post("/message/send", status_code=200)
 async def send_message(
     request: Request,
@@ -24,6 +23,7 @@ async def send_message(
     message: str = Form(...),
     text_message: Optional[str] = Form(None),
     message_data: Optional[UploadFile] = File(default=None),
+    replied_to_message_id: Optional[int] = Form(None),
 ) -> dict:
     auth_token = get_auth_token(request.headers.get("Authorization"))
     if auth_token == "":
@@ -107,7 +107,7 @@ async def send_message(
         info=False,
         data=file_name,
         data_type=data_type,
-        replied_to=None,
+        replied_to=replied_to_message_id,
         receive_remaining=chat.bro_ids
     )
     chat.current_message_id += 1
