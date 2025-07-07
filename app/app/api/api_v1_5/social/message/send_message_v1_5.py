@@ -14,6 +14,7 @@ from app.util.rest_util import get_failed_response
 from app.util.notification_util import send_notification_broup
 from app.util.util import check_token, get_auth_token, save_image_v1_5
 
+
 @api_router_v1_5.post("/message/send", status_code=200)
 async def send_message(
     request: Request,
@@ -141,7 +142,6 @@ async def send_message(
         message_send_data,
         room=broup_room,
     )
-    print(f"image send")
 
     return {
         "result": True,

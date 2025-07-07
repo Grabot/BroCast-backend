@@ -30,10 +30,13 @@ class Message(SQLModel, table=True):
     def bro_received_message(self, bro_id):
         old_received = self.receive_remaining
         new_received = []
-        for old in old_received:
-            if old != bro_id:
-                new_received.append(old)
+        for old_id in old_received:
+            if old_id != bro_id:
+                new_received.append(old_id)
         self.receive_remaining = new_received
+
+    def received_by_all(self):
+        return len(self.receive_remaining) == 0
 
     def get_message_image_data(self):
         # TODO: at some point only send the ids or something to do a seperate call for only images in bytes?

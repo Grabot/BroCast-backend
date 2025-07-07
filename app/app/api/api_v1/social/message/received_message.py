@@ -46,10 +46,12 @@ async def message_received_single(
             Message.message_id == message_id,
             Message.broup_id == broup_id,
         )
+        .with_for_update(of=Message)
     )
     results_message = await db.execute(select_message_statement)
     result_message = results_message.first()
     if result_message is None:
+        await db.commit()
         return {
             "result": False,
             "error": "No messages found",
@@ -59,7 +61,7 @@ async def message_received_single(
     
     message.bro_received_message(me.id)
     db.add(message)
-    if message.receive_remaining == []:
+    if message.received_by_all():
         if message.data:
             remove_message_image_data(message.data)
         await db.delete(message)
@@ -114,7 +116,7 @@ async def message_received(
         message: Message = result_message.Message
 
         message.bro_received_message(me.id)
-        if message.receive_remaining == []:
+        if message.received_by_all():
             if message.data:
                 remove_message_image_data(message.data)
             await db.delete(message)

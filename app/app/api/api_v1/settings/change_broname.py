@@ -69,17 +69,18 @@ async def change_broname(
                         socket_response,
                         room=bro_room,
                     )
-            
-        broup_room = f"broup_{chat.id}"
-        socket_response = {
-            "broup_id": chat.id,
-            "bro_to_update": me.id
-        }
-        await sio.emit(
-            "chat_changed",
-            socket_response,
-            room=broup_room,
-        )
+
+        if not chat.private:
+            broup_room = f"broup_{chat.id}"
+            socket_response = {
+                "broup_id": chat.id,
+                "bro_to_update": me.id
+            }
+            await sio.emit(
+                "chat_changed",
+                socket_response,
+                room=broup_room,
+            )
 
     await db.commit()
 

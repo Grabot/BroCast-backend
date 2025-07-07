@@ -100,11 +100,15 @@ async def add_bro_broup(
         if not broup.removed:
             if me.id != broup.bro_id:
                 broup.broup_updated = True
-                db.add(broup)
                 broup.add_bro_to_update(bro_id)
                 broup.add_bro_avatar_to_update(bro_id)
+                db.add(broup)
+
     bro_chat.add_participant(bro_id)
     bro_chat.set_broup_name(new_broup_name)
+    new_broup.last_message_read_id = bro_chat.current_message_id - 1
+    new_broup.new_messages = True
+    print(f"what is the current message: {bro_chat.current_message_id - 1}")
     db.add(bro_chat)
 
     db.add(new_broup)
@@ -112,7 +116,7 @@ async def add_bro_broup(
     chat_serialize = bro_chat.serialize
     new_broup_dict_bro = new_broup.serialize_no_chat
     new_broup_dict_bro["chat"] = chat_serialize
-    new_broup_dict_bro["chat"]["current_message_id"] = bro_chat.current_message_id
+    new_broup_dict_bro["chat"]["current_message_id"] = bro_chat.current_message_id - 1
 
     socket_response = {
         "broup_id": broup_id,
@@ -135,6 +139,8 @@ async def add_bro_broup(
         room=bro_add_room,
     )
 
+    print(f"bro ids here are {bro_chat.bro_ids}")
+    print(f"new bro id was {bro_id}")
     message_text = f"Bro {new_bro_for_broup.bro_name} {new_bro_for_broup.bromotion} added to the broup! Welcome! 🥰"
     bro_message = Message(
         sender_id=me.id,

@@ -28,8 +28,6 @@ def check_fcm_token_expiration():
 
         session.commit()
 
-        # TODO: Implement the logic to remove the expired FCM tokens
-
 
 def remove_expired_tokens():
     with Session(engine_sync) as session:

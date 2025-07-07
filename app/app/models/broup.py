@@ -1,10 +1,8 @@
 from datetime import datetime
 from typing import Optional, List
-from sqlmodel import Field, SQLModel, Relationship, Column, ARRAY, Integer
+from sqlmodel import Field, SQLModel, Relationship, Column, ARRAY, Integer, JSON
 import pytz
-from app.config.config import settings
-from hashlib import md5
-
+from sqlalchemy.ext.mutable import MutableDict
 
 class Broup(SQLModel, table=True):
     """
@@ -36,7 +34,8 @@ class Broup(SQLModel, table=True):
     # Don't send the avatar every time. Only send it if changes have been made.
     new_avatar: bool = Field(default=True)
     last_message_read_id: int = Field(default=0)
-
+    emoji_reactions: Optional[dict] = Field(default=None, sa_column=Column(MutableDict.as_mutable(JSON)))
+    
     chat: "Chat" = Relationship(
         back_populates="chat_broups",
         sa_relationship_kwargs={
@@ -157,6 +156,8 @@ class Broup(SQLModel, table=True):
         if self.new_avatar:
             data["new_avatar"] = self.new_avatar
             self.new_avatar = False
+        if self.emoji_reactions:
+            data["emoji_reactions"] = self.emoji_reactions
         return data
 
 
@@ -182,6 +183,8 @@ class Broup(SQLModel, table=True):
             data["new_messages"] = self.new_messages
         if self.new_avatar:
             data["new_avatar"] = self.new_avatar
+        if self.emoji_reactions:
+            data["emoji_reactions"] = self.emoji_reactions
         return data
 
     @property
@@ -202,6 +205,8 @@ class Broup(SQLModel, table=True):
             data["new_messages"] = self.new_messages
         if self.new_avatar:
             data["new_avatar"] = self.new_avatar
+        if self.emoji_reactions:
+            data["emoji_reactions"] = self.emoji_reactions
         return data
     
     @property
@@ -211,7 +216,9 @@ class Broup(SQLModel, table=True):
             "removed": self.removed,
         }
         if self.broup_updated:
-            data["broup_updated"] = self.broup_updated
+            data["broup_updated"] = self.broup_updated     
+        if self.emoji_reactions:
+            data["emoji_reactions"] = self.emoji_reactions
         return data
 
     @property
@@ -223,6 +230,8 @@ class Broup(SQLModel, table=True):
         }
         if self.new_messages:
             data["new_messages"] = self.new_messages
+        if self.emoji_reactions:
+            data["emoji_reactions"] = self.emoji_reactions
         return data
 
     @property
@@ -242,4 +251,3 @@ class Broup(SQLModel, table=True):
         # We don't include the `new_avatar` here because it should always be true for a new brou
         # So there is not need to include it.
         return data
-

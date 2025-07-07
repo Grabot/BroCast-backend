@@ -1,18 +1,16 @@
-from typing import Optional, List
+from typing import Optional
 from datetime import datetime
 import pytz
 from fastapi import Depends, Request, Response
 from pydantic import BaseModel
-from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlmodel import select, update
-import random
+from sqlmodel import select
 
 from app.api.api_v1 import api_router_v1
 from app.database import get_db
 from app.models import Bro, Broup, Chat, Message
 from app.util.rest_util import get_failed_response
-from app.util.util import check_token, get_auth_token
+from app.util.util import check_token, get_auth_token, remove_message_image_data
 from app.sockets.sockets import sio
 from sqlalchemy.orm import selectinload
 
@@ -119,6 +117,28 @@ async def remove_bro_broup(
             broup.removed = True
         broup.broup_updated = True
         db.add(broup)
+
+    # Remove the bro from the `receive` indicator on the messages
+    select_messages_statement = (
+        select(Message)
+        .where(Message.broup_id == broup_id)
+    )
+    results_messages = await db.execute(select_messages_statement)
+    result_messages = results_messages.all()
+    if result_messages is None or result_messages == []:
+        return {
+            "result": False,
+            "error": "No messages found",
+        }
+
+    for result_message in result_messages:
+        message: Message = result_message.Message
+
+        message.bro_received_message(bro_id)
+        if message.received_by_all():
+            if message.data:
+                remove_message_image_data(message.data)
+            await db.delete(message)
 
     socket_response = {
         "broup_id": broup_id,

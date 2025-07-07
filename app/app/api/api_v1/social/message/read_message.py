@@ -13,11 +13,9 @@ from sqlalchemy.orm import selectinload
 from app.util.rest_util import get_failed_response
 from app.util.util import check_token, get_auth_token, remove_message_image_data
 
-
 class ReadMessageRequest(BaseModel):
     broup_id: int
     last_message_read_id: int
-
 
 @api_router_v1.post("/message/read", status_code=200)
 async def message_read(
@@ -38,6 +36,29 @@ async def message_read(
     broup_id = read_message_request.broup_id
     last_message_read_id = read_message_request.last_message_read_id
 
+    broup_statement = (
+        select(Broup)
+        .where(
+            Broup.broup_id == broup_id,
+            Broup.bro_id == me.id,
+        )
+        .with_for_update(of=Broup)
+    )
+
+    results_broup = await db.execute(broup_statement)
+    result_broup = results_broup.first()
+    if result_broup is None:
+        return {
+            "result": False,
+            "message": "Broup not found",
+        }
+    
+    broup_me: Broup = result_broup.Broup
+    broup_me.last_message_read_id = last_message_read_id
+    broup_me.unread_messages = 0
+    db.add(broup_me)
+    await db.commit()
+    
     broups_statement = (
         select(Broup)
         .where(
@@ -55,23 +76,14 @@ async def message_read(
     lowest_last_message_read_id = last_message_read_id
     for result_broup in result_broups:
         broup: Broup = result_broup.Broup
-        if me.id == broup.bro_id:
-            broup.last_message_read_id = last_message_read_id
-            broup.unread_messages = 0
-            db.add(broup)
         if broup.last_message_read_id < lowest_last_message_read_id:
             lowest_last_message_read_id = broup.last_message_read_id
+
     chat: Chat = result_broups[0].Broup.chat
     if chat.last_message_read_id_chat < lowest_last_message_read_id:
         chat.last_message_read_id_chat = lowest_last_message_read_id
         db.add(chat)
-        # We also update all the broups of this chat to indicate the message update
-        for result_broup in result_broups:
-            broup: Broup = result_broup.Broup
-            # There might not be new messages, but the lowest_last_message_read_id_chat
-            #  of the chat will also be send when this flag is triggered
-            broup.new_messages = True
-            db.add(broup)
+
         room = f"broup_{broup_id}"
         socket_response = {
             "last_message_read_id": lowest_last_message_read_id,
@@ -83,26 +95,29 @@ async def message_read(
             room=room,
         )
 
-        select_message_statement = (
-            select(Message)
-            .where(
-                Message.broup_id == broup_id,
-                Message.message_id <= chat.last_message_read_id_chat,
-            )
+    for result_broup in result_broups:
+        broup: Broup = result_broup.Broup
+        broup.new_messages = True
+        db.add(broup)
+
+    select_message_statement = (
+        select(Message)
+        .where(
+            Message.broup_id == broup_id,
+            Message.message_id <= lowest_last_message_read_id,
         )
-        results_messages = await db.execute(select_message_statement)
-        result_messages = results_messages.all()
-        if result_messages is None or result_messages == []:
-            # This is perfectly possible and we should not return an error
-            await db.commit()
+    )
+    results_messages = await db.execute(select_message_statement)
+    result_messages = results_messages.all()
+    if result_messages is None or result_messages == []:
+        await db.commit()
+        return {
+            "result": True,
+        }
 
-            return {
-                "result": True,
-            }
-
-        # If there are messages to be delete we will delete them
-        for result_message in result_messages:
-            message: Message = result_message.Message
+    for result_message in result_messages:
+        message: Message = result_message.Message
+        if message.message_id <= lowest_last_message_read_id:
             if message.data:
                 remove_message_image_data(message.data)
             await db.delete(message)

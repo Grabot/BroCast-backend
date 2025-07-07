@@ -82,8 +82,8 @@ async def change_bromotion(
                     room=bro_room,
                 )
             
-        broup_room = f"broup_{chat.id}"
         if not chat.private:
+            broup_room = f"broup_{chat.id}"
             socket_response = {
                 "broup_id": chat.id,
                 "new_broup_name": new_broup_name,

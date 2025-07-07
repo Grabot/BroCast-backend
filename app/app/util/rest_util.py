@@ -7,7 +7,7 @@ from sqlmodel import select
 
 from app.database import get_db
 from app.models import Bro, Broup, Chat, Message
-from app.util.util import remove_broup_traces
+from app.util.util import remove_broup_traces, remove_message_image_data
 from app.sockets.sockets import sio
 from sqlalchemy.orm import selectinload
 
@@ -166,6 +166,28 @@ async def leave_broup_me(
             socket_response_chat_changed,
             room=broup_room,
         )
+
+    # Remove the bro from the `receive` indicator on the messages
+    select_messages_statement = (
+        select(Message)
+        .where(Message.broup_id == broup_id)
+    )
+    results_messages = await db.execute(select_messages_statement)
+    result_messages = results_messages.all()
+    if result_messages is None or result_messages == []:
+        return {
+            "result": False,
+            "error": "No messages found",
+        }
+
+    for result_message in result_messages:
+        message: Message = result_message.Message
+
+        message.bro_received_message(me.id)
+        if message.received_by_all():
+            if message.data:
+                remove_message_image_data(message.data)
+            await db.delete(message)
     
     for broup in chat.chat_broups:
         if broup.bro_id == me.id:
