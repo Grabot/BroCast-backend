@@ -11,6 +11,7 @@ from app.database import get_db
 from app.models import Bro, Broup, Chat
 from app.util.rest_util import get_failed_response
 from app.util.util import check_token, get_auth_token
+from sqlalchemy.orm import attributes
 
 class EmojiReactionRequest(BaseModel):
     broup_id: int
@@ -60,32 +61,41 @@ async def send_message(
         broup: Broup = result_broup.Broup
         broup.new_messages = True
 
-        print(f"broup emoji reaction before: {broup.emoji_reactions}")
         if broup.emoji_reactions is None:
             broup.emoji_reactions = {}
         
-        if is_add:
-            if str(message_id) not in broup.emoji_reactions:
-                broup.emoji_reactions[str(message_id)] = {}
-            broup.emoji_reactions[str(message_id)][str(me.id)] = emoji
-
-        # else:
-        #     if message_id in broup.emoji_reactions and me.id in broup.emoji_reactions[message_id]:
-        #         del broup.emoji_reactions[message_id][me.id]
-        #         if not broup.emoji_reactions[message_id]:
-        #             del broup.emoji_reactions[message_id]
-        print(f"broup emoji reaction now: {broup.emoji_reactions}")
+        message_id_key = str(message_id)
+        me_key = str(me.id)
+        add_integer_key = "1"
+        if not is_add:
+            add_integer_key = "0"
+        if message_id_key not in broup.emoji_reactions:
+            broup.emoji_reactions[message_id_key] = {}
+        if me_key not in broup.emoji_reactions[message_id_key]:
+            broup.emoji_reactions[message_id_key][me_key] = {}
+        broup.emoji_reactions[message_id_key][me_key] = [emoji, add_integer_key]
+        # We need to mark the field as modified so that SQLAlchemy knows to update it.
+        attributes.flag_modified(broup, "emoji_reactions")
         db.add(broup)
     
     await db.commit()
     
     broup_room = f"broup_{broup_id}"
-    emoji_reaction_data = {
-            "broup_id": broup_id,
-            "message_id": message_id,
-            "emoji": emoji,
-            "bro_id": me.id,
-        }
+    if is_add:
+        emoji_reaction_data = {
+                "broup_id": broup_id,
+                "message_id": message_id,
+                "emoji": emoji,
+                "bro_id": me.id,
+            }
+    else:
+        emoji_reaction_data = {
+                "broup_id": broup_id,
+                "message_id": message_id,
+                "emoji": emoji,
+                "bro_id": me.id,
+                "is_add": is_add,
+            }
     await sio.emit(
         "emoji_reaction",
         emoji_reaction_data,
