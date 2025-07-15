@@ -94,7 +94,10 @@ class Settings(BaseSettings):
     MAIL_SENDERNAME: str = os.environ.get("MAIL_SENDERNAME")
     BASE_URL: str = os.environ.get("BASE_URL")
     UPLOAD_FOLDER_AVATARS: str = "static/uploads/avatars"
-    UPLOAD_FOLDER_IMAGES: str = "static/uploads/images"
+    UPLOAD_FOLDER_MEDIA: str = "static/uploads/media"
+    UPLOAD_FOLDER_IMAGES: str = "static/uploads/media/images"
+    UPLOAD_FOLDER_VIDEOS: str = "static/uploads/media/videos"
+    UPLOAD_FOLDER_AUDIO: str = "static/uploads/media/audio"
 
     LOG_READ_PASSWORD: str = os.environ.get("LOG_READ_PASSWORD")
 

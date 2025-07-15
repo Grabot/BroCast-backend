@@ -10,7 +10,7 @@ from app.api.api_v1 import api_router_v1
 from app.database import get_db
 from app.models import Bro, Broup, Message, Chat
 from app.util.rest_util import get_failed_response
-from app.util.util import check_token, get_auth_token, remove_message_image_data
+from app.util.util import check_token, get_auth_token, remove_message_data
 from sqlalchemy.orm import selectinload
 from datetime import datetime
 import pytz
@@ -63,7 +63,7 @@ async def message_received_single(
     db.add(message)
     if message.received_by_all():
         if message.data:
-            remove_message_image_data(message.data)
+            remove_message_data(message.data, message.data_type)
         await db.delete(message)
 
     await db.commit()
@@ -98,6 +98,7 @@ async def message_received(
 
     broup_id = receieved_messages_request.broup_id
     message_ids = receieved_messages_request.message_ids
+    print(f"message_ids: {message_ids}")
 
     select_messages_statement = (
         select(Message)
@@ -111,14 +112,16 @@ async def message_received(
             "result": False,
             "error": "No messages found",
         }
+    print(f"length of result_messages: {len(result_messages)}")
 
     for result_message in result_messages:
         message: Message = result_message.Message
+        print(f"message_id: {message.message_id}")
 
         message.bro_received_message(me.id)
         if message.received_by_all():
             if message.data:
-                remove_message_image_data(message.data)
+                remove_message_data(message.data, message.data_type)
             await db.delete(message)
 
     await db.commit()

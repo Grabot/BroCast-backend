@@ -108,7 +108,6 @@ async def add_bro_broup(
     bro_chat.set_broup_name(new_broup_name)
     new_broup.last_message_read_id = bro_chat.current_message_id - 1
     new_broup.new_messages = True
-    print(f"what is the current message: {bro_chat.current_message_id - 1}")
     db.add(bro_chat)
 
     db.add(new_broup)
@@ -139,8 +138,6 @@ async def add_bro_broup(
         room=bro_add_room,
     )
 
-    print(f"bro ids here are {bro_chat.bro_ids}")
-    print(f"new bro id was {bro_id}")
     message_text = f"Bro {new_bro_for_broup.bro_name} {new_bro_for_broup.bromotion} added to the broup! Welcome! 🥰"
     bro_message = Message(
         sender_id=me.id,

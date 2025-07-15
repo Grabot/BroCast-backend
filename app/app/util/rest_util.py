@@ -7,7 +7,7 @@ from sqlmodel import select
 
 from app.database import get_db
 from app.models import Bro, Broup, Chat, Message
-from app.util.util import remove_broup_traces, remove_message_image_data
+from app.util.util import remove_broup_traces, remove_message_data
 from app.sockets.sockets import sio
 from sqlalchemy.orm import selectinload
 
@@ -186,7 +186,7 @@ async def leave_broup_me(
         message.bro_received_message(me.id)
         if message.received_by_all():
             if message.data:
-                remove_message_image_data(message.data)
+                remove_message_data(message.data, message.data_type)
             await db.delete(message)
     
     for broup in chat.chat_broups:

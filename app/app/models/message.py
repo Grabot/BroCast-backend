@@ -55,6 +55,40 @@ class Message(SQLModel, table=True):
             }
             return image_data
         
+    def get_message_image_data_v1_5(self):
+        print("new getting message function")
+        if not self.data:
+            return None
+        media_data = {
+            "type": self.data_type,
+        }
+        return media_data
+
+    def get_message_image_data_v1_5_data(self) -> bytes:
+        if not self.data:
+            return None
+        if self.data_type == 0:
+            # images
+            file_folder = settings.UPLOAD_FOLDER_IMAGES
+            file_path = os.path.join(file_folder, f"{self.data}.png")
+            if not os.path.isfile(file_path):
+                return None
+            else:
+                with open(file_path, "rb") as fd:
+                    image_bytes = fd.read()
+                return image_bytes
+        elif self.data_type == 1:
+            # videos
+            file_folder = settings.UPLOAD_FOLDER_VIDEOS
+            file_path = os.path.join(file_folder, f"{self.data}.mp4")
+            if not os.path.isfile(file_path):
+                return None
+            else:
+                with open(file_path, "rb") as fd:
+                    video_bytes = fd.read()
+                return video_bytes
+
+
     @property
     def serialize(self):
         data = {
@@ -92,3 +126,24 @@ class Message(SQLModel, table=True):
         if self.replied_to is not None:
             data["replied_to"] = self.replied_to
         return data
+
+    @property
+    def serialize_v1_5(self):
+        data = {
+            "sender_id": self.sender_id,
+            "broup_id": self.broup_id,
+            "message_id": self.message_id,
+            "body": self.body,
+            "timestamp": self.timestamp.strftime("%Y-%m-%dT%H:%M:%S.%f"),
+            "info": self.info,
+            "data": self.get_message_image_data_v1_5(),
+        }
+
+        if self.text_message is not None:
+            data["text_message"] = self.text_message
+
+        if self.replied_to is not None:
+            data["replied_to"] = self.replied_to
+
+        return data
+        

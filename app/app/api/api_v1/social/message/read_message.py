@@ -11,7 +11,7 @@ from app.database import get_db
 from app.models import Bro, Chat, Broup, Message
 from sqlalchemy.orm import selectinload
 from app.util.rest_util import get_failed_response
-from app.util.util import check_token, get_auth_token, remove_message_image_data
+from app.util.util import check_token, get_auth_token, remove_message_data
 
 class ReadMessageRequest(BaseModel):
     broup_id: int
@@ -99,29 +99,6 @@ async def message_read(
         broup: Broup = result_broup.Broup
         broup.new_messages = True
         db.add(broup)
-
-    select_message_statement = (
-        select(Message)
-        .where(
-            Message.broup_id == broup_id,
-            Message.message_id <= lowest_last_message_read_id,
-        )
-    )
-    results_messages = await db.execute(select_message_statement)
-    result_messages = results_messages.all()
-    if result_messages is None or result_messages == []:
-        await db.commit()
-        return {
-            "result": True,
-        }
-
-    for result_message in result_messages:
-        message: Message = result_message.Message
-        if message.message_id <= lowest_last_message_read_id:
-            if message.data:
-                remove_message_image_data(message.data)
-            await db.delete(message)
-    await db.commit()
 
     return {
         "result": True,

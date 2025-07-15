@@ -12,7 +12,7 @@ from app.database import get_db
 from app.models import Bro, Message, Broup, Chat
 from app.util.rest_util import get_failed_response
 from app.util.notification_util import send_notification_broup
-from app.util.util import check_token, get_auth_token, save_image_v1_5
+from app.util.util import check_token, get_auth_token, save_image_v1_5, save_video_v1_5
 
 
 @api_router_v1_5.post("/message/send", status_code=200)
@@ -25,6 +25,7 @@ async def send_message(
     text_message: Optional[str] = Form(None),
     message_data: Optional[UploadFile] = File(default=None),
     replied_to_message_id: Optional[int] = Form(None),
+    video_data: Optional[UploadFile] = File(default=None),
 ) -> dict:
     auth_token = get_auth_token(request.headers.get("Authorization"))
     if auth_token == "":
@@ -97,6 +98,18 @@ async def send_message(
         # Read the contents of the uploaded file
         image_bytes = await message_data.read()
         save_image_v1_5(image_bytes, file_name)
+        print(f"Image saved: {file_name}")
+    elif video_data is not None:
+        # If the message includes video data we want to take the data and save it as a video
+        # The path to that video will be saved on the message db object.
+        # This is because we don't want to save the video in the db itself.
+        # Create a filename based on the current timestamp
+        file_name = f"broup_{broup_id}_video_{current_timestamp.strftime('%Y%m%d%H%M%S%f')}"
+        data_type = 1
+        # Read the contents of the uploaded file
+        video_bytes = await video_data.read()
+        save_video_v1_5(video_bytes, file_name)
+        print(f"Video saved: {file_name}")
 
     bro_message = Message(
         sender_id=me.id,
@@ -133,15 +146,21 @@ async def send_message(
     message_send_data = bro_message.serialize_no_image
     if message_data is not None:
         image_data = {
-            "data": image_bytes,
             "type": data_type,
         }
         message_send_data["data"] = image_data
+    elif video_data is not None:
+        video_data = {
+            "type": data_type,
+        }
+        message_send_data["data"] = video_data
     await sio.emit(
         "message_received",
         message_send_data,
         room=broup_room,
     )
+
+    # print(f"Message sent to room {broup_room}: {message_send_data}")
 
     return {
         "result": True,
