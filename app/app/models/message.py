@@ -56,7 +56,6 @@ class Message(SQLModel, table=True):
             return image_data
         
     def get_message_image_data_v1_5(self):
-        print("new getting message function")
         if not self.data:
             return None
         media_data = {
@@ -146,4 +145,3 @@ class Message(SQLModel, table=True):
             data["replied_to"] = self.replied_to
 
         return data
-        

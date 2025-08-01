@@ -2,13 +2,12 @@ from typing import Optional, List
 
 from fastapi import Depends, Request, Response
 from pydantic import BaseModel
-from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlmodel import select, update
+from sqlmodel import select
 
 from app.api.api_v1 import api_router_v1
 from app.database import get_db
-from app.models import Bro, Broup
+from app.models import Bro
 from app.util.rest_util import get_failed_response
 from app.util.util import check_token, get_auth_token
 
@@ -40,7 +39,7 @@ async def bro_details(
 
     if not bro_ids:
         return {
-            "result": True,
+            "result": False,
             "bros": [],
         }
 
@@ -50,7 +49,7 @@ async def bro_details(
 
     if result_bros is None or result_bros == []:
         return {
-            "result": True,
+            "result": False,
             "bros": [],
         }
 

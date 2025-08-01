@@ -167,24 +167,19 @@ def save_video_v1_5(video_bytes: bytes, file_name: str):
     # Set the file permissions
     os.chmod(file_path, stat.S_IRWXO)
 
-    print(f"Video saved: {file_path}")
 
 
 def remove_message_data(file_name: str, data_type: int):
-    print(f"removing message {file_name} with data with type {data_type}")
     file_folder = settings.UPLOAD_FOLDER_IMAGES
     file_path = ""
     if data_type == 0:
-        print("image data")
         file_path = os.path.join(file_folder, f"{file_name}.png")
     elif data_type == 1:
-        print("video data")
         file_path = os.path.join(file_folder, f"{file_name}.mp4")
     else:
         # unknown data type
         return
     if file_path != "" and os.path.isfile(file_path):
-        print("file exists and now removing!")
         os.remove(file_path)
     return
 

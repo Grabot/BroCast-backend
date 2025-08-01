@@ -43,7 +43,6 @@ async def get_messages_v1_5(
     broup_id = get_message_data_request.broup_id
     message_id = get_message_data_request.message_id
 
-    print("going to query the message")
     select_statement = (
         select(Message)
         .where(
@@ -60,7 +59,6 @@ async def get_messages_v1_5(
             media_type="text/plain",
             status_code=500
         )
-    print("message queried and retrieving data.")
     
     message_with_data: Message = result_message.Message
     data_bytes = message_with_data.get_message_image_data_v1_5_data()
@@ -78,9 +76,7 @@ async def get_messages_v1_5(
         await db.delete(message_with_data)
 
     await db.commit()
-        
-    print("sending the bytes")
-    # TODO: test het.
+
     return Response(
         content=data_bytes,
         media_type="application/octet-stream"

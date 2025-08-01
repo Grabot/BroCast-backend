@@ -98,7 +98,6 @@ async def send_message(
         # Read the contents of the uploaded file
         image_bytes = await message_data.read()
         save_image_v1_5(image_bytes, file_name)
-        print(f"Image saved: {file_name}")
     elif video_data is not None:
         # If the message includes video data we want to take the data and save it as a video
         # The path to that video will be saved on the message db object.
@@ -109,7 +108,6 @@ async def send_message(
         # Read the contents of the uploaded file
         video_bytes = await video_data.read()
         save_video_v1_5(video_bytes, file_name)
-        print(f"Video saved: {file_name}")
 
     bro_message = Message(
         sender_id=me.id,
@@ -126,6 +124,7 @@ async def send_message(
     )
     chat.current_message_id += 1
     db.add(chat)
+    bro_message.bro_received_message(me.id)
     db.add(bro_message)
     await db.commit()
     # No need to refresh message because we don't send the message id
@@ -160,8 +159,7 @@ async def send_message(
         room=broup_room,
     )
 
-    # print(f"Message sent to room {broup_room}: {message_send_data}")
-
     return {
         "result": True,
+        "message_id": bro_message.message_id,
     }

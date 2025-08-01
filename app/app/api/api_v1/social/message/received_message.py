@@ -98,7 +98,6 @@ async def message_received(
 
     broup_id = receieved_messages_request.broup_id
     message_ids = receieved_messages_request.message_ids
-    print(f"message_ids: {message_ids}")
 
     select_messages_statement = (
         select(Message)
@@ -112,11 +111,9 @@ async def message_received(
             "result": False,
             "error": "No messages found",
         }
-    print(f"length of result_messages: {len(result_messages)}")
 
     for result_message in result_messages:
         message: Message = result_message.Message
-        print(f"message_id: {message.message_id}")
 
         message.bro_received_message(me.id)
         if message.received_by_all():
