@@ -168,6 +168,20 @@ def save_video_v1_5(video_bytes: bytes, file_name: str):
     os.chmod(file_path, stat.S_IRWXO)
 
 
+def save_audio_v1_5(audio_bytes: bytes, file_name: str):
+    # Get the file name and path
+    file_folder = settings.UPLOAD_FOLDER_AUDIO
+    file_name = f"{file_name}.mp3"
+    file_path = os.path.join(file_folder, file_name)
+
+    # Save the audio bytes to the file
+    with open(file_path, 'wb') as audio_file:
+        audio_file.write(audio_bytes)
+
+    # Set the file permissions
+    os.chmod(file_path, stat.S_IRWXO)
+
+
 
 def remove_message_data(file_name: str, data_type: int):
     file_folder = settings.UPLOAD_FOLDER_IMAGES

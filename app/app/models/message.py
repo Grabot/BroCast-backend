@@ -63,7 +63,7 @@ class Message(SQLModel, table=True):
         }
         return media_data
 
-    def get_message_image_data_v1_5_data(self) -> bytes:
+    def get_message_data_v1_5_data(self) -> bytes:
         if not self.data:
             return None
         if self.data_type == 0:
@@ -80,6 +80,16 @@ class Message(SQLModel, table=True):
             # videos
             file_folder = settings.UPLOAD_FOLDER_VIDEOS
             file_path = os.path.join(file_folder, f"{self.data}.mp4")
+            if not os.path.isfile(file_path):
+                return None
+            else:
+                with open(file_path, "rb") as fd:
+                    video_bytes = fd.read()
+                return video_bytes
+        elif self.data_type == 2:
+            # audio
+            file_folder = settings.UPLOAD_FOLDER_AUDIO
+            file_path = os.path.join(file_folder, f"{self.data}.mp3")
             if not os.path.isfile(file_path):
                 return None
             else:
@@ -118,6 +128,7 @@ class Message(SQLModel, table=True):
             "body": self.body,
             "timestamp": self.timestamp.strftime("%Y-%m-%dT%H:%M:%S.%f"),
             "info": self.info,
+            "data": self.get_message_image_data_v1_5(),  # This is only the data type
         }
         if self.text_message is not None:
             data["text_message"] = self.text_message

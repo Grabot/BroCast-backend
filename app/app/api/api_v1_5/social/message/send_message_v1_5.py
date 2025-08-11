@@ -12,7 +12,7 @@ from app.database import get_db
 from app.models import Bro, Message, Broup, Chat
 from app.util.rest_util import get_failed_response
 from app.util.notification_util import send_notification_broup
-from app.util.util import check_token, get_auth_token, save_image_v1_5, save_video_v1_5
+from app.util.util import check_token, get_auth_token, save_image_v1_5, save_video_v1_5, save_audio_v1_5
 
 
 @api_router_v1_5.post("/message/send", status_code=200)
@@ -26,6 +26,7 @@ async def send_message(
     message_data: Optional[UploadFile] = File(default=None),
     replied_to_message_id: Optional[int] = Form(None),
     video_data: Optional[UploadFile] = File(default=None),
+    audio_data: Optional[UploadFile] = File(default=None),
 ) -> dict:
     auth_token = get_auth_token(request.headers.get("Authorization"))
     if auth_token == "":
@@ -108,6 +109,16 @@ async def send_message(
         # Read the contents of the uploaded file
         video_bytes = await video_data.read()
         save_video_v1_5(video_bytes, file_name)
+    elif audio_data is not None:
+        # If the message includes video data we want to take the data and save it as a video
+        # The path to that video will be saved on the message db object.
+        # This is because we don't want to save the video in the db itself.
+        # Create a filename based on the current timestamp
+        file_name = f"broup_{broup_id}_audio_{current_timestamp.strftime('%Y%m%d%H%M%S%f')}"
+        data_type = 2
+        # Read the contents of the uploaded file
+        audio_bytes = await audio_data.read()
+        save_audio_v1_5(audio_bytes, file_name)
 
     bro_message = Message(
         sender_id=me.id,

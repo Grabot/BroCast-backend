@@ -61,7 +61,7 @@ async def get_messages_v1_5(
         )
     
     message_with_data: Message = result_message.Message
-    data_bytes = message_with_data.get_message_image_data_v1_5_data()
+    data_bytes = message_with_data.get_message_data_v1_5_data()
     if data_bytes is None:
         return Response(
             content="Message data could not be retrieved",
