@@ -17,6 +17,7 @@ description = "BroCast! The chat app where you can chat with your bros!"
 authors = ["Zwaar Developers"]
 license = "GPL-3.0 license"
 readme = "README.md"
+package-mode=false
 
 [tool.poetry.dependencies]
 python = "3.12.3"
@@ -48,6 +49,7 @@ firebase-admin = "6.9.0"
 firebase_functions = "0.4.3"
 numpy = "2.3.0"
 opencv-python-headless = "4.11.0.86"
+podman-compose = "^1.5.0"
 
 
 [build-system]
