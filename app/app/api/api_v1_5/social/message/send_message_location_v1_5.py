@@ -21,6 +21,7 @@ class SendLocationRequest(BaseModel):
     message: str
     location: str
     text_message: Optional[str]
+    data_type: int
 
 
 @api_router_v1_5.post("/message/send/location", status_code=200)
@@ -51,6 +52,8 @@ async def send_message(
     message = send_location_request.message
     location = send_location_request.location
     text_message = send_location_request.text_message
+    data_type = send_location_request.data_type
+    print(f"data type: {data_type}")
 
     broup_statement = select(Broup).where(
         Broup.broup_id == broup_id,
@@ -103,7 +106,6 @@ async def send_message(
 
     # The broup object and the message will have the same timestamp so we can check if it's equal
     current_timestamp = datetime.now(pytz.utc).replace(tzinfo=None)
-    data_type = 3
 
     bro_message = Message(
         sender_id=me.id,
@@ -140,9 +142,9 @@ async def send_message(
     message_send_data = bro_message.serialize_no_image
     image_data = {
         "type": data_type,
-        "data": location
+        "location_data": location
     }
-    message_send_data["data"] = image_data
+    message_send_data["location_data"] = image_data
     await sio.emit(
         "message_received",
         message_send_data,

@@ -61,6 +61,9 @@ class Message(SQLModel, table=True):
         media_data = {
             "type": self.data_type,
         }
+        if self.data_type == 3 or self.data_type == 4:
+            # If the data type is that of location than we just send the data immediatly.
+            media_data["location_data"] = self.data
         return media_data
 
     def get_message_data_v1_5_data(self) -> bytes:

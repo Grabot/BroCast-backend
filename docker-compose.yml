@@ -16,8 +16,10 @@ services:
     command: "/bin/sh boot.sh"
     depends_on:
       - brocast_db
+      - redis
     links:
       - brocast_db
+      - redis
 
   brocast_db:
     container_name: brocast_db

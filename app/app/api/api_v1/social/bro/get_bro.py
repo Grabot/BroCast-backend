@@ -17,7 +17,6 @@ class GetBrosRequest(BaseModel):
     bro_ids: List[int]
 
 
-# TODO: remove this endpoint, it is not used?
 @api_router_v1.post("/bro/get", status_code=200)
 async def get_bro(
     get_bros_request: GetBrosRequest,

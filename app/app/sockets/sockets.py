@@ -1,10 +1,13 @@
+from typing import Any, Dict
 import socketio
 from app.config.config import settings
+from redis import asyncio as aioredis
 
 mgr = socketio.AsyncRedisManager(settings.REDIS_URI)
 sio = socketio.AsyncServer(async_mode="asgi", client_manager=mgr, cors_allowed_origins="*")
 sio_app = socketio.ASGIApp(socketio_server=sio, socketio_path="/socket.io")
 
+redis = aioredis.from_url(settings.REDIS_URI)
 
 @sio.on("connect")
 async def handle_connect(sid, *args, **kwargs):
@@ -51,3 +54,43 @@ async def handle_leave_broup(sid, *args, **kwargs):
     broup_id = data["broup_id"]
     room = f"broup_{broup_id}"
     await sio.leave_room(sid, room)
+
+
+@sio.on("update_location")
+async def handle_update_location(sid, data: Dict[str, Any]):
+    print("handle update sharing")
+    bro_id = data["bro_id"]
+    lat = data["lat"]
+    lng = data["lng"]
+    broup_id = data["broup_id"]
+    broup_room = f"broup_{broup_id}"
+
+    print(f"bro:{bro_id}:location  {broup_room}")
+    # Set location in Redis, removed after 5.5 minutes.
+    await redis.setex(f"bro:{bro_id}:location", 330, f"{lat},{lng}")
+
+    await sio.emit(
+        "location_updated",
+        {
+            "bro_id": bro_id,
+            "lat": lat,
+            "lng": lng
+        },
+        room=broup_room
+    )
+
+@sio.on("stop_sharing_location")
+async def handle_stop_sharing(sid, data: Dict[str, Any]):
+    print("handle stop sharing")
+    bro_id = data["bro_id"]
+    broup_id = data["broup_id"]
+    broup_room = f"broup_{broup_id}"
+
+    await redis.delete(f"bro:{bro_id}:location")
+
+    await sio.emit(
+        "location_stopped",
+        {"bro_id": bro_id},
+        room=broup_room
+    )
+
