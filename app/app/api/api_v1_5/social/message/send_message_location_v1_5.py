@@ -14,6 +14,7 @@ from app.models import Bro, Message, Broup, Chat
 from app.util.rest_util import get_failed_response
 from app.util.notification_util import send_notification_broup
 from app.util.util import check_token, get_auth_token, save_image_v1_5, save_video_v1_5, save_audio_v1_5
+from app.sockets.sockets import redis
 
 
 class SendLocationRequest(BaseModel):
@@ -137,6 +138,19 @@ async def send_message(
 
     sender_name = me.bro_name + " " + me.bromotion
     await send_notification_broup(tokens, chat.id, chat.private, broup_name, sender_name, message)
+
+    if data_type == 4:
+        # For live location we set the initial location and the expiration time in the redis db.
+        lat_lng, end_time_string = location.split(";")
+        lat, lng = lat_lng.split(",")
+        end_time = datetime.fromisoformat(end_time_string)
+        print(f"going to set redis with lat {lat}, lng {lng}  end_time: {end_time}")
+        now = datetime.now(pytz.utc)
+        print(f"now {now}")
+        delta = end_time - now
+        ttl = int(delta.total_seconds())
+        print(f"ttl: {ttl}")
+        await redis.setex(f"bro:{me.id}:broup:{broup_id}:location", ttl, f"{lat},{lng}")
 
     broup_room = f"broup_{broup_id}"
     message_send_data = bro_message.serialize_no_image

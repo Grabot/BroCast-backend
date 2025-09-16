@@ -27,9 +27,12 @@ async def get_bro_location(
     if not auth_token:
         return get_failed_response("Invalid token", response, 401)
     
-    me: Optional[Bro] = await check_token(db, auth_token)
+    # me: Optional[Bro] = await check_token(db, auth_token)
+    # TODO: Add validity checks
     
-    location = await redis.get(f"bro:{get_bro_location_request.bro_id}:location")
+    bro_id = get_bro_location_request.bro_id
+    broup_id = get_bro_location_request.broup_id
+    location = await redis.get(f"bro:{bro_id}:broup:{broup_id}:location")
     if not location:
         return get_failed_response("Location not found", response)
 

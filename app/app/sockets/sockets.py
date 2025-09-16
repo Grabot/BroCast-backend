@@ -66,8 +66,8 @@ async def handle_update_location(sid, data: Dict[str, Any]):
     broup_room = f"broup_{broup_id}"
 
     print(f"bro:{bro_id}:location  {broup_room}")
-    # Set location in Redis, removed after 5.5 minutes.
-    await redis.setex(f"bro:{bro_id}:location", 330, f"{lat},{lng}")
+    # Update value in Redis (but leave the expiration date which is set when the message is sent)
+    await redis.set(f"bro:{bro_id}:broup:{broup_id}:location", f"{lat},{lng}", xx=True, keepttl=True)
 
     await sio.emit(
         "location_updated",
@@ -78,19 +78,3 @@ async def handle_update_location(sid, data: Dict[str, Any]):
         },
         room=broup_room
     )
-
-@sio.on("stop_sharing_location")
-async def handle_stop_sharing(sid, data: Dict[str, Any]):
-    print("handle stop sharing")
-    bro_id = data["bro_id"]
-    broup_id = data["broup_id"]
-    broup_room = f"broup_{broup_id}"
-
-    await redis.delete(f"bro:{bro_id}:location")
-
-    await sio.emit(
-        "location_stopped",
-        {"bro_id": bro_id},
-        room=broup_room
-    )
-
