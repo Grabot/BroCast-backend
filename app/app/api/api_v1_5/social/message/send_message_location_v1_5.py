@@ -54,7 +54,6 @@ async def send_message(
     location = send_location_request.location
     text_message = send_location_request.text_message
     data_type = send_location_request.data_type
-    print(f"data type: {data_type}")
 
     broup_statement = select(Broup).where(
         Broup.broup_id == broup_id,
@@ -144,12 +143,9 @@ async def send_message(
         lat_lng, end_time_string = location.split(";")
         lat, lng = lat_lng.split(",")
         end_time = datetime.fromisoformat(end_time_string)
-        print(f"going to set redis with lat {lat}, lng {lng}  end_time: {end_time}")
         now = datetime.now(pytz.utc)
-        print(f"now {now}")
         delta = end_time - now
         ttl = int(delta.total_seconds())
-        print(f"ttl: {ttl}")
         await redis.setex(f"bro:{me.id}:broup:{broup_id}:location", ttl, f"{lat},{lng}")
 
     broup_room = f"broup_{broup_id}"

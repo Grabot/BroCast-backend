@@ -58,14 +58,12 @@ async def handle_leave_broup(sid, *args, **kwargs):
 
 @sio.on("update_location")
 async def handle_update_location(sid, data: Dict[str, Any]):
-    print("handle update sharing")
     bro_id = data["bro_id"]
     lat = data["lat"]
     lng = data["lng"]
     broup_id = data["broup_id"]
     broup_room = f"broup_{broup_id}"
 
-    print(f"bro:{bro_id}:location  {broup_room}")
     # Update value in Redis (but leave the expiration date which is set when the message is sent)
     await redis.set(f"bro:{bro_id}:broup:{broup_id}:location", f"{lat},{lng}", xx=True, keepttl=True)
 
