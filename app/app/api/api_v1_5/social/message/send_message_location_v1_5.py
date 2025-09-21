@@ -20,9 +20,10 @@ from app.sockets.sockets import redis
 class SendLocationRequest(BaseModel):
     broup_id: int
     message: str
-    location: str
+    location: Optional[str]
     text_message: Optional[str]
     data_type: int
+    replied_to_message_id: Optional[int]
 
 
 @api_router_v1_5.post("/message/send/location", status_code=200)
@@ -54,6 +55,7 @@ async def send_message(
     location = send_location_request.location
     text_message = send_location_request.text_message
     data_type = send_location_request.data_type
+    replied_to_message_id = send_location_request.replied_to_message_id
 
     broup_statement = select(Broup).where(
         Broup.broup_id == broup_id,
@@ -107,6 +109,8 @@ async def send_message(
     # The broup object and the message will have the same timestamp so we can check if it's equal
     current_timestamp = datetime.now(pytz.utc).replace(tzinfo=None)
 
+    if not location:
+        location = "stop sharing"
     bro_message = Message(
         sender_id=me.id,
         broup_id=broup_id,
@@ -117,7 +121,7 @@ async def send_message(
         info=False,
         data=location,
         data_type=data_type,
-        replied_to=None,
+        replied_to=replied_to_message_id,
         receive_remaining=chat.bro_ids
     )
     chat.current_message_id += 1
@@ -147,14 +151,16 @@ async def send_message(
         delta = end_time - now
         ttl = int(delta.total_seconds())
         await redis.setex(f"bro:{me.id}:broup:{broup_id}:location", ttl, f"{lat},{lng}")
+    elif data_type == 5:
+        await redis.delete(f"bro:{me.id}:broup:{broup_id}:location")
 
     broup_room = f"broup_{broup_id}"
     message_send_data = bro_message.serialize_no_image
-    image_data = {
+    location_data = {
         "type": data_type,
         "location_data": location
     }
-    message_send_data["location_data"] = image_data
+    message_send_data["location_data"] = location_data
     await sio.emit(
         "message_received",
         message_send_data,
