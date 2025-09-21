@@ -12,7 +12,7 @@ skip = ["app/migrations/env.py"]
 
 [tool.poetry]
 name = "BroCast"
-version = "1.6.1"
+version = "1.7.0"
 description = "BroCast! The chat app where you can chat with your bros!"
 authors = ["Zwaar Developers"]
 license = "GPL-3.0 license"
@@ -21,36 +21,37 @@ package-mode=false
 
 [tool.poetry.dependencies]
 python = "3.12.3"
-fastapi = "0.115.13"
-uvicorn = "0.34.3"
-python-dotenv = "1.1.0"
+fastapi = "0.117.1"
+uvicorn = "0.36.0"
+python-dotenv = "1.1.1"
 psycopg2-binary = "2.9.10"
-sqlmodel = "0.0.24"
-alembic = "1.16.2"
+sqlmodel = "0.0.25"
+alembic = "1.16.5"
 asyncpg = "0.30.0"
 passlib = "1.7.4"
-authlib = "1.6.0"
+authlib = "1.6.4"
 oauthlib = "3.3.1"
 python-socketio = "5.13.0"
 websockets = "15.0.1"
 asyncio-redis = "0.16.0"
-redis = "6.2.0"
+redis = "6.4.0"
 pillow = "11.3.0"
-fastapi-pagination = "0.13.2"
+fastapi-pagination = "0.14.1"
 fastapi-mail = "1.5.0"
 celery = "5.5.3"
 APScheduler = "3.11.0"
-pydantic_settings = "2.9.1"
-requests = "2.32.4"
+pydantic_settings = "2.10.1"
+requests = "2.32.5"
 PyJWT = "2.10.1"
 python-multipart = "0.0.20"
 pytz = "2025.2"
-firebase-admin = "6.9.0"
-firebase_functions = "0.4.3"
-numpy = "2.3.0"
+firebase-admin = "7.1.0"
+firebase-functions = "0.4.3"
+numpy = "2.3.3"
 opencv-python-headless = "4.11.0.86"
-podman-compose = "^1.5.0"
 
+[tool.poetry.group.dev.dependencies]
+podman-compose = "^1.5.0"
 
 [build-system]
 requires = ["poetry-core"]
