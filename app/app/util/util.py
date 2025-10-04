@@ -13,7 +13,6 @@ import os
 import base64
 import numpy as np
 import cv2
-import stat
 
 
 async def delete_bro_token_and_return(db: AsyncSession, bro_token, return_value: Optional[Bro]):
@@ -137,7 +136,7 @@ def save_image(image_data: str, file_name: str):
     
     # Save the image using OpenCV
     cv2.imwrite(file_path, new_image)
-    os.chmod(file_path, stat.S_IRWXO)
+    os.chmod(file_path, 0o644)
 
 
 def save_image_v1_5(image_bytes: bytes, file_name: str):
@@ -151,7 +150,7 @@ def save_image_v1_5(image_bytes: bytes, file_name: str):
     
     # Save the image using OpenCV
     cv2.imwrite(file_path, new_image)
-    os.chmod(file_path, stat.S_IRWXO)
+    os.chmod(file_path, 0o644)
 
 
 def save_video_v1_5(video_bytes: bytes, file_name: str):
@@ -165,13 +164,13 @@ def save_video_v1_5(video_bytes: bytes, file_name: str):
         video_file.write(video_bytes)
 
     # Set the file permissions
-    os.chmod(file_path, stat.S_IRWXO)
+    os.chmod(file_path, 0o644)
 
 
 def save_audio_v1_5(audio_bytes: bytes, file_name: str):
     # Get the file name and path
     file_folder = settings.UPLOAD_FOLDER_AUDIO
-    file_name = f"{file_name}.mp3"
+    file_name = f"{file_name}.m4a"
     file_path = os.path.join(file_folder, file_name)
 
     # Save the audio bytes to the file
@@ -179,17 +178,57 @@ def save_audio_v1_5(audio_bytes: bytes, file_name: str):
         audio_file.write(audio_bytes)
 
     # Set the file permissions
-    os.chmod(file_path, stat.S_IRWXO)
+    os.chmod(file_path, 0o644)
+
+
+def save_gif_v1_5(gif_bytes: bytes, file_name: str):
+    # Get the file name and path
+    file_folder = settings.UPLOAD_FOLDER_IMAGES
+    file_name = f"{file_name}.gif"
+    file_path = os.path.join(file_folder, file_name)
+
+    # Save the gif bytes to the file
+    with open(file_path, 'wb') as audio_file:
+        audio_file.write(gif_bytes)
+
+    # Set the file permissions
+    os.chmod(file_path, 0o644)
+
+
+def save_other_v1_5(other_bytes: bytes, file_name: str):
+    # Get the file name and path
+    file_folder = settings.UPLOAD_FOLDER_OTHER
+    # extension is still in the filename for this
+    file_path = os.path.join(file_folder, file_name)
+
+    # Save the other bytes to the file
+    with open(file_path, 'wb') as other_file:
+        other_file.write(other_bytes)
+
+    # Set the file permissions
+    os.chmod(file_path, 0o644)
 
 
 
 def remove_message_data(file_name: str, data_type: int):
     file_folder = settings.UPLOAD_FOLDER_IMAGES
+    if data_type == 1:
+        file_folder = settings.UPLOAD_FOLDER_VIDEOS
+    elif data_type == 2:
+        file_folder = settings.UPLOAD_FOLDER_AUDIO
+    elif data_type == 7:
+        file_folder = settings.UPLOAD_FOLDER_OTHER
     file_path = ""
     if data_type == 0:
         file_path = os.path.join(file_folder, f"{file_name}.png")
     elif data_type == 1:
         file_path = os.path.join(file_folder, f"{file_name}.mp4")
+    elif data_type == 2:
+        file_path = os.path.join(file_folder, f"{file_name}.m4a")
+    elif data_type == 6:
+        file_path = os.path.join(file_folder, f"{file_name}.gif")
+    elif data_type == 7:
+        file_path = os.path.join(file_folder, f"{file_name}")
     else:
         # unknown data type
         return

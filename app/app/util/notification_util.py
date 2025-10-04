@@ -25,7 +25,8 @@ async def send_notification_broup(tokens, broup_id, private, broup_name, sender_
         if platform == 0:
             android_config = messaging.AndroidConfig(
                 notification=messaging.AndroidNotification(
-                    channel_id="channel_bro"
+                    channel_id="channel_bro",
+                    click_action="FLUTTER_NOTIFICATION_CLICK"
                 )
             )
             message = messaging.Message(

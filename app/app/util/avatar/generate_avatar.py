@@ -1,7 +1,6 @@
 import math
 import os
 import random
-import stat
 
 from PIL import Image, ImageDraw
 
@@ -376,4 +375,4 @@ def generate_avatar(file_name, file_path):
 
     file = os.path.join(file_path, "%s.png" % file_name)
     im2.save(file)
-    os.chmod(file, stat.S_IRWXO)
+    os.chmod(file, 0o644)

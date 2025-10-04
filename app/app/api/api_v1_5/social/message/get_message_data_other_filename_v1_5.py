@@ -7,18 +7,17 @@ from sqlmodel import select
 from app.api.api_v1_5 import api_router_v1_5
 from app.database import get_db
 from app.models import Bro, Message
-from app.util.rest_util import get_failed_response
-from app.util.util import check_token, get_auth_token, remove_message_data
+from app.util.util import check_token, get_auth_token
 
 
-class GetMessageDataRequest(BaseModel):
+class GetMessageOtherDataRequest(BaseModel):
     broup_id: int
     message_id: int
 
 
-@api_router_v1_5.post("/message/get/data", status_code=200)
-async def get_messages_data_v1_5(
-    get_message_data_request: GetMessageDataRequest,
+@api_router_v1_5.post("/message/get/data/other/filename", status_code=200)
+async def get_messages_data_other_filename_v1_5(
+    get_message_other_data_request: GetMessageOtherDataRequest,
     request: Request,
     response: Response,
     db: AsyncSession = Depends(get_db),
@@ -40,8 +39,8 @@ async def get_messages_data_v1_5(
             status_code=500
         )
 
-    broup_id = get_message_data_request.broup_id
-    message_id = get_message_data_request.message_id
+    broup_id = get_message_other_data_request.broup_id
+    message_id = get_message_other_data_request.message_id
 
     select_statement = (
         select(Message)
@@ -60,24 +59,24 @@ async def get_messages_data_v1_5(
             status_code=500
         )
     
-    message_with_data: Message = result_message.Message
-    data_bytes = message_with_data.get_message_data_v1_5_data()
-    if data_bytes is None:
+    message_with_data_and_extension: Message = result_message.Message
+    file_path_message = message_with_data_and_extension.data
+    if not file_path_message:
         return Response(
             content="Message data could not be retrieved",
             media_type="text/plain",
             status_code=500
         )
 
-    message_with_data.bro_received_message(me.id)
-    if message_with_data.received_by_all():
-        if message_with_data.data:
-            remove_message_data(message_with_data.data, message_with_data.data_type)
-        await db.delete(message_with_data)
-
-    await db.commit()
+    path_split = file_path_message.split("___")
+    original_file_path = path_split[-1]
+    if isinstance(original_file_path, list):
+        original_filename = original_file_path.join("")
+    else:
+        original_filename = original_file_path
 
     return Response(
-        content=data_bytes,
-        media_type="application/octet-stream"
-    )
+            content=original_filename,
+            media_type="text/plain",
+            status_code=200
+        )

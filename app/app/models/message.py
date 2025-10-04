@@ -66,6 +66,7 @@ class Message(SQLModel, table=True):
             media_data["location_data"] = self.data
         return media_data
 
+
     def get_message_data_v1_5_data(self) -> bytes:
         if not self.data:
             return None
@@ -92,14 +93,33 @@ class Message(SQLModel, table=True):
         elif self.data_type == 2:
             # audio
             file_folder = settings.UPLOAD_FOLDER_AUDIO
-            file_path = os.path.join(file_folder, f"{self.data}.mp3")
+            file_path = os.path.join(file_folder, f"{self.data}.m4a")
             if not os.path.isfile(file_path):
                 return None
             else:
                 with open(file_path, "rb") as fd:
-                    video_bytes = fd.read()
-                return video_bytes
-
+                    audio_bytes = fd.read()
+                return audio_bytes
+        if self.data_type == 6:
+            # gifs
+            file_folder = settings.UPLOAD_FOLDER_IMAGES
+            file_path = os.path.join(file_folder, f"{self.data}.gif")
+            if not os.path.isfile(file_path):
+                return None
+            else:
+                with open(file_path, "rb") as fd:
+                    gif_bytes = fd.read()
+                return gif_bytes
+        if self.data_type == 7:
+            # other
+            file_folder = settings.UPLOAD_FOLDER_OTHER
+            file_path = os.path.join(file_folder, f"{self.data}")
+            if not os.path.isfile(file_path):
+                return None
+            else:
+                with open(file_path, "rb") as fd:
+                    other_bytes = fd.read()
+                return other_bytes
 
     @property
     def serialize(self):

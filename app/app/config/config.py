@@ -98,6 +98,7 @@ class Settings(BaseSettings):
     UPLOAD_FOLDER_IMAGES: str = "static/uploads/media/images"
     UPLOAD_FOLDER_VIDEOS: str = "static/uploads/media/videos"
     UPLOAD_FOLDER_AUDIO: str = "static/uploads/media/audio"
+    UPLOAD_FOLDER_OTHER: str = "static/uploads/media/other"
 
     LOG_READ_PASSWORD: str = os.environ.get("LOG_READ_PASSWORD")
 

@@ -1,7 +1,6 @@
 import base64
 import io
 import os
-import stat
 from typing import Optional, List
 from datetime import datetime
 import pytz
@@ -56,7 +55,7 @@ async def change_avatar(
     
     # Save the image using OpenCV
     cv2.imwrite(file_path, new_image)
-    os.chmod(file_path, stat.S_IRWXO)
+    os.chmod(file_path, 0o644)
 
     me.set_default_avatar(False)
     db.add(me)
@@ -141,7 +140,7 @@ async def change_avatar_broup(
     file_path = os.path.join(file_folder, "%s.png" % file_name)
 
     new_avatar_pil.save(file_path)
-    os.chmod(file_path, stat.S_IRWXO)
+    os.chmod(file_path, 0o644)
 
     chat.set_default_avatar(False)
     chat_broups: List[Broup] = chat.chat_broups
