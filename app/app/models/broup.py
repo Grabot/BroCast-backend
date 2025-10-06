@@ -35,6 +35,7 @@ class Broup(SQLModel, table=True):
     new_avatar: bool = Field(default=True)
     last_message_read_id: int = Field(default=0)
     emoji_reactions: Optional[dict] = Field(default=None, sa_column=Column(MutableDict.as_mutable(JSON)))
+    message_updates: Optional[dict] = Field(default=None, sa_column=Column(MutableDict.as_mutable(JSON)))
     
     chat: "Chat" = Relationship(
         back_populates="chat_broups",
@@ -158,6 +159,8 @@ class Broup(SQLModel, table=True):
             self.new_avatar = False
         if self.emoji_reactions:
             data["emoji_reactions"] = self.emoji_reactions
+        if self.message_updates:
+            data["message_updates"] = self.message_updates
         return data
 
 
@@ -185,6 +188,8 @@ class Broup(SQLModel, table=True):
             data["new_avatar"] = self.new_avatar
         if self.emoji_reactions:
             data["emoji_reactions"] = self.emoji_reactions
+        if self.message_updates:
+            data["message_updates"] = self.message_updates
         return data
 
     @property
@@ -207,6 +212,8 @@ class Broup(SQLModel, table=True):
             data["new_avatar"] = self.new_avatar
         if self.emoji_reactions:
             data["emoji_reactions"] = self.emoji_reactions
+        if self.message_updates:
+            data["message_updates"] = self.message_updates
         return data
     
     @property
@@ -219,6 +226,8 @@ class Broup(SQLModel, table=True):
             data["broup_updated"] = self.broup_updated     
         if self.emoji_reactions:
             data["emoji_reactions"] = self.emoji_reactions
+        if self.message_updates:
+            data["message_updates"] = self.message_updates
         return data
 
     @property
@@ -232,6 +241,8 @@ class Broup(SQLModel, table=True):
             data["new_messages"] = self.new_messages
         if self.emoji_reactions:
             data["emoji_reactions"] = self.emoji_reactions
+        if self.message_updates:
+            data["message_updates"] = self.message_updates
         return data
 
     @property

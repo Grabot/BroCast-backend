@@ -13,13 +13,13 @@ from app.util.rest_util import get_failed_response
 from app.util.util import check_token, get_auth_token
 
 
-class EmojiReactionReceivedRequest(BaseModel):
+class DeleteMessageReceivedRequest(BaseModel):
     broup_id: int
 
 
-@api_router_v1_5.post("/emoji_reaction/received", status_code=200)
-async def emoji_reaction_received(
-    emoji_reaction_received_request: EmojiReactionReceivedRequest,
+@api_router_v1_5.post("/delete/message/received", status_code=200)
+async def delete_message_received(
+    delete_message_received_request: DeleteMessageReceivedRequest,
     request: Request,
     response: Response,
     db: AsyncSession = Depends(get_db),
@@ -34,7 +34,7 @@ async def emoji_reaction_received(
     if not me:
         return get_failed_response("An error occurred", response)
 
-    broup_id = emoji_reaction_received_request.broup_id
+    broup_id = delete_message_received_request.broup_id
 
     broup_statement = (
         select(Broup)
@@ -54,7 +54,7 @@ async def emoji_reaction_received(
         }
 
     broup: Broup = result_broup.Broup
-    broup.emoji_reactions = None
+    broup.message_updates = None
     db.add(broup)
     await db.commit()
     

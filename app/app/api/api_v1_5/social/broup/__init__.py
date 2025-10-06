@@ -1,1 +1,1 @@
-from . import get_read_time_broup_v1_5, emoji_reaction_received_v1_5
+from . import get_read_time_broup_v1_5, emoji_reaction_received_v1_5, delete_message_received_v1_5

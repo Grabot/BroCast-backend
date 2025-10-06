@@ -26,6 +26,7 @@ class Message(SQLModel, table=True):
     replied_to: Optional[int]
     # A int list which indicates which bros still need to receive and read this message.
     receive_remaining: List[int] = Field(default=[], sa_column=Column(ARRAY(Integer())))
+    deleted: bool = Field(default=False)
 
     def bro_received_message(self, bro_id):
         old_received = self.receive_remaining
@@ -39,7 +40,6 @@ class Message(SQLModel, table=True):
         return len(self.receive_remaining) == 0
 
     def get_message_image_data(self):
-        # TODO: at some point only send the ids or something to do a seperate call for only images in bytes?
         if not self.data:
             return None
         file_folder = settings.UPLOAD_FOLDER_IMAGES
@@ -121,6 +121,18 @@ class Message(SQLModel, table=True):
                     other_bytes = fd.read()
                 return other_bytes
 
+    def delete_message_data(self):
+        from app.util.util import remove_message_data
+        self.deleted = True
+        # We don't remove the message object just yet
+        # The bros in the broup will still retrieve the message
+        # It will just display as that it has been deleted
+        # If it has data we will already delete that and set that to None
+        if self.data:
+            remove_message_data(self.data, self.data_type)
+            self.data = None
+            self.data_type = None
+
     @property
     def serialize(self):
         data = {
@@ -138,6 +150,9 @@ class Message(SQLModel, table=True):
 
         if self.replied_to is not None:
             data["replied_to"] = self.replied_to
+        
+        if self.deleted:
+            data["deleted"] = self.deleted
 
         return data
         
@@ -158,6 +173,8 @@ class Message(SQLModel, table=True):
 
         if self.replied_to is not None:
             data["replied_to"] = self.replied_to
+        if self.deleted:
+            data["deleted"] = self.deleted
         return data
 
     @property
@@ -174,8 +191,8 @@ class Message(SQLModel, table=True):
 
         if self.text_message is not None:
             data["text_message"] = self.text_message
-
         if self.replied_to is not None:
             data["replied_to"] = self.replied_to
-
+        if self.deleted:
+            data["deleted"] = self.deleted
         return data
