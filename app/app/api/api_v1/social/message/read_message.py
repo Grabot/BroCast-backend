@@ -56,6 +56,7 @@ async def message_read(
     broup_me: Broup = result_broup.Broup
     broup_me.last_message_read_id = last_message_read_id
     broup_me.unread_messages = 0
+    broup_me.new_messages = False
     db.add(broup_me)
     await db.commit()
     

@@ -53,27 +53,7 @@ async def refresh_bro_token(db: AsyncSession, access_token, refresh_token, with_
         return await delete_bro_token_and_return(db, bro_token, None)
     bro: Bro = bro_result.Bro
 
-    if bro_token.token_expiration > int(time.time()):
-        return await delete_bro_token_and_return(db, bro_token, bro)
-    try:
-        access = jwt.decode(access_token, settings.jwk)
-        refresh = jwt.decode(refresh_token, settings.jwk)
-    except DecodeError:
-        return await delete_bro_token_and_return(db, bro_token, None)
-
-    if not access or not refresh:
-        return await delete_bro_token_and_return(db, bro_token, None)
-
-    # do the refresh time check again, just in case.
-    if refresh["exp"] < int(time.time()):
-        return await delete_bro_token_and_return(db, bro_token, None)
-
-    # It all needs to match before you accept the login
-    if bro.id == access["id"] and bro.bro_name == refresh["bro_name"]:
-        return await delete_bro_token_and_return(db, bro_token, bro)
-    else:
-        return await delete_bro_token_and_return(db, bro_token, None)
-
+    return await delete_bro_token_and_return(db, bro_token, bro)
 
 async def check_token(db: AsyncSession, token, retrieve_full=False) -> Optional[Bro]:
     token_statement = select(BroToken).filter_by(access_token=token)

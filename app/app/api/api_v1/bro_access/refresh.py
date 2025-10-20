@@ -86,7 +86,6 @@ async def refresh_bro_oauth(
                 return_broups.append(broup.serialize)
                 broup.broup_updated = False
                 broup.new_avatar = False
-                broup.new_messages = False
                 broup.update_bros = []
                 broup.update_bros_avatar = []
                 broup.emoji_reactions = None
@@ -94,12 +93,10 @@ async def refresh_bro_oauth(
             elif broup.new_avatar:
                 return_broups.append(broup.serialize_new_avatar)
                 broup.new_avatar = False
-                broup.new_messages = False
                 broup.emoji_reactions = None
                 db.add(broup)
             elif broup.new_messages:
                 return_broups.append(broup.serialize_messages)
-                broup.new_messages = False
                 broup.emoji_reactions = None
                 db.add(broup)
     await db.commit()

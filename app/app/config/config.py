@@ -1,4 +1,5 @@
 import os
+from typing import Optional
 
 from pydantic_settings import BaseSettings
 
@@ -45,24 +46,24 @@ class Settings(BaseSettings):
     GITHUB_AUTHORIZE: str = "https://github.com/login/oauth/authorize"
     GITHUB_ACCESS: str = "https://github.com/login/oauth/access_token"
     GITHUB_USER: str = "https://api.github.com/user"
-    GITHUB_CLIENT_ID: str = os.environ.get("GITHUB_CLIENT_ID", None)
-    GITHUB_CLIENT_SECRET: str = os.environ.get("GITHUB_CLIENT_SECRET", None)
+    GITHUB_CLIENT_ID: Optional[str] = os.environ.get("GITHUB_CLIENT_ID", None)
+    GITHUB_CLIENT_SECRET: Optional[str] = os.environ.get("GITHUB_CLIENT_SECRET", None)
 
     REDDIT_AUTHORIZE: str = "https://www.reddit.com/api/v1/authorize"
     REDDIT_ACCESS: str = "https://www.reddit.com/api/v1/access_token"
     REDDIT_USER: str = "https://oauth.reddit.com/api/v1/me"
-    REDDIT_CLIENT_ID: str = os.environ.get("REDDIT_CLIENT_ID", None)
-    REDDIT_CLIENT_SECRET: str = os.environ.get("REDDIT_CLIENT_SECRET", None)
-    REDDIT_REDIRECT: str = os.environ.get("REDDIT_REDIRECT", None)
+    REDDIT_CLIENT_ID: Optional[str] = os.environ.get("REDDIT_CLIENT_ID", None)
+    REDDIT_CLIENT_SECRET: Optional[str] = os.environ.get("REDDIT_CLIENT_SECRET", None)
+    REDDIT_REDIRECT: Optional[str] = os.environ.get("REDDIT_REDIRECT", None)
 
     APPLE_AUTHORIZE: str = "https://appleid.apple.com/auth/token"
-    APPLE_CLIENT_ID: str = os.environ.get("APPLE_CLIENT_ID", None)
+    APPLE_CLIENT_ID: Optional[str] = os.environ.get("APPLE_CLIENT_ID", None)
     APPLE_AUD_URL: str = "https://appleid.apple.com"
-    APPLE_KEY_ID: str = os.environ.get("APPLE_KEY_ID", None)
-    APPLE_TEAM_ID: str = os.environ.get("APPLE_TEAM_ID", None)
-    APPLE_AUTH_KEY: str = os.environ.get("APPLE_AUTH_KEY", None)
+    APPLE_KEY_ID: Optional[str] = os.environ.get("APPLE_KEY_ID", None)
+    APPLE_TEAM_ID: Optional[str] = os.environ.get("APPLE_TEAM_ID", None)
+    APPLE_AUTH_KEY: Optional[str] = os.environ.get("APPLE_AUTH_KEY", None)
     APPLE_GRANT_TYPE: str = "authorization_code"
-    APPLE_REDIRECT_URL: str = os.environ.get("APPLE_REDIRECT_URL", None)
+    APPLE_REDIRECT_URL: Optional[str] = os.environ.get("APPLE_REDIRECT_URL", None)
 
     jwk: dict = {
         "alg": os.environ.get("JWT_ALG", ""),
@@ -87,7 +88,7 @@ class Settings(BaseSettings):
     API_SOCK_NAMESPACE: str = "/api/v1.4/sock"
 
     MAIL_SERVER: str = os.environ.get("MAIL_SERVER")
-    MAIL_PORT: str = int(os.environ.get("MAIL_PORT") or 25)
+    MAIL_PORT: int = int(os.environ.get("MAIL_PORT") or 25)
     MAIL_USE_TLS: str = os.environ.get("MAIL_USE_TLS") is not None
     MAIL_USERNAME: str = os.environ.get("MAIL_USERNAME")
     MAIL_PASSWORD: str = os.environ.get("MAIL_PASSWORD")
