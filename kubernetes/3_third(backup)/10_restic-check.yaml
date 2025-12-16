@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: restic-check
+  namespace: <namespace>
+spec:
+  containers:
+    - name: restic
+      image: restic/restic:latest
+      command:
+        - /bin/sh
+        - -c
+        - |
+          mkdir -p /root/.ssh
+          echo "$SSH_PRIVATE_KEY" > /root/.ssh/id_rsa
+          echo "$KNOWN_HOSTS" > /root/.ssh/known_hosts
+          chmod 600 /root/.ssh/id_rsa
+          sleep 3600
+      env:
+        - name: RESTIC_REPOSITORY
+          valueFrom:
+            secretKeyRef:
+              name: restic-credentials
+              key: RESTIC_REPOSITORY
+        - name: RESTIC_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: restic-credentials
+              key: RESTIC_PASSWORD
+        - name: SSH_PRIVATE_KEY
+          valueFrom:
+            secretKeyRef:
+              name: restic-credentials
+              key: SSH_PRIVATE_KEY
+        - name: KNOWN_HOSTS
+          valueFrom:
+            secretKeyRef:
+              name: restic-credentials
+              key: KNOWN_HOSTS
+  restartPolicy: Never

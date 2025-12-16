@@ -1,0 +1,75 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: postgres-backup
+  namespace: <namespace>
+spec:
+  schedule: "0 2 * * *"  # Runs daily at 2 AM
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 3600
+      template:
+        spec:
+          nodeSelector:
+            kubernetes.io/hostname: <kubernetes-node-name>
+          containers:
+            - name: restic
+              image: restic/restic
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  mkdir -p /root/.ssh
+                  echo "$SSH_PRIVATE_KEY" > /root/.ssh/id_rsa
+                  echo "$KNOWN_HOSTS" > /root/.ssh/known_hosts
+                  chmod 600 /root/.ssh/id_rsa
+
+                  # Daily backup
+                  restic backup <data_path> --tag daily
+
+                  # Weekly backup (every Sunday)
+                  if [ "$(date +\%u)" -eq 7 ]; then
+                    restic backup <data_path> --tag weekly
+                  fi
+
+                  # Monthly backup (1st day of the month)
+                  if [ "$(date +\%d)" -eq 1 ]; then
+                    restic backup <data_path> --tag monthly
+                  fi
+
+                  # Yearly backup (1st day of January)
+                  if [ "$(date +\%d\%m)" = "0101" ]; then
+                    restic backup <data_path> --tag yearly
+                  fi
+
+                  # Retention policy (run daily)
+                  restic forget --keep-daily 7 --keep-weekly 4 --keep-monthly 12 --keep-yearly 7 --tag daily --tag weekly --tag monthly --tag yearly --prune
+              env:
+                - name: RESTIC_REPOSITORY
+                  valueFrom:
+                    secretKeyRef:
+                      name: restic-credentials
+                      key: RESTIC_REPOSITORY
+                - name: RESTIC_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: restic-credentials
+                      key: RESTIC_PASSWORD
+                - name: SSH_PRIVATE_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: restic-credentials
+                      key: SSH_PRIVATE_KEY
+                - name: KNOWN_HOSTS
+                  valueFrom:
+                    secretKeyRef:
+                      name: restic-credentials
+                      key: KNOWN_HOSTS
+              volumeMounts:
+                - name: data
+                  mountPath: <data_path>
+          volumes:
+            - name: data
+              persistentVolumeClaim:
+                claimName: local-pvc
+          restartPolicy: OnFailure

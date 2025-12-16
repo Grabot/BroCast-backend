@@ -24,7 +24,7 @@ services:
   brocast_db:
     container_name: brocast_db
     env_file: .env
-    image: postgres:15.3
+    image: postgres:latest
     networks:
       - default
     ports:

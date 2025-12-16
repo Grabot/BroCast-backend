@@ -1,0 +1,106 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  namespace: <namespace>
+  name: local-<project-name>-pv
+spec:
+  capacity:
+    storage: 200Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  local:
+    path: <data-folder>
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - <kubernetes-node-name>
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  namespace: <namespace>
+  name: local-<project-name>-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 195Gi
+  storageClassName: local-storage
+  volumeName: local-<project-name>-pv
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: <namespace>
+  name: deployment-postgres
+  labels:
+    app: database
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: database
+  template:
+    metadata:
+      labels:
+        app: database
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: <kubernetes-node-name>
+      containers:
+        - name: postgres
+          image: postgres:latest
+          ports:
+            - name: tcp-5432
+              containerPort: 5432
+          envFrom:
+            - secretRef:
+                name: fastapi-secret
+          env:
+            - name: POSTGRES_PORT
+              value: "5432"
+            - name: PGDATA
+              value: "<data-folder>/pgdata"
+          args:
+          - -c
+          - max_connections=200
+          - -c
+          - max_parallel_workers=32
+          - -c
+          - max_parallel_workers_per_gather=8
+          - -c
+          - shared_buffers=2048MB
+          resources:
+            requests:
+              cpu: "1000m"
+              memory: "8Gi"
+            limits:
+              cpu: "2000m"
+              memory: "16Gi"
+          volumeMounts:
+            - name: data
+              mountPath: <data-folder>
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: local-<project-name>-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+  namespace: <namespace>
+  labels:
+    name: postgres
+spec:
+  ports:
+    - port: 5432
+  selector:
+    app: database

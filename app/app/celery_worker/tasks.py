@@ -1,9 +1,9 @@
 import requests
 from celery import Celery
 
+from app.util.mail_util import send_delete_account, send_reset_email
 from app.config.config import settings
 from app.util.avatar.generate_avatar import generate_avatar
-from app.util.email.send_email import send_email
 
 celery_app = Celery("tasks", broker=settings.REDIS_URI, backend=f"db+{settings.SYNC_DB_URL}")
 
@@ -25,17 +25,20 @@ def task_generate_avatar(avatar_filename: str, bro_id: int, broup: bool):
 
 
 @celery_app.task
-def task_send_email(username: str, recipients: str, subject: str, body: str):
-    send_email(
-        settings.MAIL_SENDERNAME,
-        settings.MAIL_USERNAME,
-        settings.MAIL_PASSWORD,
-        username,
-        recipients,
-        subject,
-        body,
-    )
+def task_send_email_forgot_password(
+    to_email: str, subject: str, access_token: str, refresh_token: str
+) -> dict[str, bool]:
+    """Send email to reset password."""
+    send_reset_email(to_email, subject, access_token, refresh_token)
+    return {"success": True}
 
+
+@celery_app.task
+def task_send_email_delete_account(
+    to_email: str, subject: str, access_token: str, refresh_token: str, origin: str
+) -> dict[str, bool]:
+    """Send email to reset password."""
+    send_delete_account(to_email, subject, access_token, refresh_token, origin)
     return {"success": True}
 
 

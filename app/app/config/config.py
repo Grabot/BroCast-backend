@@ -103,6 +103,19 @@ class Settings(BaseSettings):
 
     LOG_READ_PASSWORD: str = os.environ.get("LOG_READ_PASSWORD")
 
+    FIREBASE_PROJECT_ID: str
+    FIREBASE_PRIVATE_KEY_ID: str
+    FIREBASE_PRIVATE_KEY: str
+    FIREBASE_CLIENT_EMAIL: str
+    FIREBASE_CLIENT_ID: str
+    FIREBASE_CLIENT_X509_CERT_URL: str
+
+    SMTP_PASSWORD: str
+    SMTP_ACCOUNT: str
+    SMTP_USER: str
+    SMTP_HOST: str
+    SMTP_PORT: str
+
     class Config:
         case_sensitive: bool = True
 

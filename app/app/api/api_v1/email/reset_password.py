@@ -2,16 +2,13 @@ import time
 
 from fastapi import Depends, Response
 from pydantic import BaseModel
-from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
 from app.api.api_v1 import api_router_v1
-from app.celery_worker.tasks import task_send_email
-from app.config.config import settings
+from app.celery_worker.tasks import task_send_email_forgot_password
 from app.database import get_db
 from app.models import Bro, BroToken
-from app.util.email.reset_password_email import reset_password_email
 from app.util.rest_util import get_failed_response
 import hashlib
 
@@ -44,12 +41,7 @@ async def reset_password(
     refresh_reset_token = bro.generate_refresh_token(refresh_expiration_time).decode("ascii")
 
     subject = "Brocast - Change your password"
-    body = reset_password_email.format(
-        base_url=settings.BASE_URL, token=reset_token, refresh_token=refresh_reset_token
-    )
-
-    user_name = f"{bro.bro_name} {bro.bromotion}"
-    _ = task_send_email.delay(user_name, email_to_send, subject, body)
+    _ = task_send_email_forgot_password.delay(email_to_send, subject, reset_token, refresh_reset_token)
 
     bro_token = BroToken(
         bro_id=bro.id,

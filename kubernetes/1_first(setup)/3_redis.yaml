@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: redis-service
-  namespace: bro
+  namespace: <namespace>
 spec:
   ports:
     - port: 6379
@@ -13,7 +13,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: redis-api
-  namespace: bro
+  namespace: <namespace>
 spec:
   replicas: 1
   selector:
@@ -21,12 +21,20 @@ spec:
       app: redis
   template:
     metadata:
-      namespace: bro
       labels:
         app: redis
     spec:
+      nodeSelector:
+        kubernetes.io/hostname: <kubernetes-node-name>
       containers:
         - name: redis-api
           image: redis:latest
           ports:
             - containerPort: 6379
+          resources:
+            requests:
+              cpu: "1000m"  # 1 CPU
+              memory: "8Gi"  # 8 Gigabytes
+            limits:
+              cpu: "2000m"  # 2 CPU
+              memory: "16Gi"  # 16 Gigabytes
