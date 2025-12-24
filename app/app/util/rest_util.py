@@ -25,6 +25,8 @@ def get_failed_response(message, response: Response):
 async def leave_broup_me(
         me: Bro,
         broup_id: int,
+        s3_client,
+        cipher,
         db: AsyncSession = Depends(get_db)
     ):
 
@@ -186,7 +188,7 @@ async def leave_broup_me(
         message.bro_received_message(me.id)
         if message.received_by_all():
             if message.data:
-                remove_message_data(message.data, message.data_type)
+                remove_message_data(message.data, message.data_type, s3_client, cipher)
             await db.delete(message)
     
     for broup in chat.chat_broups:

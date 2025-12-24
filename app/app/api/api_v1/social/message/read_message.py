@@ -8,10 +8,10 @@ from app.sockets.sockets import sio
 
 from app.api.api_v1 import api_router_v1
 from app.database import get_db
-from app.models import Bro, Chat, Broup, Message
+from app.models import Bro, Chat, Broup
 from sqlalchemy.orm import selectinload
 from app.util.rest_util import get_failed_response
-from app.util.util import check_token, get_auth_token, remove_message_data
+from app.util.util import check_token, get_auth_token
 
 class ReadMessageRequest(BaseModel):
     broup_id: int

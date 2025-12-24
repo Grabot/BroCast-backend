@@ -53,7 +53,10 @@ async def report_broup(
     )
     db.add(log)
 
-    me_broup = await leave_broup_me(me, broup_id, db)
+    s3_client = request.app.state.s3
+    cipher = request.app.state.cipher
+
+    me_broup = await leave_broup_me(me, broup_id, s3_client, cipher, db)
 
     # Next delete the broup
     me_broup.deleted = True

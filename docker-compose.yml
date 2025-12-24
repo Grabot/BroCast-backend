@@ -17,9 +17,11 @@ services:
     depends_on:
       - brocast_db
       - redis
+      - minio
     links:
       - brocast_db
       - redis
+      - minio
 
   brocast_db:
     container_name: brocast_db
@@ -64,7 +66,25 @@ services:
     depends_on:
       - redis
       - brocast_db
+      - minio
     command: "poetry run celery -A app.celery_worker.tasks worker -l info"
+
+
+  minio:
+    image: minio/minio
+    container_name: minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    networks:
+      - default
+
 
   cron_worker:
     build:
@@ -82,3 +102,6 @@ services:
       - redis
       - brocast_db
     command: "python main_cron.py"
+
+volumes:
+  minio_data:

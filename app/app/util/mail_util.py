@@ -45,7 +45,6 @@ def send_email(
             server.starttls()
             server.login(smtp_account, smtp_password)
             server.send_message(msg)
-        print("Email sent successfully!")
     except Exception as e:
         print(f"Error sending email: {e}")
 

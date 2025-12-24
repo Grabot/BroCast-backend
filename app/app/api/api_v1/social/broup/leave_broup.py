@@ -38,8 +38,11 @@ async def remove_bro_broup(
     if not me:
         return get_failed_response("An error occurred", response)
 
+    s3_client = request.app.state.s3
+    cipher = request.app.state.cipher
+
     broup_id = leave_broup_request.broup_id
-    _ = await leave_broup_me(me, broup_id, db)
+    _ = await leave_broup_me(me, broup_id, s3_client, cipher, db)
 
     return {
         "result": True,

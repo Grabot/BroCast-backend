@@ -71,5 +71,5 @@ spec:
           volumes:
             - name: data
               persistentVolumeClaim:
-                claimName: local-pvc
+                claimName: local-<project_name>-pvc
           restartPolicy: OnFailure

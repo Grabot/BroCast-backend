@@ -1,13 +1,38 @@
+from contextlib import asynccontextmanager
 import uvicorn
+import boto3
+from botocore import client as boto_client
 from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi_pagination import add_pagination
+from cryptography.fernet import Fernet
 
 from app.api import api_login, api_v1, api_v1_5
 from app.config.config import settings
 from app.sockets.sockets import sio_app
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    cipher = Fernet(settings.S3_ENCRYPTION_KEY.encode())
+    app.state.cipher = cipher
+    app.state.s3 = boto3.client(
+        "s3",
+        endpoint_url=settings.S3_ENDPOINT,
+        aws_access_key_id=settings.S3_ACCESS_KEY,
+        aws_secret_access_key=settings.S3_SECRET_KEY,
+        region_name="eu-central-1",
+        config=boto_client.Config(signature_version="s3v4"),
+    )
+    try:
+        app.state.s3.head_bucket(Bucket=settings.S3_BUCKET_NAME)
+    except Exception:
+        app.state.s3.create_bucket(Bucket=settings.S3_BUCKET_NAME)
+
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
 
 add_pagination(app)
 

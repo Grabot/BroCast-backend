@@ -4,6 +4,7 @@ import os
 from typing import Optional, List
 import pytz
 from sqlmodel import Field, SQLModel, Column, ARRAY, Integer
+from app.util.storage_util import avatar_s3_key, download_media
 from app.config.config import settings
 
 
@@ -39,22 +40,6 @@ class Message(SQLModel, table=True):
     def received_by_all(self):
         return len(self.receive_remaining) == 0
 
-    def get_message_image_data(self):
-        if not self.data:
-            return None
-        file_folder = settings.UPLOAD_FOLDER_IMAGES
-        file_path = os.path.join(file_folder, f"{self.data}.png")
-        if not os.path.isfile(file_path):
-            return None
-        else:
-            with open(file_path, "rb") as fd:
-                image_as_base64 = base64.encodebytes(fd.read()).decode()
-            image_data = {
-                "data": image_as_base64,
-                "type": self.data_type,
-            }
-            return image_data
-        
     def get_message_image_data_v1_5(self):
         if not self.data:
             return None
@@ -67,61 +52,32 @@ class Message(SQLModel, table=True):
         return media_data
 
 
-    def get_message_data_v1_5_data(self) -> bytes:
+    def get_message_data_v1_5_data(self, s3_client, cipher) -> bytes:
         if not self.data:
             return None
         if self.data_type == 0:
             # images
-            file_folder = settings.UPLOAD_FOLDER_IMAGES
-            file_path = os.path.join(file_folder, f"{self.data}.png")
-            if not os.path.isfile(file_path):
-                return None
-            else:
-                with open(file_path, "rb") as fd:
-                    image_bytes = fd.read()
-                return image_bytes
+            s3_key = avatar_s3_key(0, f"{self.data}.png")
+            return download_media(s3_client, cipher, settings.S3_BUCKET_NAME, s3_key)
         elif self.data_type == 1:
             # videos
-            file_folder = settings.UPLOAD_FOLDER_VIDEOS
-            file_path = os.path.join(file_folder, f"{self.data}.mp4")
-            if not os.path.isfile(file_path):
-                return None
-            else:
-                with open(file_path, "rb") as fd:
-                    video_bytes = fd.read()
-                return video_bytes
+            s3_key = avatar_s3_key(1, f"{self.data}.mp4")
+            return download_media(s3_client, cipher, settings.S3_BUCKET_NAME, s3_key)
         elif self.data_type == 2:
             # audio
-            file_folder = settings.UPLOAD_FOLDER_AUDIO
-            file_path = os.path.join(file_folder, f"{self.data}.m4a")
-            if not os.path.isfile(file_path):
-                return None
-            else:
-                with open(file_path, "rb") as fd:
-                    audio_bytes = fd.read()
-                return audio_bytes
+            s3_key = avatar_s3_key(2, f"{self.data}.m4a")
+            return download_media(s3_client, cipher, settings.S3_BUCKET_NAME, s3_key)
         if self.data_type == 6:
             # gifs
-            file_folder = settings.UPLOAD_FOLDER_IMAGES
-            file_path = os.path.join(file_folder, f"{self.data}.gif")
-            if not os.path.isfile(file_path):
-                return None
-            else:
-                with open(file_path, "rb") as fd:
-                    gif_bytes = fd.read()
-                return gif_bytes
+            s3_key = avatar_s3_key(6, f"{self.data}.gif")
+            return download_media(s3_client, cipher, settings.S3_BUCKET_NAME, s3_key)
         if self.data_type == 7:
             # other
-            file_folder = settings.UPLOAD_FOLDER_OTHER
-            file_path = os.path.join(file_folder, f"{self.data}")
-            if not os.path.isfile(file_path):
-                return None
-            else:
-                with open(file_path, "rb") as fd:
-                    other_bytes = fd.read()
-                return other_bytes
+            s3_key = avatar_s3_key(7, f"{self.data}")
+            return download_media(s3_client, cipher, settings.S3_BUCKET_NAME, s3_key)
 
-    def delete_message_data(self):
+
+    def delete_message_data(self, s3_client, cipher):
         from app.util.util import remove_message_data
         self.deleted = True
         # We don't remove the message object just yet
@@ -129,7 +85,7 @@ class Message(SQLModel, table=True):
         # It will just display as that it has been deleted
         # If it has data we will already delete that and set that to None
         if self.data:
-            remove_message_data(self.data, self.data_type)
+            remove_message_data(self.data, self.data_type, s3_client, cipher)
             self.data = None
             self.data_type = None
 
@@ -142,7 +98,7 @@ class Message(SQLModel, table=True):
             "body": self.body,
             "timestamp": self.timestamp.strftime("%Y-%m-%dT%H:%M:%S.%f"),
             "info": self.info,
-            "data": self.get_message_image_data(),
+            "data": self.get_message_image_data_v1_5(),
         }
 
         if self.text_message is not None:

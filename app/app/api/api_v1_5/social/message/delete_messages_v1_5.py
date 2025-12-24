@@ -94,8 +94,12 @@ async def delete_messages_v1_5(
         return {
             "result": False,
         }
+    
+    s3_client = request.app.state.s3
+    cipher = request.app.state.cipher
+
     delete_message: Message = result_message.Message
-    delete_message.delete_message_data()
+    delete_message.delete_message_data(s3_client, cipher)
     db.add(delete_message)
     await db.commit()
 

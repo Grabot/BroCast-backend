@@ -50,7 +50,6 @@ async def send_notification_broup(tokens, broup_id, private, broup_name, sender_
                 token=token
             )
         elif platform == 1:
-            # TODO: test
             apns_config = messaging.APNSConfig(
                 payload=messaging.APNSPayload(
                     aps=messaging.Aps(

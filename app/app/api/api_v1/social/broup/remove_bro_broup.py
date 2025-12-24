@@ -131,13 +131,16 @@ async def remove_bro_broup(
             "error": "No messages found",
         }
 
+    s3_client = request.app.state.s3
+    cipher = request.app.state.cipher
+
     for result_message in result_messages:
         message: Message = result_message.Message
 
         message.bro_received_message(bro_id)
         if message.received_by_all():
             if message.data:
-                remove_message_data(message.data, message.data_type)
+                remove_message_data(message.data, message.data_type, s3_client, cipher)
             await db.delete(message)
 
     socket_response = {

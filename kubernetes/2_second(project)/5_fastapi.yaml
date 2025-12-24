@@ -77,18 +77,6 @@ spec:
               value: <jwt_iss>
             - name: JWT_AUD
               value: <jwt_aud>
-            - name: MAIL_SERVER
-              value: <mail_server>
-            - name: MAIL_PORT
-              value: <mail_port>
-            - name: MAIL_USE_TLS
-              value: <mail_use_tls>
-            - name: MAIL_PASSWORD
-              value: <mail_password>
-            - name: MAIL_USERNAME
-              value: <mail_username>
-            - name: MAIL_SENDERNAME
-              value: <mail_sendername>
             - name: BASE_URL
               value: <base_url>
             - name: DB_EXCLUDE_TABLES
@@ -107,10 +95,6 @@ spec:
               value: <apple_redirect_url>
             - name: LOG_READ_PASSWORD
               value: <log_read_password>
-            - name: MAIL_API_KEY
-              value: "<mail_api_key>"
-            - name: SENDER_MAIL
-              value: "<sender_mail>"
             - name: FIREBASE_PROJECT_ID
               value: "<firebase_project_id>"
             - name: FIREBASE_PRIVATE_KEY_ID
@@ -133,13 +117,27 @@ spec:
               value: "<smtp_host>"
             - name: SMTP_PORT
               value: "<smtp_port>"
+            - name: S3_ENDPOINT
+              value: "<s3_endpoint>"
+            - name: S3_ACCESS_KEY
+              value: "<s3_access_key>"
+            - name: S3_SECRET_KEY
+              value: "<s3_secret_key>"
+            - name: S3_BUCKET_NAME
+              value: "<s3_bucket_name>"
+            - name: S3_SECURE
+              value: "<s3_secure>"
+            - name: S3_ENCRYPTION_KEY
+              value: "<s3_encryption_key>"
+            - name: PROJECT_NAME
+              value: "<project_name>"
           args:
             - /bin/sh
             - boot.sh
       volumes:
         - name: postgres-data
           persistentVolumeClaim:
-            claimName: local-pvc
+            claimName: local-<project_name>-pvc
 ---
 apiVersion: v1
 kind: Service

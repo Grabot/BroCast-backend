@@ -41,6 +41,9 @@ async def delete_account(
             "message": "Bro account deletion failed",
         }
 
+    s3_client = request.app.state.s3
+    cipher = request.app.state.cipher
+
     bro_statement = (
         select(Bro)
         .filter_by(id=bro_token.bro_id)
@@ -55,7 +58,7 @@ async def delete_account(
         }
     me = result.Bro
     for broup in me.broups:
-        _ = await leave_broup_me(me, broup.broup_id, db)
+        _ = await leave_broup_me(me, broup.broup_id, s3_client, cipher, db)
     await db.commit()
     # Retrieve the bro again, this time for the tokens which might have changed.
     bro_statement_2 = (
@@ -113,10 +116,13 @@ async def delete_account_all(
     if result is None or result == []:
         return get_failed_response("no account found with that email", response)
 
+    s3_client = request.app.state.s3
+    cipher = request.app.state.cipher
+
     for bro_result in result:
         bro_me: Bro = bro_result.Bro
         for broup in bro_me.broups:
-            _ = await leave_broup_me(bro_me, broup.broup_id, db)
+            _ = await leave_broup_me(bro_me, broup.broup_id, s3_client, cipher, db)
         await db.commit()
         # Retrieve the bro again, this time for the tokens which might have changed.
         bro_statement_2 = (

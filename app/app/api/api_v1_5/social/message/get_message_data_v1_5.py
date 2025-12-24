@@ -61,7 +61,11 @@ async def get_messages_data_v1_5(
         )
     
     message_with_data: Message = result_message.Message
-    data_bytes = message_with_data.get_message_data_v1_5_data()
+
+    s3_client = request.app.state.s3
+    cipher = request.app.state.cipher
+
+    data_bytes = message_with_data.get_message_data_v1_5_data(s3_client, cipher)
     if data_bytes is None:
         return Response(
             content="Message data could not be retrieved",
@@ -72,7 +76,7 @@ async def get_messages_data_v1_5(
     message_with_data.bro_received_message(me.id)
     if message_with_data.received_by_all():
         if message_with_data.data:
-            remove_message_data(message_with_data.data, message_with_data.data_type)
+            remove_message_data(message_with_data.data, message_with_data.data_type, s3_client, cipher)
         await db.delete(message_with_data)
 
     await db.commit()

@@ -83,6 +83,9 @@ async def send_message_other(
         db.add(broup)
         await db.commit()
 
+    s3_client = request.app.state.s3
+    cipher = request.app.state.cipher
+
     # The broup object and the message will have the same timestamp so we can check if it's equal
     current_timestamp = datetime.now(pytz.utc).replace(tzinfo=None)
     file_name = None
@@ -107,7 +110,7 @@ async def send_message_other(
         
         other_bytes = await other_data.read()
 
-        save_other_v1_5(other_bytes, file_name)
+        save_other_v1_5(other_bytes, file_name, s3_client, cipher)
 
     bro_message = Message(
         sender_id=me.id,

@@ -87,19 +87,9 @@ class Settings(BaseSettings):
     JWT_AUD: str = os.environ.get("JWT_AUD", "")
     API_SOCK_NAMESPACE: str = "/api/v1.4/sock"
 
-    MAIL_SERVER: str = os.environ.get("MAIL_SERVER")
-    MAIL_PORT: int = int(os.environ.get("MAIL_PORT") or 25)
-    MAIL_USE_TLS: str = os.environ.get("MAIL_USE_TLS") is not None
-    MAIL_USERNAME: str = os.environ.get("MAIL_USERNAME")
-    MAIL_PASSWORD: str = os.environ.get("MAIL_PASSWORD")
-    MAIL_SENDERNAME: str = os.environ.get("MAIL_SENDERNAME")
     BASE_URL: str = os.environ.get("BASE_URL")
     UPLOAD_FOLDER_AVATARS: str = "static/uploads/avatars"
-    UPLOAD_FOLDER_MEDIA: str = "static/uploads/media"
     UPLOAD_FOLDER_IMAGES: str = "static/uploads/media/images"
-    UPLOAD_FOLDER_VIDEOS: str = "static/uploads/media/videos"
-    UPLOAD_FOLDER_AUDIO: str = "static/uploads/media/audio"
-    UPLOAD_FOLDER_OTHER: str = "static/uploads/media/other"
 
     LOG_READ_PASSWORD: str = os.environ.get("LOG_READ_PASSWORD")
 
@@ -115,6 +105,15 @@ class Settings(BaseSettings):
     SMTP_USER: str
     SMTP_HOST: str
     SMTP_PORT: str
+
+    S3_ENDPOINT: str
+    S3_ACCESS_KEY: str
+    S3_SECRET_KEY: str
+    S3_BUCKET_NAME: str
+    S3_SECURE: bool
+
+    S3_ENCRYPTION_KEY: str
+    PROJECT_NAME: str
 
     class Config:
         case_sensitive: bool = True

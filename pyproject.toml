@@ -49,6 +49,8 @@ firebase-admin = "7.1.0"
 firebase-functions = "0.4.3"
 numpy = "2.3.4"
 opencv-python-headless = "4.11.0.86"
+boto3 = "1.42.14"
+botocore = "1.42.14"
 
 [tool.poetry.group.dev.dependencies]
 podman-compose = "^1.5.0"

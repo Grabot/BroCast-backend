@@ -1,8 +1,7 @@
 import time
 from typing import Optional
 
-from authlib.jose import jwt
-from authlib.jose.errors import DecodeError
+from app.util.storage_util import avatar_s3_key, upload_media
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from sqlmodel import select
@@ -119,102 +118,51 @@ def save_image(image_data: str, file_name: str):
     os.chmod(file_path, 0o644)
 
 
-def save_image_v1_5(image_bytes: bytes, file_name: str):
-    image_array = np.frombuffer(image_bytes, dtype=np.uint8)
-    new_image = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
-
-    # Get the file name and path
-    file_folder = settings.UPLOAD_FOLDER_IMAGES
+def save_image_v1_5(image_bytes: bytes, file_name: str, s3_client, cipher):
     file_name = f"{file_name}.png"
-    file_path = os.path.join(file_folder, file_name)
-    
-    # Save the image using OpenCV
-    cv2.imwrite(file_path, new_image)
-    os.chmod(file_path, 0o644)
+    s3_key = avatar_s3_key(0, file_name)
+    upload_media(s3_client, cipher, image_bytes, settings.S3_BUCKET_NAME, s3_key)
 
 
-def save_video_v1_5(video_bytes: bytes, file_name: str):
-    # Get the file name and path
-    file_folder = settings.UPLOAD_FOLDER_VIDEOS
+def save_video_v1_5(video_bytes: bytes, file_name: str, s3_client, cipher):
     file_name = f"{file_name}.mp4"
-    file_path = os.path.join(file_folder, file_name)
-
-    # Save the video bytes to the file
-    with open(file_path, 'wb') as video_file:
-        video_file.write(video_bytes)
-
-    # Set the file permissions
-    os.chmod(file_path, 0o644)
+    s3_key = avatar_s3_key(1, file_name)
+    upload_media(s3_client, cipher, video_bytes, settings.S3_BUCKET_NAME, s3_key)
 
 
-def save_audio_v1_5(audio_bytes: bytes, file_name: str):
-    # Get the file name and path
-    file_folder = settings.UPLOAD_FOLDER_AUDIO
+def save_audio_v1_5(audio_bytes: bytes, file_name: str, s3_client, cipher):
     file_name = f"{file_name}.m4a"
-    file_path = os.path.join(file_folder, file_name)
-
-    # Save the audio bytes to the file
-    with open(file_path, 'wb') as audio_file:
-        audio_file.write(audio_bytes)
-
-    # Set the file permissions
-    os.chmod(file_path, 0o644)
+    s3_key = avatar_s3_key(2, file_name)
+    upload_media(s3_client, cipher, audio_bytes, settings.S3_BUCKET_NAME, s3_key)
 
 
-def save_gif_v1_5(gif_bytes: bytes, file_name: str):
-    # Get the file name and path
-    file_folder = settings.UPLOAD_FOLDER_IMAGES
+def save_gif_v1_5(gif_bytes: bytes, file_name: str, s3_client, cipher):
     file_name = f"{file_name}.gif"
-    file_path = os.path.join(file_folder, file_name)
-
-    # Save the gif bytes to the file
-    with open(file_path, 'wb') as audio_file:
-        audio_file.write(gif_bytes)
-
-    # Set the file permissions
-    os.chmod(file_path, 0o644)
+    s3_key = avatar_s3_key(6, file_name)
+    upload_media(s3_client, cipher, gif_bytes, settings.S3_BUCKET_NAME, s3_key)
 
 
-def save_other_v1_5(other_bytes: bytes, file_name: str):
-    # Get the file name and path
-    file_folder = settings.UPLOAD_FOLDER_OTHER
-    # extension is still in the filename for this
-    file_path = os.path.join(file_folder, file_name)
-
-    # Save the other bytes to the file
-    with open(file_path, 'wb') as other_file:
-        other_file.write(other_bytes)
-
-    # Set the file permissions
-    os.chmod(file_path, 0o644)
+def save_other_v1_5(other_bytes: bytes, file_name: str, s3_client, cipher):
+    s3_key = avatar_s3_key(7, file_name)
+    upload_media(s3_client, cipher, other_bytes, settings.S3_BUCKET_NAME, s3_key)
 
 
-
-def remove_message_data(file_name: str, data_type: int):
-    file_folder = settings.UPLOAD_FOLDER_IMAGES
-    if data_type == 1:
-        file_folder = settings.UPLOAD_FOLDER_VIDEOS
-    elif data_type == 2:
-        file_folder = settings.UPLOAD_FOLDER_AUDIO
-    elif data_type == 7:
-        file_folder = settings.UPLOAD_FOLDER_OTHER
-    file_path = ""
+def remove_message_data(file_name: str, data_type: int, s3_client, cipher):
     if data_type == 0:
-        file_path = os.path.join(file_folder, f"{file_name}.png")
+        file_name = f"{file_name}.png"
     elif data_type == 1:
-        file_path = os.path.join(file_folder, f"{file_name}.mp4")
+        file_name = f"{file_name}.mp4"
     elif data_type == 2:
-        file_path = os.path.join(file_folder, f"{file_name}.m4a")
+        file_name = f"{file_name}.m4a"
     elif data_type == 6:
-        file_path = os.path.join(file_folder, f"{file_name}.gif")
+        file_name = f"{file_name}.gif"
     elif data_type == 7:
-        file_path = os.path.join(file_folder, f"{file_name}")
+        file_name = f"{file_name}"
     else:
         # unknown data type
         return
-    if file_path != "" and os.path.isfile(file_path):
-        os.remove(file_path)
-    return
+    s3_key = avatar_s3_key(data_type, file_name)
+    s3_client.delete_object(Bucket=settings.S3_BUCKET_NAME, Key=s3_key)
 
 
 async def remove_broup_traces(chat: Chat, db: AsyncSession):

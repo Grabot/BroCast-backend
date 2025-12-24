@@ -85,6 +85,9 @@ async def send_message(
         db.add(broup)
         await db.commit()
 
+    s3_client = request.app.state.s3
+    cipher = request.app.state.cipher
+
     # The broup object and the message will have the same timestamp so we can check if it's equal
     current_timestamp = datetime.now(pytz.utc).replace(tzinfo=None)
     file_name = None
@@ -98,7 +101,7 @@ async def send_message(
         data_type = 0
         # Read the contents of the uploaded file
         image_bytes = await message_data.read()
-        save_image_v1_5(image_bytes, file_name)
+        save_image_v1_5(image_bytes, file_name, s3_client, cipher)
     elif video_data is not None:
         # If the message includes video data we want to take the data and save it as a video
         # The path to that video will be saved on the message db object.
@@ -108,7 +111,7 @@ async def send_message(
         data_type = 1
         # Read the contents of the uploaded file
         video_bytes = await video_data.read()
-        save_video_v1_5(video_bytes, file_name)
+        save_video_v1_5(video_bytes, file_name, s3_client, cipher)
     elif audio_data is not None:
         # If the message includes video data we want to take the data and save it as a video
         # The path to that video will be saved on the message db object.
@@ -118,7 +121,7 @@ async def send_message(
         data_type = 2
         # Read the contents of the uploaded file
         audio_bytes = await audio_data.read()
-        save_audio_v1_5(audio_bytes, file_name)
+        save_audio_v1_5(audio_bytes, file_name, s3_client, cipher)
 
     bro_message = Message(
         sender_id=me.id,

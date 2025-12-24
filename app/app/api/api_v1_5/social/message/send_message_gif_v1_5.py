@@ -83,6 +83,9 @@ async def send_message_gif(
         db.add(broup)
         await db.commit()
 
+    s3_client = request.app.state.s3
+    cipher = request.app.state.cipher
+
     # The broup object and the message will have the same timestamp so we can check if it's equal
     current_timestamp = datetime.now(pytz.utc).replace(tzinfo=None)
     file_name = None
@@ -96,7 +99,7 @@ async def send_message_gif(
         data_type = 6
         # Read the contents of the uploaded file
         gif_bytes = await gif_data.read()
-        save_gif_v1_5(gif_bytes, file_name)
+        save_gif_v1_5(gif_bytes, file_name, s3_client, cipher)
 
     bro_message = Message(
         sender_id=me.id,

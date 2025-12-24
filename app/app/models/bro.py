@@ -111,6 +111,7 @@ class Bro(SQLModel, table=True):
                 image_as_base64 = base64.encodebytes(fd.read()).decode()
             return image_as_base64
 
+
     @property
     def serialize_avatar(self):
         return {

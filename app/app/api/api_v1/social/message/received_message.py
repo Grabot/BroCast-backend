@@ -59,11 +59,14 @@ async def message_received_single(
 
     message: Message = result_message.Message
     
+    s3_client = request.app.state.s3
+    cipher = request.app.state.cipher
+
     message.bro_received_message(me.id)
     db.add(message)
     if message.received_by_all():
         if message.data:
-            remove_message_data(message.data, message.data_type)
+            remove_message_data(message.data, message.data_type, s3_client, cipher)
         await db.delete(message)
 
     await db.commit()
