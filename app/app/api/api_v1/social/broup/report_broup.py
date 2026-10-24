@@ -1,6 +1,4 @@
 from typing import Optional, List
-from datetime import datetime
-import pytz
 from fastapi import Depends, Request, Response
 from pydantic import BaseModel
 from sqlalchemy import func

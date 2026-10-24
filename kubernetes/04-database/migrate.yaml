@@ -22,7 +22,7 @@ spec:
       restartPolicy: OnFailure
       initContainers:
         - name: wait-for-db
-          image: grabot/bro_cast:1.115
+          image: grabot/bro_cast:1.116
           imagePullPolicy: Always
           resources:
             requests:
@@ -78,7 +78,7 @@ spec:
                       time.sleep(5)
       containers:
         - name: migrate
-          image: grabot/bro_cast:1.115
+          image: grabot/bro_cast:1.116
           imagePullPolicy: Always
           resources:
             requests:

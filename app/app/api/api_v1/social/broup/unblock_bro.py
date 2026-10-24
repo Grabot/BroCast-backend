@@ -1,6 +1,5 @@
 from typing import Optional
-from datetime import datetime
-import pytz
+import datetime
 from fastapi import Depends, Request, Response
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -91,7 +90,7 @@ async def unblock_bro(
         message_id=chat.current_message_id,
         body=message_text,
         text_message="",
-        timestamp=datetime.now(pytz.utc).replace(tzinfo=None),
+        timestamp=datetime.datetime.now(datetime.UTC),
         info=True,
         data=None,
         data_type=None,

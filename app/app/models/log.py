@@ -1,5 +1,4 @@
-from datetime import datetime
-import pytz
+import datetime
 from sqlmodel import Field, SQLModel
 import json
 
@@ -17,8 +16,8 @@ class Log(SQLModel, table=True):
     report_broup: str
     report_broup_id: int
     messages: str
-    report_date: datetime = Field(
-        default=datetime.now(pytz.utc).replace(tzinfo=None)
+    report_date: datetime.datetime = Field(
+        default=datetime.datetime.now(datetime.UTC)
     )
 
 

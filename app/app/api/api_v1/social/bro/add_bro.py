@@ -5,8 +5,7 @@ from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 import random
-from datetime import datetime
-import pytz
+import datetime
 
 from app.api.api_v1 import api_router_v1
 from app.database import get_db
@@ -124,7 +123,7 @@ async def rejoin_bro_chat(db: AsyncSession, broup_me: Broup, broup_bro: Broup, c
         message_id=chat.current_message_id,
         body=message_text,
         text_message="",
-        timestamp=datetime.now(pytz.utc).replace(tzinfo=None),
+        timestamp=datetime.datetime.now(datetime.UTC),
         info=True,
         data=None,
         data_type=None,

@@ -27,7 +27,7 @@ spec:
               app: cron-worker
       containers:
         - name: cron-worker
-          image: grabot/bro_cast:1.114
+          image: grabot/bro_cast:1.116
           imagePullPolicy: Always
           resources:
             requests:

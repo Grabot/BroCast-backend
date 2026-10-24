@@ -11,7 +11,6 @@ from app.models import Bro, Broup
 from app.util.rest_util import get_failed_response
 from app.util.util import check_token, get_auth_token
 from sqlalchemy.orm import selectinload
-import pytz
 from datetime import datetime, timedelta
 
 
@@ -62,11 +61,11 @@ async def mute_broup(
     if mute_time == -1:
         mute = False
     elif mute_time == 0:
-        unmute_date = datetime.now(pytz.utc).replace(tzinfo=None) + timedelta(hours=1)
+        unmute_date = datetime.datetime.now(datetime.UTC) + timedelta(hours=1)
     elif mute_time == 1:
-        unmute_date = datetime.now(pytz.utc).replace(tzinfo=None) + timedelta(hours=8)
+        unmute_date = datetime.datetime.now(datetime.UTC) + timedelta(hours=8)
     elif mute_time == 2:
-        unmute_date = datetime.now(pytz.utc).replace(tzinfo=None) + timedelta(days=7)
+        unmute_date = datetime.datetime.now(datetime.UTC) + timedelta(days=7)
 
     broup.mute_broup(mute)
     if not mute:

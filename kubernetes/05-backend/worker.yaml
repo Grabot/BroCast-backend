@@ -24,7 +24,7 @@ spec:
               app: worker
       containers:
         - name: worker
-          image: grabot/bro_cast:1.115
+          image: grabot/bro_cast:1.116
           imagePullPolicy: Always
           resources:
             requests:

@@ -12,8 +12,7 @@ from app.util.storage_util import avatar_key, download_avatar
 from app.util.util import check_token, get_auth_token
 from sqlalchemy.orm import selectinload
 from app.sockets.sockets import sio
-from datetime import datetime
-import pytz
+import datetime
 
 
 @api_router_v1.post("/reset/avatar/me", status_code=200)
@@ -124,7 +123,7 @@ async def reset_avatar_broup(
         message_id=chat.current_message_id,
         body=message_text,
         text_message="",
-        timestamp=datetime.now(pytz.utc).replace(tzinfo=None),
+        timestamp=datetime.datetime.now(datetime.UTC),
         info=True,
         data=None,
         data_type=None,

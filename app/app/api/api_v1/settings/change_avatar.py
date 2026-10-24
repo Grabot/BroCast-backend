@@ -2,7 +2,6 @@ import base64
 import io
 from typing import Optional, List
 from datetime import datetime
-import pytz
 from fastapi import Depends, Request, Response
 from PIL import Image
 import numpy as np
@@ -18,6 +17,7 @@ from app.util.storage_util import avatar_key, upload_avatar
 from app.util.util import check_token, get_auth_token
 from app.sockets.sockets import sio
 from sqlalchemy.orm import selectinload
+import datetime
 
 
 class ChangeAvatarRequest(BaseModel):
@@ -160,7 +160,7 @@ async def change_avatar_broup(
         message_id=chat.current_message_id,
         body=message_text,
         text_message="",
-        timestamp=datetime.now(pytz.utc).replace(tzinfo=None),
+        timestamp=datetime.datetime.now(datetime.UTC),
         info=True,
         data=None,
         data_type=None,

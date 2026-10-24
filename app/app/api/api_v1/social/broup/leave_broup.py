@@ -1,21 +1,14 @@
-from typing import Optional, List
-from datetime import datetime
-import pytz
+from typing import Optional
 from fastapi import Depends, Request, Response
 from pydantic import BaseModel
-from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlmodel import select, update
-import random
 
 from app.api.api_v1 import api_router_v1
 from app.database import get_db
-from app.models import Bro, Broup, Chat, Message
+from app.models import Bro
 from app.util.rest_util import get_failed_response
 from app.util.util import check_token, get_auth_token, remove_broup_traces
 from app.util.rest_util import leave_broup_me
-from app.sockets.sockets import sio
-from sqlalchemy.orm import selectinload
 
 
 class LeaveBroupRequest(BaseModel):

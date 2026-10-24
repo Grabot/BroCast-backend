@@ -1,6 +1,5 @@
 from fastapi import Response, status
-from datetime import datetime
-import pytz
+import datetime
 from fastapi import Depends, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
@@ -73,7 +72,7 @@ async def leave_broup_me(
         message_id=chat.current_message_id,
         body=message_text,
         text_message="",
-        timestamp=datetime.now(pytz.utc).replace(tzinfo=None),
+        timestamp=datetime.datetime.now(datetime.UTC),
         info=True,
         data=None,
         data_type=None,
@@ -144,7 +143,7 @@ async def leave_broup_me(
                     message_id=chat.current_message_id,
                     body=message_text,
                     text_message="",
-                    timestamp=datetime.now(pytz.utc).replace(tzinfo=None),
+                    timestamp=datetime.datetime.now(datetime.UTC),
                     info=True,
                     data=None,
                     data_type=None,

@@ -1,8 +1,5 @@
-from datetime import datetime
-import base64
-import os
+import datetime
 from typing import Optional, List
-import pytz
 from sqlmodel import Field, SQLModel, Column, ARRAY, Integer
 from app.util.storage_util import avatar_s3_key, download_media
 from app.config.config import settings
@@ -20,7 +17,9 @@ class Message(SQLModel, table=True):
     message_id: int
     body: str
     text_message: Optional[str]
-    timestamp: datetime = Field(default=datetime.now(pytz.utc).replace(tzinfo=None))
+    timestamp: datetime.datetime = Field(
+        default_factory=lambda: datetime.datetime.now(datetime.UTC)
+    )
     info: bool = Field(default=False)
     data: Optional[str]
     data_type: Optional[int]

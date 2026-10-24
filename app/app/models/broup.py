@@ -1,7 +1,6 @@
-from datetime import datetime
+import datetime
 from typing import Optional, List
 from sqlmodel import Field, SQLModel, Relationship, Column, ARRAY, Integer, JSON
-import pytz
 from sqlalchemy.ext.mutable import MutableDict
 
 class Broup(SQLModel, table=True):
@@ -18,7 +17,7 @@ class Broup(SQLModel, table=True):
     mute: bool = Field(default=False)
     # Determines if the bro currently has the chat open.
     open: bool = Field(default=False)
-    mute_timestamp: Optional[datetime]
+    mute_timestamp: Optional[datetime.datetime]
     removed: bool = Field(default=False)
     deleted: bool = Field(default=False)
     # This is different from the unread messages.
@@ -115,7 +114,7 @@ class Broup(SQLModel, table=True):
         return self.mute
 
     def check_mute(self):
-        if self.is_muted() and (self.mute_timestamp is not None and self.mute_timestamp < datetime.now(pytz.utc).replace(tzinfo=None)):
+        if self.is_muted() and (self.mute_timestamp is not None and self.mute_timestamp < datetime.datetime.now(datetime.UTC)):
             self.mute_broup(False)
             self.set_mute_timestamp(None)
             return True

@@ -1,6 +1,5 @@
 from typing import Optional
-from datetime import datetime
-import pytz
+import datetime
 from fastapi import Depends, Request, Response, UploadFile, File, Form
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
@@ -89,7 +88,7 @@ async def send_message(
     cipher = request.app.state.cipher
 
     # The broup object and the message will have the same timestamp so we can check if it's equal
-    current_timestamp = datetime.now(pytz.utc).replace(tzinfo=None)
+    current_timestamp = datetime.datetime.now(datetime.UTC)
     file_name = None
     data_type = None
     if message_data is not None:

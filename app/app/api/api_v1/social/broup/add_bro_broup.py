@@ -1,6 +1,5 @@
 from typing import Optional, List
-from datetime import datetime
-import pytz
+import datetime
 from fastapi import Depends, Request, Response
 from pydantic import BaseModel
 from sqlalchemy import func
@@ -145,7 +144,7 @@ async def add_bro_broup(
         message_id=bro_chat.current_message_id,
         body=message_text,
         text_message="",
-        timestamp=datetime.now(pytz.utc).replace(tzinfo=None),
+        timestamp=datetime.datetime.now(datetime.UTC),
         info=True,
         data=None,
         data_type=None,

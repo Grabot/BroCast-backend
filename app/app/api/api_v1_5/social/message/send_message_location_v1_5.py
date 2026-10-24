@@ -1,6 +1,5 @@
 from typing import Optional
-from datetime import datetime
-import pytz
+import datetime
 from fastapi import Depends, Request, Response
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -106,7 +105,7 @@ async def send_message(
         await db.commit()
 
     # The broup object and the message will have the same timestamp so we can check if it's equal
-    current_timestamp = datetime.now(pytz.utc).replace(tzinfo=None)
+    current_timestamp = datetime.datetime.now(datetime.UTC)
 
     if not location:
         location = "stop sharing"
@@ -145,8 +144,8 @@ async def send_message(
         # For live location we set the initial location and the expiration time in the redis db.
         lat_lng, end_time_string = location.split(";")
         lat, lng = lat_lng.split(",")
-        end_time = datetime.fromisoformat(end_time_string)
-        now = datetime.now(pytz.utc)
+        end_time = datetime.datetime.fromisoformat(end_time_string)
+        now = datetime.datetime.now(datetime.UTC)
         delta = end_time - now
         ttl = int(delta.total_seconds())
         await redis.setex(f"bro:{me.id}:broup:{broup_id}:location", ttl, f"{lat},{lng}")
