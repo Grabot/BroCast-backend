@@ -1,0 +1,17 @@
+apiVersion: barmancloud.cnpg.io/v1
+kind: ObjectStore
+metadata:
+  name: bro-object-store
+  namespace: broer
+spec:
+  configuration:
+    destinationPath: s3://zwaar/brocast-barman-v2/
+    endpointURL: https://fsn1.your-objectstorage.com
+    s3Credentials:
+      accessKeyId:
+        name: brocast-app
+        key: S3_ACCESS_KEY
+      secretAccessKey:
+        name: brocast-app
+        key: S3_SECRET_KEY
+  retentionPolicy: 30d

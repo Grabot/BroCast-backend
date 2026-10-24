@@ -1,5 +1,4 @@
 import base64
-import os
 from typing import Optional, List
 from sqlmodel import select
 from pydantic import BaseModel
@@ -7,10 +6,10 @@ from fastapi import Depends, Request, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.api_v1 import api_router_v1
-from app.config.config import settings
 from app.database import get_db
 from app.models import Bro, Broup, Chat
 from app.util.rest_util import get_failed_response
+from app.util.storage_util import avatar_key, download_avatar
 from app.util.util import check_token, get_auth_token
 from app.sockets.sockets import sio
 
@@ -30,19 +29,18 @@ async def get_avatar_me(
     if not me:
         return get_failed_response("An error occurred", response)
 
-    file_folder = settings.UPLOAD_FOLDER_AVATARS
     if me.is_default():
         file_name = me.avatar_filename_default()
+        encrypted = False
     else:
         file_name = me.avatar_filename()
+        encrypted = True
 
-    file_path = os.path.join(file_folder, "%s.png" % file_name)
-
-    if not os.path.isfile(file_path):
+    image_bytes = download_avatar(avatar_key(file_name), encrypted=encrypted)
+    if image_bytes is None:
         return get_failed_response("An error occurred", response)
     else:
-        with open(file_path, "rb") as fd:
-            image_as_base64 = base64.encodebytes(fd.read()).decode()
+        image_as_base64 = base64.encodebytes(image_bytes).decode()
 
         return {
             "result": True,
@@ -81,19 +79,18 @@ async def get_avatar_bro(
 
     bro_avatar: Bro = result_bro.Bro
 
-    file_folder = settings.UPLOAD_FOLDER_AVATARS
     if bro_avatar.is_default():
         file_name = bro_avatar.avatar_filename_default()
+        encrypted = False
     else:
         file_name = bro_avatar.avatar_filename()
+        encrypted = True
 
-    file_path = os.path.join(file_folder, f"{file_name}.png")
-
-    if not os.path.isfile(file_path):
+    image_bytes = download_avatar(avatar_key(file_name), encrypted=encrypted)
+    if image_bytes is None:
         return get_failed_response("An error occurred", response)
     else:
-        with open(file_path, "rb") as fd:
-            image_as_base64 = base64.encodebytes(fd.read()).decode()
+        image_as_base64 = base64.encodebytes(image_bytes).decode()
 
         # We are going to retrieve the avatar, 
         # so we can remove the bro id from the list of bros to update.

@@ -1,0 +1,29 @@
+# Order of first-time setup / secret rotation:
+#   1. kubectl apply -f 00-namespace/namespace.yaml
+#   2. ./01-secrets/manage_secrets.py [--generate]   # renders the generated Secrets
+#   3. kubectl apply -k .   # everything below, in listed order (Secrets included)
+#
+# Off-site dumps (04-database/postgres-dump.yaml + 01-secrets/box-ssh.yaml) are NOT
+# listed until the storage-box keys exist: uncomment the two lines below once
+# ./01-secrets/manage_secrets.py renders box-ssh.yaml, and append the RCLONE_*
+# block from 01-secrets/secrets.env.example to 01-secrets/secrets.env first.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- 00-namespace/namespace.yaml
+- 01-secrets/fastapi-secret.yaml
+- 01-secrets/brocast-app.yaml
+- 02-config/app-config.yaml
+- 05-backend/redis.yaml
+- 03-storage/storageclass.yaml
+- 04-database/object-store.yaml
+- 04-database/postgres-cluster.yaml
+- 04-database/scheduledbackup.yaml
+- 04-database/migrate.yaml
+- 05-backend/fastapi.yaml
+- 05-backend/worker.yaml
+- 05-backend/cronjobs.yaml
+- 06-frontend/frontend.yaml
+- 06-frontend/ingress.yaml
+- 01-secrets/box-ssh.yaml
+- 04-database/postgres-dump.yaml

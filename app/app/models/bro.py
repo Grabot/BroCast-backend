@@ -1,5 +1,4 @@
 import base64
-import os
 import secrets
 import time
 from hashlib import md5
@@ -10,6 +9,7 @@ from passlib.apps import custom_app_context as pwd_context
 from sqlmodel import Field, Relationship, SQLModel
 
 from app.config.config import settings
+from app.util.storage_util import avatar_key, download_avatar
 
 
 class Bro(SQLModel, table=True):
@@ -99,17 +99,15 @@ class Bro(SQLModel, table=True):
     def get_bro_avatar(self):
         if self.default_avatar:
             file_name = self.avatar_filename_default()
+            encrypted = False
         else:
             file_name = self.avatar_filename()
-        file_folder = settings.UPLOAD_FOLDER_AVATARS
+            encrypted = True
 
-        file_path = os.path.join(file_folder, "%s.png" % file_name)
-        if not os.path.isfile(file_path):
+        image_bytes = download_avatar(avatar_key(file_name), encrypted=encrypted)
+        if image_bytes is None:
             return None
-        else:
-            with open(file_path, "rb") as fd:
-                image_as_base64 = base64.encodebytes(fd.read()).decode()
-            return image_as_base64
+        return base64.encodebytes(image_bytes).decode()
 
 
     @property

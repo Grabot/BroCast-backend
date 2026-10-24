@@ -1,16 +1,26 @@
+from io import BytesIO
+
 import requests
 from celery import Celery
 
 from app.util.mail_util import send_delete_account, send_reset_email
 from app.config.config import settings
 from app.util.avatar.generate_avatar import generate_avatar
+from app.util.storage_util import avatar_key, ensure_bucket, upload_avatar
 
 celery_app = Celery("tasks", broker=settings.REDIS_URI, backend=f"db+{settings.SYNC_DB_URL}")
 
 
 @celery_app.task
 def task_generate_avatar(avatar_filename: str, bro_id: int, broup: bool):
-    generate_avatar(avatar_filename, settings.UPLOAD_FOLDER_AVATARS)
+    ensure_bucket()
+
+    avatar_image = generate_avatar(avatar_filename)
+    buffer = BytesIO()
+    avatar_image.save(buffer, format="PNG")
+
+    s3_key = avatar_key(f"{avatar_filename}_default")
+    upload_avatar(buffer.getvalue(), s3_key, encrypted=False)
 
     base_url = settings.BASE_URL
     api_prefix = settings.API_V1_STR

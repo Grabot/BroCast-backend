@@ -76,3 +76,22 @@ async def handle_update_location(sid, data: Dict[str, Any]):
         },
         room=broup_room
     )
+
+
+@sio.on("trigger")
+async def handle_trigger(sid, data: Dict[str, Any]):
+    broup_id = data["broup_id"]
+    bro_id = data["bro_id"]
+    trigger_type = data["trigger_type"]
+    trigger_data = data["trigger_data"]
+    
+    broup_room = f"broup_{broup_id}"
+    
+    trigger_message = {
+        "broup_id": broup_id,
+        "bro_id": bro_id,
+        "trigger_type": trigger_type,
+        "trigger_data": trigger_data
+    }
+    
+    await sio.emit("trigger_received", trigger_message, room=broup_room)

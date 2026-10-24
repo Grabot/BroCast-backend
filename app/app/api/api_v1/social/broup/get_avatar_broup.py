@@ -1,5 +1,4 @@
 import base64
-import os
 from typing import Optional
 from sqlmodel import select
 from pydantic import BaseModel
@@ -7,11 +6,11 @@ from fastapi import Depends, Request, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.api_v1 import api_router_v1
-from app.config.config import settings
 from app.database import get_db
 from app.models import Bro, Chat, Broup
 from sqlalchemy.orm import selectinload
 from app.util.rest_util import get_failed_response
+from app.util.storage_util import avatar_key, download_avatar
 from app.util.util import check_token, get_auth_token
 
 
@@ -53,19 +52,18 @@ async def get_avatar_broup(
     me_broup: Broup = result_broup.Broup
     chat: Chat = me_broup.chat
 
-    file_folder = settings.UPLOAD_FOLDER_AVATARS
     if chat.is_default():
         file_name = chat.avatar_filename_default()
+        encrypted = False
     else:
         file_name = chat.avatar_filename()
+        encrypted = True
 
-    file_path = os.path.join(file_folder, "%s.png" % file_name)
-
-    if not os.path.isfile(file_path):
+    image_bytes = download_avatar(avatar_key(file_name), encrypted=encrypted)
+    if image_bytes is None:
         return get_failed_response("An error occurred", response)
     else:
-        with open(file_path, "rb") as fd:
-            image_as_base64 = base64.encodebytes(fd.read()).decode()
+        image_as_base64 = base64.encodebytes(image_bytes).decode()
 
         me_broup.new_avatar = False
         db.add(me_broup)

@@ -1,14 +1,18 @@
 import time
 from typing import Optional
 
-from app.util.storage_util import avatar_s3_key, upload_media
+from app.util.storage_util import (
+    avatar_s3_key,
+    get_cipher,
+    get_s3_client,
+    upload_media,
+)
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from sqlmodel import select
 
 from app.config.config import settings
 from app.models import Bro, Broup, BroToken, Chat, Message
-import os
 import base64
 import numpy as np
 import cv2
@@ -108,14 +112,15 @@ def save_image(image_data: str, file_name: str):
     image_array = np.frombuffer(image_bytes, dtype=np.uint8)
     new_image = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
 
-    # Get the file name and path
-    file_folder = settings.UPLOAD_FOLDER_IMAGES
+    # Re-encode to PNG, then store in S3 like the v1.5 path.
+    success, png_bytes = cv2.imencode(".png", new_image)
+    if not success:
+        raise ValueError("Could not decode image")
     file_name = f"{file_name}.png"
-    file_path = os.path.join(file_folder, file_name)
-    
-    # Save the image using OpenCV
-    cv2.imwrite(file_path, new_image)
-    os.chmod(file_path, 0o644)
+    s3_key = avatar_s3_key(0, file_name)
+    upload_media(
+        get_s3_client(), get_cipher(), png_bytes.tobytes(), settings.S3_BUCKET_NAME, s3_key
+    )
 
 
 def save_image_v1_5(image_bytes: bytes, file_name: str, s3_client, cipher):

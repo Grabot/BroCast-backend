@@ -1,0 +1,46 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: brocast
+  namespace: broer
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "1800"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "1800"
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts: [brocast.nl, www.brocast.nl]
+    secretName: brocast-tls
+  rules:
+  - host: brocast.nl
+    http:
+      paths:
+      - path: /socket.io
+        pathType: Prefix
+        backend: {service: {name: fastapi-service, port: {number: 32136}}}
+      - path: /api
+        pathType: Prefix
+        backend: {service: {name: fastapi-service, port: {number: 32136}}}
+      - path: /login
+        pathType: Prefix
+        backend: {service: {name: fastapi-service, port: {number: 32136}}}
+      - path: /
+        pathType: Prefix
+        backend: {service: {name: frontend-service, port: {number: 32869}}}
+  - host: www.brocast.nl
+    http:
+      paths:
+      - path: /socket.io
+        pathType: Prefix
+        backend: {service: {name: fastapi-service, port: {number: 32136}}}
+      - path: /api
+        pathType: Prefix
+        backend: {service: {name: fastapi-service, port: {number: 32136}}}
+      - path: /login
+        pathType: Prefix
+        backend: {service: {name: fastapi-service, port: {number: 32136}}}
+      - path: /
+        pathType: Prefix
+        backend: {service: {name: frontend-service, port: {number: 32869}}}

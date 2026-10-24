@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: broer
+data:
+  POSTGRES_URL: brocast-db-rw.broer.svc.cluster.local
+  POSTGRES_PORT: "5432"
+  REDIS_URL: redis-service.broer.svc.cluster.local
+  REDIS_PORT: "6379"
+  REDDIT_REDIRECT: "https://brocast.nl/login/reddit/callback"
+  APPLE_REDIRECT_URL: "https://brocast.nl/login/apple/callback"
+  BASE_URL: "https://brocast.nl"

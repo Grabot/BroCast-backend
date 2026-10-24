@@ -83,6 +83,7 @@ def send_delete_account(
         base_url=settings.BASE_URL,
         token=access_token,
         refresh_token=refresh_token,
+        origin=origin,
         year=datetime.datetime.now().year,
     )
     html_content = html_content.replace("{origin}", str(origin))

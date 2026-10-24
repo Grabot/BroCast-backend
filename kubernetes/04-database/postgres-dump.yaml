@@ -1,0 +1,108 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: postgres-dump-weekly
+  namespace: broer
+spec:
+  schedule: "0 4 * * 0"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 3600
+      activeDeadlineSeconds: 3600
+      template:
+        metadata:
+          labels:
+            app: postgres-dump
+        spec:
+          topologySpreadConstraints:
+            - maxSkew: 1
+              topologyKey: kubernetes.io/hostname
+              whenUnsatisfiable: ScheduleAnyway
+              labelSelector:
+                matchLabels:
+                  app: postgres-dump
+          restartPolicy: OnFailure
+          volumes:
+            - name: share
+              emptyDir:
+                sizeLimit: 1Gi
+            - name: box-ssh
+              secret:
+                secretName: box-ssh
+                defaultMode: 256
+                items:
+                  - key: id_ed25519
+                    path: id_ed25519
+                  - key: known_hosts
+                    path: known_hosts
+          initContainers:
+            - name: dump
+              image: ghcr.io/cloudnative-pg/postgresql:18.1
+              imagePullPolicy: IfNotPresent
+              resources:
+                requests:
+                  cpu: "50m"
+                  memory: "128Mi"
+                limits:
+                  cpu: "500m"
+                  memory: "512Mi"
+              env:
+                - name: PGHOST
+                  value: brocast-db-rw.broer.svc.cluster.local
+                - name: PGPORT
+                  value: "5432"
+                - name: PGDATABASE
+                  valueFrom:
+                    secretKeyRef:
+                      name: fastapi-secret
+                      key: POSTGRES_DB
+                - name: PGUSER
+                  valueFrom:
+                    secretKeyRef:
+                      name: fastapi-secret
+                      key: username
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: fastapi-secret
+                      key: password
+              volumeMounts:
+                - name: share
+                  mountPath: /share
+              command:
+                - sh
+                - -c
+                - pg_dump -Fc -f /share/pgdump-$(date +%Y%m%d).dump && ls -lh /share
+          containers:
+            - name: upload
+              image: rclone/rclone:latest
+              imagePullPolicy: Always
+              resources:
+                requests:
+                  cpu: "50m"
+                  memory: "128Mi"
+                limits:
+                  cpu: "500m"
+                  memory: "512Mi"
+              envFrom:
+                - secretRef:
+                    name: brocast-app
+              env:
+                - name: RCLONE_CONFIG_PGBOX_KEY_FILE
+                  value: /run/boxkey/id_ed25519
+                - name: RCLONE_CONFIG_PGBOX_KNOWN_HOSTS_FILE
+                  value: /run/boxkey/known_hosts
+              volumeMounts:
+                - name: share
+                  mountPath: /share
+                  readOnly: true
+                - name: box-ssh
+                  mountPath: /run/boxkey
+                  readOnly: true
+              command:
+                - sh
+                - -c
+                - "F=$(basename /share/pgdump-*.dump) && rclone copy /share cryptbox: --include 'pgdump-*.dump' && rclone check /share cryptbox: --include \"/$F\" && rclone delete cryptbox: --min-age 90d"

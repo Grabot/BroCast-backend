@@ -1,6 +1,5 @@
 import base64
 import io
-import os
 from typing import Optional, List
 from datetime import datetime
 import pytz
@@ -12,10 +11,10 @@ from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 from app.api.api_v1 import api_router_v1
-from app.config.config import settings
 from app.database import get_db
 from app.models import Bro, Chat, Broup, Message
 from app.util.rest_util import get_failed_response
+from app.util.storage_util import avatar_key, upload_avatar
 from app.util.util import check_token, get_auth_token
 from app.sockets.sockets import sio
 from sqlalchemy.orm import selectinload
@@ -47,15 +46,12 @@ async def change_avatar(
     image_array = np.frombuffer(image_bytes, dtype=np.uint8)
     new_image = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
 
-    # Get the file name and path
-    file_folder = settings.UPLOAD_FOLDER_AVATARS
-    file_name = me.avatar_filename()
     # Store the image under the same hash but without the "default".
-    file_path = os.path.join(file_folder, "%s.png" % file_name)
-    
-    # Save the image using OpenCV
-    cv2.imwrite(file_path, new_image)
-    os.chmod(file_path, 0o644)
+    file_name = me.avatar_filename()
+    success, png_bytes = cv2.imencode(".png", new_image)
+    if not success:
+        return get_failed_response("An error occurred", response)
+    upload_avatar(png_bytes.tobytes(), avatar_key(file_name), encrypted=True)
 
     me.set_default_avatar(False)
     db.add(me)
@@ -133,14 +129,11 @@ async def change_avatar_broup(
 
     chat: Chat = chat_object.Chat
 
-    # Get the file name and path
-    file_folder = settings.UPLOAD_FOLDER_AVATARS
-    file_name = chat.avatar_filename()
     # Store the image under the same hash but without the "default".
-    file_path = os.path.join(file_folder, "%s.png" % file_name)
-
-    new_avatar_pil.save(file_path)
-    os.chmod(file_path, 0o644)
+    file_name = chat.avatar_filename()
+    buffer = io.BytesIO()
+    new_avatar_pil.save(buffer, format="PNG")
+    upload_avatar(buffer.getvalue(), avatar_key(file_name), encrypted=True)
 
     chat.set_default_avatar(False)
     chat_broups: List[Broup] = chat.chat_broups

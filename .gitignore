@@ -162,8 +162,13 @@ cython_debug/
 _ignore
 _ignore/*
 
-kubernetes/kubernetes_production
-kubernetes/kubernetes_production/*
+# Previous manifests with inline secret values, kept for reference only.
+# Never commit: copy values into kubernetes/01-secrets/secrets.env instead.
+kubernetes_old
+kubernetes_old/*
+
+# Database dumps contain production data: never commit.
+*.dump
 
 poetry.lock
 brocast_firebase.json

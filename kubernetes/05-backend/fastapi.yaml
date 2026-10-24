@@ -1,0 +1,95 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fastapi-deployment
+  namespace: broer
+  labels:
+    app: fastapi
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: fastapi
+  template:
+    metadata:
+      labels:
+        app: fastapi
+    spec:
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app: fastapi
+          matchLabelKeys:
+            - pod-template-hash
+      containers:
+        - name: fastapi
+          image: grabot/bro_cast:1.114
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5000
+          startupProbe:
+            httpGet:
+              path: /readyz
+              port: 5000
+            failureThreshold: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 5000
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /livez
+              port: 5000
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "1Gi"
+          envFrom:
+            - secretRef:
+                name: fastapi-secret
+            - secretRef:
+                name: brocast-app
+            - configMapRef:
+                name: app-config
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: fastapi-secret
+                  key: username
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: fastapi-secret
+                  key: password
+          args:
+            - /bin/sh
+            - boot.sh
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fastapi-service
+  namespace: broer
+spec:
+  type: ClusterIP
+  selector:
+    app: fastapi
+  ports:
+    - protocol: TCP
+      port: 32136
+      targetPort: 5000

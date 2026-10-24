@@ -1,0 +1,8 @@
+# Local-only secrets. The whole folder is also ignored at repo root,
+# this is defense in depth in case that ever changes.
+secrets.env
+fastapi-secret.yaml
+brocast-app.yaml
+box-ssh.yaml
+bro-box-id_ed25519
+box-known_hosts

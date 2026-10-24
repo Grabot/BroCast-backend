@@ -1,15 +1,14 @@
 import base64
-import os
 from typing import Optional, List
 from sqlmodel import select
 from fastapi import Depends, Request, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel
 from app.api.api_v1 import api_router_v1
-from app.config.config import settings
 from app.database import get_db
 from app.models import Bro, Chat, Broup, Message
 from app.util.rest_util import get_failed_response
+from app.util.storage_util import avatar_key, download_avatar
 from app.util.util import check_token, get_auth_token
 from sqlalchemy.orm import selectinload
 from app.sockets.sockets import sio
@@ -32,15 +31,12 @@ async def reset_avatar_me(
     if not me:
         return get_failed_response("An error occurred", response)
 
-    file_folder = settings.UPLOAD_FOLDER_AVATARS
     file_name = me.avatar_filename_default()
-    file_path = os.path.join(file_folder, "%s.png" % file_name)
-
-    if not os.path.isfile(file_path):
+    image_bytes = download_avatar(avatar_key(file_name), encrypted=False)
+    if image_bytes is None:
         return get_failed_response("An error occurred", response)
     else:
-        with open(file_path, "rb") as fd:
-            image_as_base64 = base64.encodebytes(fd.read()).decode()
+        image_as_base64 = base64.encodebytes(image_bytes).decode()
 
         me.set_default_avatar(True)
         db.add(me)
@@ -105,10 +101,8 @@ async def reset_avatar_broup(
     chat: Chat = chat_object.Chat
     
     chat.set_default_avatar(True)
-    file_folder = settings.UPLOAD_FOLDER_AVATARS
     file_name = chat.avatar_filename_default()
-    file_path = os.path.join(file_folder, "%s.png" % file_name)
-    
+
     chat_broups: List[Broup] = chat.chat_broups
     for chat_broup in chat_broups:
         if chat_broup.bro_id != me.id:
@@ -149,10 +143,10 @@ async def reset_avatar_broup(
         room=broup_room,
     )
 
-    if not os.path.isfile(file_path):
+    image_bytes = download_avatar(avatar_key(file_name), encrypted=False)
+    if image_bytes is None:
         return get_failed_response("An error occurred", response)
     else:
-        with open(file_path, "rb") as fd:
-            image_as_base64 = base64.encodebytes(fd.read()).decode()
+        image_as_base64 = base64.encodebytes(image_bytes).decode()
 
         return {"result": True, "message": image_as_base64}

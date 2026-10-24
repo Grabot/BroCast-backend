@@ -1,0 +1,46 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: brocast-db
+  namespace: broer
+spec:
+  instances: 3
+  imageName: ghcr.io/cloudnative-pg/postgresql:18.1
+  primaryUpdateStrategy: unsupervised
+  bootstrap:
+    initdb:
+      database: brocast_db
+      owner: brostgres
+      secret:
+        name: fastapi-secret
+  plugins:
+    - name: barman-cloud.cloudnative-pg.io
+      isWALArchiver: true
+      parameters:
+        barmanObjectName: bro-object-store
+  postgresql:
+    parameters:
+      max_connections: "200"
+      max_parallel_workers: "32"
+      max_parallel_workers_per_gather: "8"
+      shared_buffers: "1024MB"
+  storage:
+    storageClass: longhorn-brocast-db
+    size: 50Gi
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "2Gi"
+    limits:
+      cpu: "500m"
+      memory: "4Gi"
+  managed:
+    roles:
+      - name: brostgres
+        ensure: present
+        login: true
+        superuser: true
+  affinity:
+    enablePodAntiAffinity: true
+    podAntiAffinityType: required
+    topologyKey: kubernetes.io/hostname

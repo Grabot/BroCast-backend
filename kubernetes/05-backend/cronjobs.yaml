@@ -1,0 +1,59 @@
+# Bro's cron is a persistent APScheduler process (main_cron.py), not a
+# Kubernetes CronJob: keep it a Deployment so the in-process schedule
+# (midnight token cleanup, minutely FCM checks) keeps running.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cron-worker-deployment
+  namespace: broer
+  labels:
+    app: cron-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cron-worker
+  template:
+    metadata:
+      labels:
+        app: cron-worker
+    spec:
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: cron-worker
+      containers:
+        - name: cron-worker
+          image: grabot/bro_cast:1.114
+          imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          envFrom:
+            - secretRef:
+                name: fastapi-secret
+            - secretRef:
+                name: brocast-app
+            - configMapRef:
+                name: app-config
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: fastapi-secret
+                  key: username
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: fastapi-secret
+                  key: password
+          args:
+            - python
+            - main_cron.py

@@ -2,10 +2,10 @@ from datetime import datetime
 from typing import Optional, List
 from sqlmodel import Field, SQLModel, Relationship, Column, ARRAY, Integer
 import pytz
-from app.config.config import settings
 import base64
-import os
 from hashlib import md5
+
+from app.util.storage_util import avatar_key, delete_avatar, download_avatar
 
 # from models import Broup
 
@@ -126,28 +126,19 @@ class Chat(SQLModel, table=True):
     def get_broup_avatar(self):
         if self.default_avatar:
             file_name = self.avatar_filename_default()
+            encrypted = False
         else:
             file_name = self.avatar_filename()
-        file_folder = settings.UPLOAD_FOLDER_AVATARS
+            encrypted = True
 
-        file_path = os.path.join(file_folder, "%s.png" % file_name)
-        if not os.path.isfile(file_path):
+        image_bytes = download_avatar(avatar_key(file_name), encrypted=encrypted)
+        if image_bytes is None:
             return None
-        else:
-            with open(file_path, "rb") as fd:
-                image_as_base64 = base64.encodebytes(fd.read()).decode()
-            return image_as_base64
-    
+        return base64.encodebytes(image_bytes).decode()
+
     def delete_broup_avatar(self):
-        file_folder = settings.UPLOAD_FOLDER_AVATARS
-        file_name = self.avatar_filename_default()
-        file_path = os.path.join(file_folder, "%s.png" % file_name)
-        if os.path.isfile(file_path):
-            os.remove(file_path)
-        file_name_avatar = self.avatar_filename()
-        file_path_avatar = os.path.join(file_folder, "%s.png" % file_name_avatar)
-        if os.path.isfile(file_path_avatar):
-            os.remove(file_path_avatar)
+        delete_avatar(avatar_key(self.avatar_filename_default()))
+        delete_avatar(avatar_key(self.avatar_filename()))
             
 
     @property

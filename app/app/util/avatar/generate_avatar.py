@@ -1,5 +1,4 @@
 import math
-import os
 import random
 
 from PIL import Image, ImageDraw
@@ -325,12 +324,12 @@ def background_square_clean(_rand, _width, _height, _index):
     return background_plane
 
 
-def generate_avatar(file_name, file_path):
+def generate_avatar(file_name):
     # Code repurposed from https://github.com/Grabot/Stijl
-    # The email hash will be the seed of the avatar generation
+    # The email hash will be the seed of the avatar generation.
+    # Seeded on the base name so regenerated images are byte-identical
+    # to the defaults generated before (callers add "_default" to the key).
     random.seed(file_name)
-    # Because this will be the default image we will add an indicator that it is the default.
-    file_name += "_default"
     planes = []
     # Add an index so that we can pick new colours from the same list
     # using the same seed and get a new one every time.
@@ -373,6 +372,4 @@ def generate_avatar(file_name, file_path):
     box = (bound_x, bound_y, bound_x + width - 2, bound_y + height - 2)
     im2 = im.crop(box)
 
-    file = os.path.join(file_path, "%s.png" % file_name)
-    im2.save(file)
-    os.chmod(file, 0o644)
+    return im2
