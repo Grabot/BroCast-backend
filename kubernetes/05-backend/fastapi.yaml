@@ -26,7 +26,7 @@ spec:
             - pod-template-hash
       containers:
         - name: fastapi
-          image: grabot/bro_cast:1.114
+          image: grabot/bro_cast:1.115
           imagePullPolicy: Always
           ports:
             - containerPort: 5000
